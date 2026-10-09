@@ -12,6 +12,7 @@
 
 import * as db from './db.js';
 import * as M from './model.js';
+import { GOOGLE_WEB_CLIENT_ID, isConfigured } from './config.js';
 
 const SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 const VAULT = 'ember-vault.json';
@@ -77,12 +78,31 @@ export async function hasKey() { return !!(await loadKey()); }
 // ---------------------------------------------------------------- Google sign-in
 export const redirectUrl = () => (globalThis.chrome?.identity ? chrome.identity.getRedirectURL('google') : '');
 
+// How this build can sign in to Google, best first:
+//   'chrome' — Chrome's own account (chrome.identity.getAuthToken): one click, renewed silently. Google Chrome only.
+//   'web'    — Google's sign-in window with Ember's built-in web client: Edge, Brave, Vivaldi (and Chrome as a fallback).
+//   'own'    — the user's own Google Cloud client ID ("Use your own Google project" in Settings).
+const manifestClient = () => globalThis.chrome?.runtime?.getManifest?.()?.oauth2?.client_id;
+// The test suite can stand in a web client; in the extension it always comes from config.js.
+const webClient = () => globalThis.__EMBER_TEST_WEB_CLIENT__ || GOOGLE_WEB_CLIENT_ID;
+export function signInOptions() {
+  return {
+    chrome: isConfigured(manifestClient()) && typeof globalThis.chrome?.identity?.getAuthToken === 'function',
+    web: isConfigured(webClient()),
+  };
+}
+export const builtInSignIn = () => { const o = signInOptions(); return o.chrome || o.web; };
+
 async function token(interactive) {
   const s = await settings();
+  // setups from before built-in sign-in recorded no method: they used their own client ID
+  const auth = s.auth || (s.clientId ? 'own' : 'web');
+  if (auth === 'chrome') return chromeToken(interactive);
   if (s.token && s.tokenExp > Date.now() + 60000) return s.token;
-  if (!s.clientId) throw new SyncError('Add your Google OAuth client ID first.');
+  const clientId = auth === 'own' ? s.clientId : webClient();
+  if (!isConfigured(clientId)) throw new SyncError(auth === 'own' ? 'Add your Google OAuth client ID first.' : 'This copy of Ember has no built-in Google sign-in. Use your own Google project instead.');
   const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
-    client_id: s.clientId,
+    client_id: clientId,
     response_type: 'token',
     redirect_uri: redirectUrl(),
     scope: SCOPE,
@@ -103,6 +123,24 @@ async function token(interactive) {
   return s.token;
 }
 
+// Chrome keeps and renews this token itself; a 401 means it went stale and is dropped from Chrome's cache.
+async function chromeToken(interactive) {
+  try {
+    const r = await chrome.identity.getAuthToken({ interactive, scopes: [SCOPE] });
+    const t = typeof r === 'string' ? r : r?.token;
+    if (!t) throw new Error('no token');
+    return t;
+  } catch (e) {
+    throw new SyncError(interactive ? `Google sign-in didn’t finish: ${e.message}` : 'Sign in to Google again to keep syncing.', { needsSignIn: true });
+  }
+}
+
+async function dropToken(t) {
+  const s = await settings();
+  if (s.auth === 'chrome') await chrome.identity.removeCachedAuthToken({ token: t }).catch(() => {});
+  else { s.token = null; await saveSettings(s); }
+}
+
 export class SyncError extends Error {
   constructor(message, extra = {}) { super(message); Object.assign(this, extra); }
 }
@@ -113,9 +151,7 @@ async function drive(path, { method = 'GET', body, headers = {}, interactive = f
     const t = await token(interactive);
     const res = await fetch(API() + path, { method, body, headers: { Authorization: `Bearer ${t}`, ...headers } });
     if (res.status === 401 && attempt === 0) {
-      const s = await settings();
-      s.token = null;
-      await saveSettings(s);
+      await dropToken(t);
       continue;
     }
     if (!res.ok) {
@@ -174,11 +210,25 @@ export function merge(local, remote) {
 
 // ---------------------------------------------------------------- setup / unlock
 // Turn sync on. First device: creates the vault. Later devices: the passphrase must match it.
-export async function enable({ clientId, passphrase }) {
+// With no clientId, Ember signs in with its built-in Google sign-in (Chrome's account first).
+export async function enable({ clientId = '', passphrase }) {
   if (!passphrase || passphrase.length < 10) throw new SyncError('Use a passphrase of at least 10 characters.');
-  const s = { ...(await settings()), clientId: clientId.trim(), enabled: false, lastError: '' };
+  const own = clientId.trim();
+  const opts = signInOptions();
+  const auth = own ? 'own' : opts.chrome ? 'chrome' : opts.web ? 'web' : null;
+  if (!auth) throw new SyncError('This copy of Ember has no built-in Google sign-in. Use your own Google project instead.');
+  const s = { ...(await settings()), auth, clientId: own, token: null, enabled: false, lastError: '' };
   await saveSettings(s);
-  const files = await listFiles(true);
+  let files;
+  try {
+    files = await listFiles(true);
+  } catch (e) {
+    // Chrome's own sign-in isn't available in every Chromium browser: fall back to the sign-in window.
+    if (auth !== 'chrome' || !opts.web) throw e;
+    s.auth = 'web';
+    await saveSettings(s);
+    files = await listFiles(true);
+  }
   let key;
   if (files.has(VAULT)) {
     const vault = JSON.parse(td.decode(await download(files.get(VAULT).id)));
@@ -221,6 +271,10 @@ export async function disable({ deleteCloud = false } = {}) {
     for (const f of files.values()) await remove(f.id);
   }
   const s = await settings();
+  if (s.auth === 'chrome') {
+    const t = await chromeToken(false).catch(() => null);
+    if (t) await chrome.identity.removeCachedAuthToken({ token: t }).catch(() => {});
+  }
   await saveSettings({ enabled: false, clientId: s.clientId || '' });
   await forgetKey();
 }

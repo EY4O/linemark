@@ -316,14 +316,14 @@ console.log('Link health, full-text search and local covers');
 console.log('Encrypted sync (stand-in Google Drive)');
 {
   const PASS = 'correct horse battery staple';
-  const setUp = async (p, pass = PASS) => {
+  const setUp = async (p, pass = PASS, clientId = '123-test.apps.googleusercontent.com') => {
     await p.ev(`location.hash = '#/settings';`);
     await p.until(`return !!document.querySelector('[data-act=sync-setup]')`);
     await p.ev(`document.querySelector('[data-act=sync-setup]').click();`);
     await p.until(`return !!document.querySelector('#sync-form')`);
     await p.ev(`document.querySelector('#sync-section').scrollIntoView();`);
     await p.shot('settings-sync-setup');
-    await p.ev(`document.querySelector('#sync-client').value = '123-test.apps.googleusercontent.com';
+    await p.ev(`${clientId ? `document.querySelector('#sync-client').value = '${clientId}';` : ''}
       document.querySelector('#sync-pass').value = ${JSON.stringify(pass)}; document.querySelector('#sync-pass2').value = ${JSON.stringify(pass)};
       document.querySelector('#sync-form').requestSubmit();`);
   };
@@ -383,6 +383,34 @@ console.log('Encrypted sync (stand-in Google Drive)');
     const n = await c.ev(`const db = await import('/js/db.js'); return (await db.getAll('bookmarks')).length;`);
     assert(n === 0, 'device with the wrong passphrase received data');
     await c.close();
+  });
+  await test('one-click sign-in with Chrome’s Google account, no client ID needed', async () => {
+    const d = await open(`${BASE}/__test/app.html?sso=chrome#/all`);
+    await d.until(`return !!document.querySelector('.empty h2')`);
+    await d.ev(`location.hash = '#/settings';`);
+    await d.until(`return !!document.querySelector('[data-act=sync-setup]')`);
+    await d.ev(`document.querySelector('[data-act=sync-setup]').click();`);
+    await d.until(`return !!document.querySelector('#sync-form')`);
+    const form = await d.ev(`return { button: document.querySelector('#sync-go').textContent.trim(), clientHidden: !document.querySelector('#sync-form details')?.open };`);
+    assert(form.button === 'Sign in with Google and sync' && form.clientHidden, JSON.stringify(form));
+    await d.ev(`document.querySelector('#sync-section').scrollIntoView();`);
+    await d.shot('settings-sync-signin');
+    await d.ev(`document.querySelector('#sync-pass').value = ${JSON.stringify(PASS)}; document.querySelector('#sync-pass2').value = ${JSON.stringify(PASS)}; document.querySelector('#sync-form').requestSubmit();`);
+    await d.until(`return document.querySelector('#sync-section')?.textContent.includes('Synced')`, 30000);
+    const r = await d.ev(`const db = await import('/js/db.js'); return { calls: window.__authCalls, auth: (await db.getMeta('sync')).auth, live: (await db.getAll('bookmarks')).filter((b) => !b.trashedAt).length };`);
+    assert(r.auth === 'chrome' && r.calls.getAuthToken > 0 && r.calls.launchWebAuthFlow === 0 && r.live === 5, JSON.stringify(r));
+    assert(!d.errors.length, d.errors.join('\n'));
+    await d.close();
+  });
+  await test('browsers without Chrome’s sign-in (Edge, Brave) fall back to the sign-in window', async () => {
+    const e = await open(`${BASE}/__test/app.html?sso=edge#/all`);
+    await e.until(`return !!document.querySelector('.empty h2')`);
+    await setUp(e, PASS, '');
+    await e.until(`return document.querySelector('#sync-section')?.textContent.includes('Synced')`, 30000);
+    const r = await e.ev(`const db = await import('/js/db.js'); return { calls: window.__authCalls, auth: (await db.getMeta('sync')).auth, live: (await db.getAll('bookmarks')).filter((b) => !b.trashedAt).length };`);
+    assert(r.auth === 'web' && r.calls.getAuthToken > 0 && r.calls.launchWebAuthFlow > 0 && r.live === 5, JSON.stringify(r));
+    assert(!e.errors.length, e.errors.join('\n'));
+    await e.close();
   });
   await test('settings pass accessibility checks with sync on', async () => {
     await a.ev(`location.hash = '#/settings';`); await sleep(300);

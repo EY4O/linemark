@@ -19,6 +19,7 @@ js/background.js     Service worker: context menus, shortcuts, omnibox, opening 
 js/io.js             Chrome tree import, Netscape HTML import/export, JSON backup/restore
 js/ui.js             Toasts, anchored menus, time formatting, downloads
 js/sync.js           Optional end-to-end encrypted sync through Google Drive's app-data folder (see docs/SYNC.md)
+js/config.js         Publisher sign-in configuration: the built-in Google web client ID (placeholder until set up)
 js/icons.js          Authored SVG icon set
 fonts/               Archivo variable font (OFL)
 icons/               Extension icons
@@ -63,6 +64,7 @@ The suite needs Google Chrome but no npm packages (set `CHROME_PATH` if Chrome i
 - **Model and import/export:** URL normalisation, line-colour contrast and assignment, page metadata, link-health classification, the bookmark-HTML round trip, and backup validation (unsafe or malformed entries are dropped).
 - **Library:** first render, search filters, accessibility checks in all four views and at 320px (contrast, names, nesting, overflow), and keyboard access (line expand, menus, the drawer's focus trap and return).
 - **Link health, full-text search and local covers:** against local pages that answer 200, 404, 403, a cross-host redirect and an unreachable port.
+- **Sign-in paths:** one-click Chrome sign-in (no client ID), the fallback to the sign-in window in Edge-style browsers, and the user's own project.
 - **Encrypted sync:** a stand-in for Google Drive's app-data endpoints. It checks that two devices converge (library, images, edits and permanent deletions), that a wrong passphrase is refused, and that Drive never holds readable data.
 - **Real extension:** loads Ember unpacked into a fresh profile, then checks the first-run screen, Chrome bookmark import, Settings, dark mode, the popup and the service worker's shortcuts.
 

@@ -1458,16 +1458,19 @@ function syncSection() {
     rows = `<div class="row"><div class="what"><b>Sync is off</b><span>Your library lives only in this browser profile.</span></div><div class="act"><button class="btn" data-act="sync-setup">${icon('cloud', 16)} Set up sync</button></div></div>`;
   } else if (!sy.enabled) {
     const redirect = Sync.redirectUrl();
-    rows = `<form class="sync-form" id="sync-form" novalidate>
-      <div class="field"><label for="sync-client">Google OAuth client ID</label>
-        <input class="input" id="sync-client" autocomplete="off" spellcheck="false" placeholder="1234567890-abc.apps.googleusercontent.com" value="${esc(sy.clientId)}" required>
+    const builtIn = Sync.builtInSignIn();
+    const own = `<div class="field"><label for="sync-client">Google OAuth client ID</label>
+        <input class="input" id="sync-client" autocomplete="off" spellcheck="false" placeholder="1234567890-abc.apps.googleusercontent.com" value="${esc(sy.clientId)}">
         <span class="hint">Create one in Google Cloud in about five minutes (steps in <b>docs/SYNC.md</b>). Use this as its authorised redirect URI:</span>
         <span class="copy-row"><code id="sync-redirect">${esc(redirect || 'Available when Ember runs as an extension')}</code>${redirect ? `<button type="button" class="btn sm" data-act="copy-redirect">${icon('copy', 14)} Copy</button>` : ''}</span>
-      </div>
+      </div>`;
+    rows = `<form class="sync-form" id="sync-form" novalidate>
+      ${builtIn ? '<p class="hint">Sign in with your Google account, then choose a passphrase. Sign-in only gives Ember its private app folder in your Drive; the passphrase is what encrypts your library.</p>' : '<p class="hint">This copy of Ember has no built-in Google sign-in yet, so sync uses a Google project you own.</p>'}
       <div class="field"><label for="sync-pass">Passphrase</label><input class="input" id="sync-pass" type="password" autocomplete="new-password" minlength="10" required aria-describedby="sync-pass-hint"><span class="hint" id="sync-pass-hint">At least 10 characters. Use the same passphrase on every device. Ember can’t recover it; if it’s lost, only the cloud copy is lost, never this computer’s library.</span></div>
       <div class="field"><label for="sync-pass2">Confirm passphrase</label><input class="input" id="sync-pass2" type="password" autocomplete="new-password" required></div>
+      ${builtIn ? `<details class="advanced" ${sy.clientId ? 'open' : ''}><summary>Advanced: use your own Google project</summary>${own}</details>` : own}
       <span class="field-error" id="sync-err" role="alert"></span>
-      <div class="form-actions"><button class="btn primary" type="submit" id="sync-go">${icon('cloud', 16)} Connect Google Drive and sync</button><button class="btn ghost" type="button" data-act="sync-cancel">Cancel</button></div>
+      <div class="form-actions"><button class="btn primary" type="submit" id="sync-go">${icon('cloud', 16)} ${builtIn ? 'Sign in with Google and sync' : 'Connect Google Drive and sync'}</button><button class="btn ghost" type="button" data-act="sync-cancel">Cancel</button></div>
     </form>`;
   } else if (sy.locked) {
     rows = `<form class="sync-form" id="sync-unlock" novalidate>
@@ -1495,7 +1498,11 @@ function wireSyncForms() {
     const pass = $('#sync-pass').value;
     const fail = (msg, field) => { err.textContent = msg; field?.setAttribute('aria-invalid', 'true'); field?.focus(); };
     $$('#sync-form [aria-invalid]').forEach((f) => f.removeAttribute('aria-invalid'));
-    if (!/\.apps\.googleusercontent\.com$/.test(clientId)) return fail('That doesn’t look like a Google OAuth client ID (it ends in .apps.googleusercontent.com).', $('#sync-client'));
+    const needsOwn = !Sync.builtInSignIn();
+    if ((needsOwn || clientId) && !/\.apps\.googleusercontent\.com$/.test(clientId)) {
+      $('#sync-form details')?.setAttribute('open', '');
+      return fail(needsOwn ? 'Enter your Google OAuth client ID (it ends in .apps.googleusercontent.com).' : 'That doesn’t look like a Google OAuth client ID (it ends in .apps.googleusercontent.com). Leave it empty to sign in with Google.', $('#sync-client'));
+    }
     if (pass.length < 10) return fail('Use a passphrase of at least 10 characters.', $('#sync-pass'));
     if (pass !== $('#sync-pass2').value) return fail('The two passphrases don’t match.', $('#sync-pass2'));
     // the identity permission has to be requested inside the click
@@ -1503,7 +1510,7 @@ function wireSyncForms() {
     if (!ok) return fail('Ember needs Chrome’s sign-in permission to connect to Google Drive.');
     const btn = $('#sync-go');
     btn.disabled = true;
-    btn.textContent = 'Connecting and encrypting…';
+    btn.textContent = 'Signing in and encrypting…';
     try {
       syncing = true;
       const st = await Sync.enable({ clientId, passphrase: pass });
@@ -1517,7 +1524,7 @@ function wireSyncForms() {
       syncing = false;
       await refreshSyncState();
       btn.disabled = false;
-      btn.innerHTML = `${icon('cloud', 16)} Connect Google Drive and sync`;
+      btn.innerHTML = `${icon('cloud', 16)} ${Sync.builtInSignIn() ? 'Sign in with Google and sync' : 'Connect Google Drive and sync'}`;
       fail(ex.message);
     }
   });

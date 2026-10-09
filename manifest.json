@@ -33,6 +33,10 @@
   ],
   "optional_permissions": ["tabs", "identity"],
   "optional_host_permissions": ["<all_urls>"],
+  "oauth2": {
+    "client_id": "YOUR_CHROME_EXTENSION_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/drive.appdata"]
+  },
   "omnibox": { "keyword": "em" },
   "commands": {
     "_execute_action": {

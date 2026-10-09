@@ -115,7 +115,7 @@ Replace the files in the folder, then click the reload arrow on Ember's card in 
 - **Where it goes:** your own Google Drive's hidden app folder, which your other files and other apps can't see.
 - **How it's protected:** your passphrase goes through PBKDF2-SHA256 (600,000 iterations) to make an AES-256-GCM key. The key is created on your device and can't be exported. Google only stores ciphertext, and Ember can't recover a forgotten passphrase.
 - **What syncs:** lines, bookmarks, deletions and stored images. Each device rebuilds its own full-text index.
-- **Setup:** you need your own free Google OAuth client ID, which takes about five minutes. Follow the steps in **[docs/SYNC.md](docs/SYNC.md)**.
+- **Setup:** click **Sign in with Google** (one click in Chrome, using the account Chrome is signed into) and choose a passphrase. A published build needs the publisher's one-time Google setup; until then, Settings lets you use your own free Google project. See **[docs/SYNC.md](docs/SYNC.md)**.
 </details>
 
 <details>

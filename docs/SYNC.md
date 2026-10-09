@@ -20,33 +20,57 @@ When you turn sync on, Ember keeps your library the same across Chrome, Edge, Br
 | **When** | When the library opens, about 15 seconds after you stop editing, every five minutes while the library is open, and whenever you click **Sync now**. Pages saved from the popup sync the next time the library is open. |
 | **Passphrase** | Ember can't recover it. If you lose it, delete the cloud copy and set sync up again; your local library is never affected. **Forget key** makes this device ask for the passphrase again. |
 
-## Setting up your Google client ID (one time, about 5 minutes)
+## Signing in
 
-Ember has no server and no shared Google project, so sync uses an OAuth client that **you** own.
+Sign-in has one job: it gives Ember access to its private app folder in your Drive (the `drive.appdata` scope, nothing else). The **passphrase** is what encrypts your library, and it never leaves your device. If the key came from your Google account instead, Google, or anyone who took over the account, could unlock your data.
 
-1. Open the [Google Cloud console](https://console.cloud.google.com/) and create a project, for example "Ember sync".
-2. **APIs & Services → Library**: enable the **Google Drive API**.
-3. **APIs & Services → OAuth consent screen**:
-   - Choose **External**.
-   - Fill in the app name and your email.
-   - Add the scope `.../auth/drive.appdata` (Ember asks for nothing else).
-   - Under **Test users**, add your own Google account.
-   - You can leave the app in **Testing**; it's only for you.
-4. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
-   - Application type: **Web application**.
-   - **Authorised redirect URIs**: paste the URI shown in Ember under **Settings → Sync → Set up sync**. It looks like `https://<extension-id>.chromiumapp.org/google`.
-5. Copy the **client ID** (`….apps.googleusercontent.com`) into Ember, choose a passphrase, and click **Connect Google Drive and sync**.
+Ember picks the best sign-in your browser offers:
 
-On your other computers:
-1. Load Ember.
-2. Add that computer's redirect URI to the same OAuth client (step 4); each install of an unpacked extension has its own ID.
-3. Enter the same client ID and passphrase.
+| Browser | How you sign in |
+|---|---|
+| **Google Chrome** | One click with the Google account already signed into Chrome (`chrome.identity.getAuthToken`). Chrome renews access by itself. |
+| **Edge, Brave, Vivaldi** | Google's sign-in window, once (`launchWebAuthFlow`). Ember renews silently while you stay signed in to Google, and occasionally asks again. |
+| **Any** | **Advanced: use your own Google project**: your own OAuth client ID, for people who'd rather not use Ember's shared one. |
+
+So for a user, setup is:
+1. **Settings → Sync → Set up sync.**
+2. Choose a passphrase.
+3. Click **Sign in with Google and sync**.
+
+On every other device, use the same Google account and the same passphrase.
+
+## Publisher setup (one time)
+
+Built-in sign-in needs one Google Cloud project for Ember, owned by whoever publishes it. Until the placeholders below are filled in, Settings automatically offers **Use your own Google project** instead.
+
+1. **Give Ember a fixed extension ID.** Either publish to the Chrome Web Store, or add a `"key"` to `manifest.json` (see Chrome's docs on keeping a consistent extension ID).
+   > ⚠ **Back up first.** Changing the extension ID moves Ember to a new storage area, so the existing library seems to disappear. Use **Settings → Full backup (JSON)** before you change it, and **Restore** afterwards.
+2. **Create a project** in the [Google Cloud console](https://console.cloud.google.com/) and enable the **Google Drive API**.
+3. **Set up the OAuth consent screen:**
+   - User type **External**.
+   - Your app name, logo, support email, homepage and **privacy policy URL**.
+   - Add the scope `https://www.googleapis.com/auth/drive.appdata`.
+4. **Create two OAuth clients** (APIs & Services → Credentials):
+   - **Chrome Extension** client, with the fixed extension ID as the item ID. Put its client ID in **`manifest.json` → `oauth2.client_id`**.
+   - **Web application** client, with the authorised redirect URI `https://<extension-id>.chromiumapp.org/google`. Put its client ID in **`js/config.js` → `GOOGLE_WEB_CLIENT_ID`**.
+5. **Submit for verification.** Google lists `drive.appdata` as a non-sensitive scope, so only basic (brand) verification is needed: domain ownership, privacy policy and logo. There's no security assessment. Until it's verified, users see an "unverified app" warning and you're limited to 100 test users. Google can reclassify scopes, so check the label on Google's *Choose Google Drive API scopes* page when you submit.
+
+Ember still runs no server. Each user's encrypted data lives in their own Drive, and the publisher never sees it.
+
+## Using your own Google project (Advanced)
+
+1. Create a project and enable the **Google Drive API**.
+2. Set up the OAuth consent screen:
+   - User type **External**.
+   - Add the scope `.../auth/drive.appdata`.
+   - Add yourself under **Test users**. You can leave the app in **Testing**.
+3. Create an OAuth client of type **Web application**. Use the redirect URI shown in **Settings → Sync → Advanced** as its authorised redirect URI. Each install of an unpacked extension has its own ID, so add one URI per computer.
+4. Paste the client ID into **Advanced: use your own Google project**, choose your passphrase, and sync.
 
 ### Good to know
 
 - **Testing mode:** while your consent screen is in Testing, Google may ask you to sign in again from time to time. Sync then shows "needs attention"; clicking **Sync now** signs you back in.
-- **Same extension ID everywhere:** you can add a `"key"` to `manifest.json` so every install gets the same ID and redirect URI. See Chrome's documentation on keeping a consistent extension ID.
-- **Firefox and Safari** aren't supported by this prototype. The sync code uses only standard web crypto and `chrome.identity.launchWebAuthFlow`, so a Firefox port mostly needs its own manifest.
+- **Firefox and Safari** aren't supported yet. The sync code uses standard web crypto and `launchWebAuthFlow`, so a Firefox port mostly needs its own manifest.
 
 ## Turning it off
 

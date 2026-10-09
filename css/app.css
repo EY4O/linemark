@@ -932,4 +932,9 @@ body { overflow: hidden; }
 .brand .sync-btn::after { content: ''; position: absolute; right: 5px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--band-ok); box-shadow: 0 0 0 2px var(--band); }
 .brand .sync-btn.warn::after { background: var(--fav); }
 .brand .sync-btn.busy::after { background: var(--ember); animation: fade-in 0.8s ease-in-out infinite alternate; }
+.sync-form .advanced { border-top: 1px solid var(--rule); padding-top: 12px; }
+.sync-form .advanced summary { cursor: pointer; color: var(--ink-2); font-weight: 600; font-size: 0.8125rem; }
+.sync-form .advanced summary:hover { color: var(--ink); }
+.sync-form .advanced[open] summary { margin-bottom: 12px; }
+.sync-form > .hint { margin: 0; }
 
