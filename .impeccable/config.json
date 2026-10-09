@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "css/app.css"
+        ],
+        "createdAt": "2026-10-09T23:01:23.633Z",
+        "reason": "Agent + finish reviewer: .station::after is the Wayfinding Lines direction's full-width line-colour rule under the header (the station-wall stripe), not a side tab on a card"
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><title>seed</title>
+<script type="module">
+// Seeds a small synthetic library, then opens the app under test. ?set=scan seeds the link-health set.
+const q = new URLSearchParams(location.search);
+const db = await import('/js/db.js');
+const M = await import('/js/model.js');
+const o = location.origin;
+const line = (id, name, color, parentId = null, order = 0, expanded = false) => ({ id, name, code: M.codeFor(name), color, parentId, order, expanded, createdAt: Date.now() });
+const B = (id, url, title, col, extra = {}) => Object.assign(M.newBookmark({ url, title, collectionId: col, ...extra }), { id, metaFetched: true }, extra);
+let cols, bms;
+if (q.get('set') === 'scan') {
+  cols = [line('c_test', 'Test line', '#0b7a75')];
+  bms = [
+    B('t1', o + '/__test/page1.html', 'Page one', 'c_test', { metaFetched: false }),
+    B('t2', o + '/README.md', 'Readme', 'c_test'),
+    B('t3', o + '/missing-page', 'A page that was deleted', 'c_test'),
+    B('t4', 'http://127.0.0.1:1/', 'Server that is gone', 'c_test'),
+    B('t5', o + '/__test/forbidden', 'Bot-protected site', 'c_test'),
+    B('t6', o + '/__test/moved', 'Moved to a new domain', 'c_test'),
+  ];
+} else {
+  cols = [line('c_design', 'Design', '#5c6773', null, 0, true), line('c_type', 'Typography', '#c2255c', 'c_design', 0), line('c_eng', 'Engineering', '#2f5bd8', null, 1, true), line('c_rust', 'Rust', '#9a5b36', 'c_eng', 0), line('c_read', 'Reading list', '#0b7a75', null, 2)];
+  bms = [
+    B('b1', 'https://practicaltypography.com/', 'Butterick’s Practical Typography', 'c_type', { excerpt: 'A free online book about typography.', tags: ['type', 'reference'], favorite: true }),
+    B('b2', 'https://www.vignelli.com/canon.pdf', 'The Vignelli Canon (PDF)', 'c_design', { tags: ['signage'], note: 'Re-read the grid chapter.' }),
+    B('b3', 'https://refactoringui.com/', 'Refactoring UI', 'c_design', { tags: ['ui'] }),
+    B('b4', 'https://doc.rust-lang.org/book/', 'The Rust Programming Language', 'c_rust', { tags: ['rust', 'book'] }),
+    B('b5', 'https://danluu.com/', 'Dan Luu', 'c_read', { tags: ['essays'], cover: 'https://cdn.example.net/remote-cover.jpg' }),
+    B('b6', 'https://news.ycombinator.com/', 'Hacker News', null),
+    B('b7', 'https://example.com/old', 'An old link', 'c_design', { trashedAt: Date.now() - 86400000 }),
+  ];
+}
+if (!(await db.getAll('bookmarks')).length) {
+  await db.putMany('collections', cols);
+  await db.putMany('bookmarks', bms);
+}
+await db.setMeta('ui', { view: q.get('view') || 'cards', sort: 'title', size: 260, theme: 'light' });
+localStorage.setItem('ember-theme', 'light');
+location.replace('/__test/app.html#' + (q.get('to') || '/all'));
+</script>

@@ -1,0 +1,1122 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T21:44:48.351Z",
+  "title": "Design System: Ember",
+  "extensions": {
+    "colorMeta": {
+      "ember": {
+        "role": "primary",
+        "displayName": "Ember Orange",
+        "canonical": "#ff5a1f",
+        "oklch": "oklch(68.2% 0.211 37.7)",
+        "tonalRamp": [
+          "#1c0300",
+          "#440f00",
+          "#711f01",
+          "#a23102",
+          "#dc4502",
+          "#fe764b",
+          "#feb7a1",
+          "#fee9e3"
+        ],
+        "purpose": "System line only: brand bullet, primary actions, focus, selection (cards, checkboxes, switches, fills, drop bars, selected tag pill), All-bookmarks stripe. Never in the user palette."
+      },
+      "ember-hover": {
+        "role": "primary",
+        "displayName": "Ember Orange Hover",
+        "canonical": "#ff6f3a",
+        "oklch": "oklch(71.0% 0.188 39.6)",
+        "tonalRamp": [
+          "#1b0300",
+          "#431100",
+          "#6f2201",
+          "#a03400",
+          "#d84a05",
+          "#fe7645",
+          "#feb79f",
+          "#feeae3"
+        ]
+      },
+      "ember-ink": {
+        "role": "primary",
+        "displayName": "Ink on Ember",
+        "canonical": "#16171a",
+        "oklch": "oklch(20.5% 0.006 271.1)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7f8084",
+          "#a3a4a8",
+          "#c9cacf",
+          "#edeef3"
+        ]
+      },
+      "ember-text": {
+        "role": "primary",
+        "displayName": "Ember Text",
+        "canonical": "#c23c0b",
+        "oklch": "oklch(54.8% 0.178 36.9)",
+        "tonalRamp": [
+          "#1c0200",
+          "#440e00",
+          "#731d00",
+          "#a42f01",
+          "#d44e24",
+          "#fe754e",
+          "#ffb6a1",
+          "#fee9e3"
+        ],
+        "darkTheme": "#ff7d4a"
+      },
+      "ember-soft": {
+        "role": "primary",
+        "displayName": "Ember Haze",
+        "canonical": "rgba(255, 90, 31, 0.13)",
+        "darkTheme": "rgba(255, 90, 31, 0.18)",
+        "purpose": "Focus halo on fields, text selection, highlight behind matched words in titles and full-text snippets."
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Signage Black Ink",
+        "canonical": "#16171a",
+        "oklch": "oklch(20.5% 0.006 271.1)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7f8084",
+          "#a3a4a8",
+          "#c9cacf",
+          "#edeef3"
+        ],
+        "darkTheme": "#ecebe7"
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2",
+        "canonical": "#474a51",
+        "oklch": "oklch(40.9% 0.012 267.2)",
+        "tonalRamp": [
+          "#090b10",
+          "#21242a",
+          "#3d4046",
+          "#5a5e65",
+          "#7d8088",
+          "#a1a4ad",
+          "#c7cad3",
+          "#ebeef7"
+        ],
+        "darkTheme": "#c0c2c7"
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink 3",
+        "canonical": "#686b73",
+        "oklch": "oklch(52.8% 0.013 269.4)",
+        "tonalRamp": [
+          "#090b11",
+          "#21242b",
+          "#3d4047",
+          "#5a5d65",
+          "#7d8088",
+          "#a1a4ad",
+          "#c7cad3",
+          "#ebeef8"
+        ],
+        "darkTheme": "#9a9da5"
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Platform Ground",
+        "canonical": "#f2f2ef",
+        "oklch": "oklch(96.0% 0.004 106.5)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242422",
+          "#40403d",
+          "#5e5e5b",
+          "#80807e",
+          "#a5a5a2",
+          "#cbcbc8",
+          "#efefec"
+        ],
+        "darkTheme": "#0f1012"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Poster White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#808080",
+          "#a4a4a4",
+          "#cacaca",
+          "#eeeeee"
+        ],
+        "darkTheme": "#18191c"
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Poster Grey",
+        "canonical": "#f7f7f5",
+        "oklch": "oklch(97.6% 0.003 106.4)",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#242423",
+          "#40403e",
+          "#5e5e5c",
+          "#80807e",
+          "#a5a5a3",
+          "#cacac9",
+          "#eeeeec"
+        ],
+        "darkTheme": "#1d1f23"
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover Tone",
+        "canonical": "#efefeb",
+        "oklch": "oklch(95.1% 0.005 106.5)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5a",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ],
+        "darkTheme": "#24262b"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e3e3df",
+        "oklch": "oklch(91.5% 0.005 106.5)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5a",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ],
+        "darkTheme": "#2a2c31"
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "#cdcdc7",
+        "oklch": "oklch(84.7% 0.008 106.6)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242420",
+          "#40403b",
+          "#5e5e59",
+          "#81817b",
+          "#a5a59f",
+          "#cbcbc5",
+          "#efefe9"
+        ],
+        "darkTheme": "#3b3e45"
+      },
+      "on-color-rule": {
+        "role": "neutral",
+        "displayName": "On-Colour Hairline",
+        "canonical": "rgba(0, 0, 0, 0.12)",
+        "purpose": "1px inner hairline on colour swatches so pale fills keep an edge."
+      },
+      "band": {
+        "role": "neutral",
+        "displayName": "Signage Black",
+        "canonical": "#16171a",
+        "oklch": "oklch(20.5% 0.006 271.1)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232427",
+          "#3e4043",
+          "#5c5d61",
+          "#7f8084",
+          "#a3a4a8",
+          "#c9cacf",
+          "#edeef3"
+        ],
+        "darkTheme": "#08090a"
+      },
+      "band-ink": {
+        "role": "neutral",
+        "displayName": "Band Paper",
+        "canonical": "#f4f3ef",
+        "oklch": "oklch(96.4% 0.005 95.1)",
+        "tonalRamp": [
+          "#0c0b09",
+          "#252421",
+          "#40403d",
+          "#5e5e5a",
+          "#81807d",
+          "#a5a5a1",
+          "#cbcac7",
+          "#efeeea"
+        ]
+      },
+      "band-ink-2": {
+        "role": "neutral",
+        "displayName": "Band Grey",
+        "canonical": "#a8aab0",
+        "oklch": "oklch(73.8% 0.009 271.3)",
+        "tonalRamp": [
+          "#0a0b0f",
+          "#222428",
+          "#3e4045",
+          "#5c5d63",
+          "#7e8086",
+          "#a2a4aa",
+          "#c8cad0",
+          "#eceef5"
+        ]
+      },
+      "band-rule": {
+        "role": "neutral",
+        "displayName": "Band Rule",
+        "canonical": "#2b2d32",
+        "oklch": "oklch(29.7% 0.009 268.4)",
+        "tonalRamp": [
+          "#090b0f",
+          "#222429",
+          "#3d4045",
+          "#5b5d63",
+          "#7e8086",
+          "#a2a4ab",
+          "#c8cad1",
+          "#eceef5"
+        ],
+        "darkTheme": "#1e2024"
+      },
+      "band-hover": {
+        "role": "neutral",
+        "displayName": "Band Hover",
+        "canonical": "#222429",
+        "oklch": "oklch(26.0% 0.010 268.3)",
+        "tonalRamp": [
+          "#090b0f",
+          "#222429",
+          "#3d4045",
+          "#5b5d63",
+          "#7e8086",
+          "#a2a4ab",
+          "#c8cad1",
+          "#eceef5"
+        ],
+        "darkTheme": "#16171a"
+      },
+      "band-active": {
+        "role": "neutral",
+        "displayName": "Band Active",
+        "canonical": "#2e3037",
+        "oklch": "oklch(31.0% 0.013 273.0)",
+        "tonalRamp": [
+          "#090b11",
+          "#22242a",
+          "#3d3f47",
+          "#5b5d65",
+          "#7d8088",
+          "#a2a4ad",
+          "#c7cad3",
+          "#ebeef7"
+        ],
+        "darkTheme": "#1f2125"
+      },
+      "band-raised": {
+        "role": "neutral",
+        "displayName": "Band Raised",
+        "canonical": "#3a3d45",
+        "oklch": "oklch(36.0% 0.014 269.3)",
+        "tonalRamp": [
+          "#090b11",
+          "#22252c",
+          "#3f424a",
+          "#5e616a",
+          "#7f828b",
+          "#a1a5ae",
+          "#c5c9d3",
+          "#eaeef9"
+        ],
+        "purpose": "Third band tone: toast action hover, band scrollbar thumb."
+      },
+      "band-danger": {
+        "role": "neutral",
+        "displayName": "Band Danger",
+        "canonical": "#ff8a8a",
+        "oklch": "oklch(76.1% 0.142 20.9)",
+        "tonalRamp": [
+          "#1e0002",
+          "#4c000c",
+          "#7c0d1e",
+          "#a2373d",
+          "#c95a5c",
+          "#f17d7e",
+          "#ffb2b0",
+          "#ffe9e7"
+        ],
+        "purpose": "Destructive action read on band black (bulk bar Delete)."
+      },
+      "band-ok": {
+        "role": "neutral",
+        "displayName": "Band OK",
+        "canonical": "#6fd18a",
+        "oklch": "oklch(78.3% 0.138 151.0)",
+        "tonalRamp": [
+          "#001004",
+          "#012e12",
+          "#005024",
+          "#027537",
+          "#339955",
+          "#5bbd77",
+          "#80e39a",
+          "#c7ffd3"
+        ],
+        "purpose": "Success read on band black (popup saved check)."
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "#c4282f",
+        "oklch": "oklch(53.6% 0.191 24.7)",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0006",
+          "#7c0111",
+          "#b0071e",
+          "#db4142",
+          "#ff726c",
+          "#ffb5ae",
+          "#fee9e7"
+        ],
+        "darkTheme": "#ff6b6b",
+        "purpose": "Destructive actions, Dead health chip, invalid fields and messages, Broken links stop bullet and stripe."
+      },
+      "danger-soft": {
+        "role": "tertiary",
+        "displayName": "Danger Wash",
+        "canonical": "rgba(196, 40, 47, 0.1)",
+        "darkTheme": "rgba(255, 107, 107, 0.12)"
+      },
+      "warn-ink": {
+        "role": "tertiary",
+        "displayName": "Warn Ochre",
+        "canonical": "#8a5a00",
+        "oklch": "oklch(50.8% 0.108 73.3)",
+        "tonalRamp": [
+          "#130900",
+          "#352000",
+          "#5b3a01",
+          "#845602",
+          "#a9772e",
+          "#ce9a53",
+          "#f4be77",
+          "#ffebd3"
+        ],
+        "darkTheme": "#f5c34d",
+        "purpose": "Unverified health chip text and icon only."
+      },
+      "warn-soft": {
+        "role": "tertiary",
+        "displayName": "Warn Wash",
+        "canonical": "rgba(240, 168, 0, 0.17)",
+        "darkTheme": "rgba(240, 168, 0, 0.14)",
+        "purpose": "Unverified health chip fill."
+      },
+      "fav": {
+        "role": "tertiary",
+        "displayName": "Favourite Amber",
+        "canonical": "#f0a800",
+        "oklch": "oklch(78.1% 0.163 77.8)",
+        "tonalRamp": [
+          "#120900",
+          "#322001",
+          "#563a00",
+          "#7c5503",
+          "#a97501",
+          "#d79708",
+          "#ffbd4c",
+          "#ffeccf"
+        ],
+        "purpose": "Favorites stop bullet and stripe, filled favourite star, active favourite buttons; read from --fav in CSS and JS. Same value as the Amber line by design: favourites are distinguished by the star shape, not colour."
+      },
+      "line-signal": {
+        "role": "secondary",
+        "displayName": "Signal Line",
+        "canonical": "#d92a3a",
+        "oklch": "oklch(57.6% 0.208 22.7)",
+        "tonalRamp": [
+          "#1f0002",
+          "#4b0009",
+          "#7c0116",
+          "#b10324",
+          "#e23441",
+          "#ff7170",
+          "#feb5b1",
+          "#ffe9e7"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-magenta": {
+        "role": "secondary",
+        "displayName": "Magenta Line",
+        "canonical": "#c2255c",
+        "oklch": "oklch(53.9% 0.193 6.5)",
+        "tonalRamp": [
+          "#1e0007",
+          "#49011c",
+          "#790233",
+          "#ad034c",
+          "#d83d6d",
+          "#ff6b92",
+          "#ffb2c1",
+          "#fee8ec"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-violet": {
+        "role": "secondary",
+        "displayName": "Violet Line",
+        "canonical": "#7048e8",
+        "oklch": "oklch(54.2% 0.227 287.8)",
+        "tonalRamp": [
+          "#0d002c",
+          "#270065",
+          "#4402a5",
+          "#6031d2",
+          "#805cfc",
+          "#a193fe",
+          "#c7c3fe",
+          "#edecff"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-cobalt": {
+        "role": "secondary",
+        "displayName": "Cobalt Line",
+        "canonical": "#2f5bd8",
+        "oklch": "oklch(51.8% 0.198 265.2)",
+        "tonalRamp": [
+          "#010036",
+          "#030078",
+          "#0c29a6",
+          "#254fcb",
+          "#4575f4",
+          "#78a1ff",
+          "#b2cafe",
+          "#e7effe"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-sky": {
+        "role": "secondary",
+        "displayName": "Sky Line",
+        "canonical": "#1c8fd6",
+        "oklch": "oklch(62.5% 0.143 243.1)",
+        "tonalRamp": [
+          "#000c19",
+          "#002640",
+          "#01446a",
+          "#046399",
+          "#0a87ce",
+          "#45adf6",
+          "#9ad2fe",
+          "#e1f1fe"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-teal": {
+        "role": "secondary",
+        "displayName": "Teal Line",
+        "canonical": "#0b7a75",
+        "oklch": "oklch(52.4% 0.088 189.7)",
+        "tonalRamp": [
+          "#000f0e",
+          "#012b29",
+          "#044a47",
+          "#036c68",
+          "#31918c",
+          "#5bb7b0",
+          "#82ddd7",
+          "#b6fff9"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-green": {
+        "role": "secondary",
+        "displayName": "Green Line",
+        "canonical": "#2f9e44",
+        "oklch": "oklch(61.7% 0.162 146.4)",
+        "tonalRamp": [
+          "#001002",
+          "#002d09",
+          "#024e17",
+          "#017224",
+          "#28993f",
+          "#54bf63",
+          "#7de689",
+          "#c9ffcd"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-olive": {
+        "role": "secondary",
+        "displayName": "Olive Line",
+        "canonical": "#7d8a12",
+        "oklch": "oklch(60.2% 0.133 116.3)",
+        "tonalRamp": [
+          "#0a0d00",
+          "#232701",
+          "#3e4500",
+          "#5b6503",
+          "#7c8910",
+          "#a0af43",
+          "#c6d56b",
+          "#e9fa8f"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-amber": {
+        "role": "secondary",
+        "displayName": "Amber Line",
+        "canonical": "#f0a800",
+        "oklch": "oklch(78.1% 0.163 77.8)",
+        "tonalRamp": [
+          "#120900",
+          "#322001",
+          "#563a00",
+          "#7c5503",
+          "#a97501",
+          "#d79708",
+          "#ffbd4c",
+          "#ffeccf"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-clay": {
+        "role": "secondary",
+        "displayName": "Clay Line",
+        "canonical": "#9a5b36",
+        "oklch": "oklch(53.5% 0.098 49.9)",
+        "tonalRamp": [
+          "#180600",
+          "#3d1801",
+          "#672d00",
+          "#894b26",
+          "#af6e49",
+          "#d6926c",
+          "#ffb891",
+          "#ffeadf"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-slate": {
+        "role": "secondary",
+        "displayName": "Slate Line",
+        "canonical": "#5c6773",
+        "oklch": "oklch(50.9% 0.023 250.6)",
+        "tonalRamp": [
+          "#050c15",
+          "#1c252f",
+          "#37414c",
+          "#545f6b",
+          "#76828e",
+          "#9aa6b3",
+          "#c0ccda",
+          "#e3f0fe"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "line-rose": {
+        "role": "secondary",
+        "displayName": "Rose Line",
+        "canonical": "#e0607e",
+        "oklch": "oklch(65.7% 0.161 8.1)",
+        "tonalRamp": [
+          "#1e0006",
+          "#49001a",
+          "#790130",
+          "#a3264c",
+          "#cc4e6d",
+          "#f67491",
+          "#feb3bf",
+          "#ffe8eb"
+        ],
+        "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Station Name",
+        "purpose": "Station sign name; 22px under 860px."
+      },
+      "headline": {
+        "displayName": "Empty-State Headline",
+        "purpose": "Empty-state headings, balanced wrap."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "Ember wordmark beside the brand bullet."
+      },
+      "section": {
+        "displayName": "Section Heading",
+        "purpose": "Settings section headings, popup line name, popup empty heading (18px/740/85%)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Drawer heading and in-content group headings."
+      },
+      "cover-host": {
+        "displayName": "Cover Host",
+        "purpose": "Placeholder cover host name; in the grid scales with the card-size slider via clamp(14px, card-w x 0.073, 28px); 18px elsewhere, 14px in list and under 860px."
+      },
+      "card-title": {
+        "displayName": "Card Title",
+        "purpose": "Bookmark titles, two-line clamp; list 15px one line, moodboard 13.5px, headlines 14px/560 one line."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base text, menu items, stop labels (540; current stop 650)."
+      },
+      "excerpt": {
+        "displayName": "Excerpt",
+        "purpose": "Card excerpts (two lines) and full-text snippets (three lines) in ink-2."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Host, relative time, counts, field errors; tabular figures."
+      },
+      "label": {
+        "displayName": "Field Label",
+        "purpose": "Form field labels in ink-3."
+      },
+      "band-group": {
+        "displayName": "Band Group Heading",
+        "purpose": "Uppercase group names inside the band (Lines, Tags) only; never above a headline."
+      },
+      "chip-label": {
+        "displayName": "Chip Label",
+        "purpose": "Health chips and the popup cover switch; tabular figures for status codes."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "The In page snippet label; kbd hints and tag-pill counts share the 11px step."
+      },
+      "fallback-letter": {
+        "displayName": "Fallback Letter",
+        "purpose": "Letter in the 16px favicon fallback square."
+      }
+    },
+    "bulletCode": {
+      "weight": 800,
+      "width": "82%",
+      "size": "48% of bullet (40% for two letters)",
+      "ink": "white or #16171a, whichever contrasts more with the line colour"
+    },
+    "font": {
+      "family": "Archivo",
+      "source": "fonts/archivo-wdth.woff2",
+      "axes": {
+        "wght": "100 900",
+        "wdth": "62% 125%"
+      },
+      "license": "OFL",
+      "display": "block"
+    },
+    "shadows": [
+      {
+        "name": "rest",
+        "value": "0 1px 2px rgba(22, 23, 26, 0.06)",
+        "dark": "0 1px 2px rgba(0, 0, 0, 0.4)",
+        "purpose": "Cards at rest, pressed view segment, switch knob."
+      },
+      {
+        "name": "lift",
+        "value": "0 8px 18px -6px rgba(22, 23, 26, 0.16), 0 2px 4px rgba(22, 23, 26, 0.06)",
+        "dark": "0 10px 22px -8px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3)",
+        "purpose": "Card hover, card action strip, drawer cover tools, placeholder favicon tile."
+      },
+      {
+        "name": "float",
+        "value": "0 24px 48px -16px rgba(22, 23, 26, 0.32), 0 4px 12px rgba(22, 23, 26, 0.08)",
+        "dark": "0 28px 56px -16px rgba(0, 0, 0, 0.75), 0 4px 12px rgba(0, 0, 0, 0.4)",
+        "purpose": "Menus, drawer, bulk bar, toasts, mobile band sheet."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 3px rgba(255, 90, 31, 0.13)",
+        "purpose": "Focused fields, search and tag input."
+      },
+      {
+        "name": "focus-outline",
+        "value": "outline: 2px solid #ff5a1f; outline-offset: 2px",
+        "purpose": "Keyboard focus everywhere."
+      },
+      {
+        "name": "current-stop-ring",
+        "value": "0 0 0 2px var(--band-active), 0 0 0 4px var(--c)",
+        "purpose": "Ring around the current stop bullet (line colour)."
+      },
+      {
+        "name": "cover-bullet-halo",
+        "value": "0 0 0 3px var(--surface)",
+        "purpose": "Separates the on-cover bullet from the cover."
+      },
+      {
+        "name": "selected-card",
+        "value": "0 0 0 2px #ff5a1f, lift",
+        "purpose": "Selected card ring."
+      },
+      {
+        "name": "match-underline",
+        "value": "inset 0 -2px 0 rgba(255, 90, 31, 0.45)",
+        "purpose": "Ember underline under matched words (with ember-soft fill)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Default long-tail ease for transforms."
+      },
+      {
+        "name": "state",
+        "value": "0.15s",
+        "purpose": "Hover, colour and border transitions."
+      },
+      {
+        "name": "lift",
+        "value": "0.2s ease",
+        "purpose": "Card hover rise."
+      },
+      {
+        "name": "pop",
+        "value": "0.16s ease; from opacity 0, translateY(-4px) scale(0.98)",
+        "purpose": "Menus opening."
+      },
+      {
+        "name": "drawer",
+        "value": "0.32s ease, translateX",
+        "purpose": "Edit drawer slide."
+      },
+      {
+        "name": "float-in",
+        "value": "0.35s ease",
+        "purpose": "Bulk bar and toast entry."
+      },
+      {
+        "name": "sweep",
+        "value": "0.6s ease; scaleX from 0, origin left",
+        "purpose": "Station stripe on arrival (signature)."
+      },
+      {
+        "name": "fade-in",
+        "value": "@keyframes fade-in { from { opacity: 0; } }",
+        "purpose": "Reduced-motion replacement for pop, toast-in and sweep."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce; movement becomes opacity",
+        "purpose": "No blanket kill. Menus and toasts fade instead of pop/rise; station stripe fades in (0.3s) instead of sweeping; drawer and bulk bar fade (0.2s) instead of sliding; cards change shadow but do not rise; card action strip does not drop in; button press does not nudge; twisty, switch knob, band sheet and progress fill change without transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow",
+        "value": "max-width: 860px",
+        "purpose": "Band becomes an off-canvas sheet over the scrim, closed by an outside tap; labels collapse to icons; cards fixed at 150px; gutters 16px; type filter on its own row, scrolling sideways."
+      },
+      {
+        "name": "coarse",
+        "value": "pointer: coarse",
+        "purpose": "Interactive targets at least 44px; tag pills 36px; selects 40px; checkbox 32px; padded hit areas on tags and chip remove buttons."
+      },
+      {
+        "name": "no-hover",
+        "value": "hover: none",
+        "purpose": "Card actions collapse to one always-visible menu button (Favorite and Edit move into it); checkbox always visible; line options button inline beside the count."
+      }
+    ],
+    "layout": {
+      "bandWidth": "268px",
+      "bandWidthNarrow": "280px",
+      "drawerWidth": "440px",
+      "popupWidth": "380px",
+      "cardWidthDefault": "260px (slider-driven)",
+      "coverRatio": "16 / 10",
+      "gridGap": "22px 18px",
+      "stationStripe": "4px",
+      "treeStem": "3px",
+      "legend": "auto-fit columns, min 240px, gaps 10px 28px",
+      "touchTarget": "44px"
+    },
+    "lineColorAssignment": "Least-used colour first; ties broken by greatest hue distance from colours in use. Ember orange is excluded from the palette.",
+    "iconography": "Authored stroke set, 24px grid, 1.75 stroke, round joins, inline SVG (js/icons.js).",
+    "fluidSizes": [
+      {
+        "name": "on-cover-bullet",
+        "value": "clamp(18px, calc(var(--card-w) * 0.092), 32px)",
+        "purpose": "Line bullet riding the cover edge in the grid."
+      },
+      {
+        "name": "favicon-tile",
+        "value": "clamp(30px, calc(var(--card-w) * 0.15), 56px)",
+        "purpose": "Placeholder favicon tile in the grid."
+      },
+      {
+        "name": "favicon-tile-letter",
+        "value": "clamp(14px, calc(var(--card-w) * 0.07), 26px)",
+        "purpose": "Fallback letter inside the placeholder favicon tile."
+      },
+      {
+        "name": "cover-host",
+        "value": "clamp(14px, calc(var(--card-w) * 0.073), 28px)",
+        "purpose": "Placeholder host name in the grid."
+      }
+    ],
+    "radiusScale": {
+      "stem": "2px: sidebar stems, drop bars",
+      "xs": "4px: favicons, kbd, snippet label, highlight marks, twisty and line options buttons, rename field, popup cover switch",
+      "sm": "6px (--r-1): buttons, fields, menu items, stops, view segments, list favicon tile, popup thumbnail",
+      "segment": "8px: segmented control outer shell",
+      "md": "10px (--r-2): cards, tiles, menus, containers, scan-status panel",
+      "pill": "999px: search, Add link, toasts, bulk bar, tag pills, chips, health chips, switches, progress bars",
+      "bullet": "50%: line bullets, colour swatches",
+      "unused": "--r-3 (14px) is declared in base.css but used nowhere; not part of the scale.",
+      "inner": "calc(var(--r-2) - 1px): a cover inside a 1px-bordered card"
+    },
+    "interaction": {
+      "drawer": "role=dialog, aria-modal=true; .app is inert while open; scrim click closes; focus to title field on open, back to the edited card title on close.",
+      "focusPreservation": "Grid re-renders restore focus to the same card and the same data-act control.",
+      "menus": "Arrow-key navigation; on close, focus returns to the control that opened the menu.",
+      "lineRows": "div.stop.line-stop holding a twisty button (aria-expanded), a stop-link whose ::after fills the row, the count and a more button (aria-haspopup=menu). Current line: data-current plus aria-current. F2 renames in place.",
+      "brokenStop": "Danger-red bullet with white alert icon under Favorites; rendered only while broken count > 0.",
+      "scanStatus": "#scan-status role=status panel above the band foot while checking or indexing.",
+      "fieldError": ".field-error role=alert, linked by aria-describedby; input gets aria-invalid=true and a danger border; empty message takes no space."
+    },
+    "unused": [],
+    "sizing": "All font sizes are rem on the browser root (body 0.875rem = 14px at the default 16px), so Chrome's default font-size setting scales the UI; text-bearing controls use min-height so they grow instead of clipping. Bullet letters scale with the bullet, not the root.",
+    "overlayTokens": {
+      "band-selection": "rgba(255, 90, 31, 0.4)",
+      "ember-ink-soft": "rgba(22, 23, 26, 0.7)",
+      "tile": "rgba(255, 255, 255, 0.94)",
+      "cover-veil": "rgba(22, 23, 26, 0.35)",
+      "cover-edge": "rgba(255, 255, 255, 0.95)",
+      "knob": "#ffffff",
+      "scrim": "rgba(15, 16, 18, 0.18) (dark: rgba(0, 0, 0, 0.45))",
+      "match-underline": "rgba(255, 90, 31, 0.45)",
+      "shimmer": "rgba(127, 127, 127, 0.14)"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary-station",
+      "description": "Ember-orange action with signage-black text; the station-sign Add link pill.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>Add link</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px 0 12px; border-radius: 999px; border: 1px solid #ff5a1f; background: #ff5a1f; color: #16171a; font: 680 14px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; transition: background .15s, transform .15s cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { background: #ff6f3a; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Surface button with a strong hairline; hover tone on hover.",
+      "html": "<button class=\"ds-btn2\">Import from Chrome</button>",
+      "css": ".ds-btn2 { display: inline-flex; align-items: center; height: 34px; padding: 0 13px; border-radius: 6px; border: 1px solid #cdcdc7; background: #fff; color: #16171a; font: 560 14px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; transition: background .15s, transform .15s cubic-bezier(0.16,1,0.3,1); } .ds-btn2:hover { background: #efefeb; } .ds-btn2:active { transform: translateY(1px); } .ds-btn2:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Transparent tertiary action in ink-2.",
+      "html": "<button class=\"ds-ghost\">Select</button>",
+      "css": ".ds-ghost { height: 34px; padding: 0 13px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: #474a51; font: 560 14px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; transition: background .15s, color .15s; } .ds-ghost:hover { background: #efefeb; color: #16171a; } .ds-ghost:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search",
+      "description": "Pill search on surface-2 with leading icon and slash key hint; ember border and haze on focus.",
+      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"m20 20-4.2-4.2\"/></svg><input placeholder=\"Search, #tag, site:, type:video\"><kbd>/</kbd></label>",
+      "css": ".ds-search { position: relative; display: flex; align-items: center; width: 340px; color: #686b73; font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-search svg { position: absolute; left: 11px; } .ds-search input { width: 100%; height: 38px; padding: 0 40px 0 36px; border: 1px solid #cdcdc7; border-radius: 999px; background: #f7f7f5; color: #16171a; font: 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; caret-color: #ff5a1f; outline: none; transition: border-color .15s, box-shadow .15s, background .15s; } .ds-search input:hover { border-color: #686b73; } .ds-search input:focus { background: #fff; border-color: #ff5a1f; box-shadow: 0 0 0 3px rgba(255,90,31,.13); } .ds-search kbd { position: absolute; right: 12px; font: 600 11px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; padding: 3px 5px; border: 1px solid #cdcdc7; border-bottom-width: 2px; border-radius: 4px; background: #fff; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled field with strong hairline; ember border and haze on focus; danger border and inline message when invalid.",
+      "html": "<label class=\"ds-field\"><span>Link</span><input class=\"ds-input\" aria-invalid=\"true\" value=\"not a link\"><em class=\"ds-err\">Enter a web address, like example.com</em></label>",
+      "css": ".ds-field { display: grid; gap: 6px; width: 300px; font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-field span { font-size: 12px; font-weight: 650; font-stretch: 87.5%; letter-spacing: .02em; color: #686b73; } .ds-input { height: 36px; padding: 8px 10px; border: 1px solid #cdcdc7; border-radius: 6px; background: #fff; color: #16171a; font: 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; caret-color: #ff5a1f; outline: none; transition: border-color .15s, box-shadow .15s; } .ds-input:hover { border-color: #686b73; } .ds-input:focus { border-color: #ff5a1f; box-shadow: 0 0 0 3px rgba(255,90,31,.13); } .ds-input[aria-invalid=\"true\"] { border-color: #c4282f; } .ds-err { font-style: normal; color: #c4282f; font-size: 12.5px; } .ds-input::placeholder { color: #686b73; }"
+    },
+    {
+      "name": "Line Bullets",
+      "kind": "custom",
+      "refersTo": "bullet",
+      "description": "The atom: solid = filed line, outline ring = Unsorted, dashed ring = Trash; ember is the system line.",
+      "html": "<div class=\"ds-bullets\"><span class=\"ds-bullet\" style=\"--c:#ff5a1f;--bi:#16171a\">E</span><span class=\"ds-bullet\" style=\"--c:#c2255c;--bi:#fff\">T</span><span class=\"ds-bullet two\" style=\"--c:#0b7a75;--bi:#fff\">RL</span><span class=\"ds-bullet\" style=\"--c:#f0a800;--bi:#16171a\">C</span><span class=\"ds-bullet ring\" style=\"--c:#686b73\"></span><span class=\"ds-bullet dashed\" style=\"--c:#686b73\"></span></div>",
+      "css": ".ds-bullets { display: flex; gap: 10px; align-items: center; } .ds-bullet { --bs: 30px; width: var(--bs); height: var(--bs); border-radius: 50%; background: var(--c); color: var(--bi); display: inline-grid; place-items: center; font: 800 calc(var(--bs) * .48)/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-stretch: 82%; letter-spacing: -0.02em; box-sizing: border-box; } .ds-bullet.two { font-size: calc(var(--bs) * .4); } .ds-bullet.ring { background: transparent; box-shadow: inset 0 0 0 2px var(--c); } .ds-bullet.dashed { background: transparent; border: 2px dashed var(--c); }"
+    },
+    {
+      "name": "Signage Band Stops",
+      "kind": "nav",
+      "refersTo": "stop",
+      "description": "Black band rows; current stop = band-active fill plus a ring around its bullet, no side tab. Broken links stop appears only while links are broken.",
+      "html": "<nav class=\"ds-band\"><button class=\"ds-stop\"><span class=\"ds-b\" style=\"--c:#c4282f;--bi:#fff\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10.3 4.2 2.7 17.5A2 2 0 0 0 4.4 20.5h15.2a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z\"/><path d=\"M12 9.5v4M12 17h.01\"/></svg></span><span class=\"ds-n\">Broken links</span><span class=\"ds-c\">4</span></button><div class=\"ds-group\">Lines</div><button class=\"ds-stop\"><span class=\"ds-b\" style=\"--c:#5c6773;--bi:#fff\">D</span><span class=\"ds-n\">Design</span><span class=\"ds-c\">3</span></button><button class=\"ds-stop\" aria-current=\"page\"><span class=\"ds-b\" style=\"--c:#c2255c;--bi:#fff\">T</span><span class=\"ds-n\">Typography</span><span class=\"ds-c\">3</span></button><button class=\"ds-stop\"><span class=\"ds-b\" style=\"--c:#2f5bd8;--bi:#fff\">E</span><span class=\"ds-n\">Engineering</span><span class=\"ds-c\">12</span></button></nav>",
+      "css": ".ds-band { width: 248px; padding: 10px; background: #16171a; color: #f4f3ef; font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; border-radius: 6px; } .ds-group { height: 28px; display: flex; align-items: center; padding: 0 10px; font-size: 11.5px; font-weight: 700; font-stretch: 87.5%; letter-spacing: .08em; text-transform: uppercase; color: #a8aab0; } .ds-stop { display: flex; align-items: center; gap: 11px; width: 100%; height: 36px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: #f4f3ef; font: 540 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; text-align: left; cursor: pointer; transition: background .12s; } .ds-stop:hover { background: #222429; } .ds-stop:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; } .ds-stop[aria-current=\"page\"] { background: #2e3037; font-weight: 650; } .ds-stop[aria-current=\"page\"] .ds-b { box-shadow: 0 0 0 2px #2e3037, 0 0 0 4px var(--c); } .ds-b { width: 20px; height: 20px; border-radius: 50%; background: var(--c); color: var(--bi); display: inline-grid; place-items: center; font: 800 9.6px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-stretch: 82%; flex: none; } .ds-n { flex: 1; } .ds-c { color: #a8aab0; font-size: 12.5px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Bookmark Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "16:10 cover with the line bullet riding its bottom edge; neutral tags; lifts on hover.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-cover\"><div class=\"ds-ph\"><span class=\"ds-tile\">F</span><span class=\"ds-host\">fonts.google.com</span></div><span class=\"ds-on\" style=\"--c:#c2255c\">T</span></div><div class=\"ds-body\"><div class=\"ds-title\">Google Fonts Knowledge</div><p class=\"ds-ex\">Guides to understanding and using type, from the basics to variable fonts.</p><div class=\"ds-tags\"><span><i>#</i>type</span><span><i>#</i>learning</span></div><div class=\"ds-meta\">fonts.google.com · 17h ago</div></div></article>",
+      "css": ".ds-card { width: 280px; background: #fff; border: 1px solid #e3e3df; border-radius: 10px; box-shadow: 0 1px 2px rgba(22,23,26,.06); font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; color: #16171a; transition: box-shadow .2s cubic-bezier(0.16,1,0.3,1), transform .2s cubic-bezier(0.16,1,0.3,1), border-color .2s; } .ds-card:hover { transform: translateY(-2px); border-color: #cdcdc7; box-shadow: 0 8px 18px -6px rgba(22,23,26,.16), 0 2px 4px rgba(22,23,26,.06); } .ds-cover { position: relative; aspect-ratio: 16/10; } .ds-ph { position: absolute; inset: 0; overflow: hidden; border-radius: 9px 9px 0 0; background: #c2255c; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 14px 16px; } .ds-tile { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.94); color: #16171a; display: grid; place-items: center; font-weight: 800; font-stretch: 85%; font-size: 18px; } .ds-host { font-size: 20px; font-weight: 760; font-stretch: 80%; letter-spacing: -0.01em; } .ds-on { position: absolute; left: 13px; bottom: 0; transform: translateY(50%); width: 26px; height: 26px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 12.5px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-stretch: 82%; box-shadow: 0 0 0 3px #fff; } .ds-body { display: flex; flex-direction: column; gap: 6px; padding: 18px 15px 13px; } .ds-title { font-weight: 650; font-size: 14.5px; line-height: 1.32; } .ds-ex { margin: 0; color: #474a51; font-size: 13px; line-height: 1.45; } .ds-tags { display: flex; gap: 8px; color: #474a51; font-size: 12.5px; font-weight: 560; } .ds-tags i { font-style: normal; color: #686b73; } .ds-meta { color: #686b73; font-size: 12.5px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Health Chips",
+      "kind": "chip",
+      "refersTo": "health-dead",
+      "description": "Link status pills at the end of a card meta row: Dead (danger), Unverified (warn), Moved (neutral).",
+      "html": "<div class=\"ds-health-row\"><span class=\"ds-health dead\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10.3 4.2 2.7 17.5A2 2 0 0 0 4.4 20.5h15.2a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z\"/><path d=\"M13 9.5v4M13 17h.01\"/></svg>Dead 404</span><span class=\"ds-health warn\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10.3 4.2 2.7 17.5A2 2 0 0 0 4.4 20.5h15.2a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z\"/><path d=\"M13 9.5v4M13 17h.01\"/></svg>Unverified 403</span><span class=\"ds-health moved\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 12h12M12 7l5 5-5 5M20 5v14\"/></svg>Moved</span></div>",
+      "css": ".ds-health-row { display: flex; gap: 8px; } .ds-health { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 7px 0 5px; border-radius: 999px; font: 650 11.5px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-stretch: 87.5%; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-health.dead { color: #c4282f; background: rgba(196,40,47,.1); } .ds-health.warn { color: #8a5a00; background: rgba(240,168,0,.17); } .ds-health.moved { color: #474a51; background: #efefeb; }"
+    },
+    {
+      "name": "Full-text Match Snippet",
+      "kind": "custom",
+      "refersTo": "snippet-label",
+      "description": "Replaces the excerpt when search matches page text: an In page label, three-line clamp, ember-soft highlight with ember underline.",
+      "html": "<p class=\"ds-snippet\"><span class=\"ds-snip-label\">In page</span> the grid is a <mark>typographic</mark> system that relates every element on the page to a common measure.</p>",
+      "css": ".ds-snippet { margin: 0; width: 260px; color: #474a51; font: 400 13px/1.45 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } .ds-snip-label { display: inline-block; margin-right: 4px; padding: 0 5px; border-radius: 4px; background: #efefeb; color: #686b73; font-size: 11px; font-weight: 650; font-stretch: 87.5%; letter-spacing: .02em; vertical-align: 1px; } .ds-snippet mark { background: rgba(255,90,31,.13); color: #16171a; border-radius: 4px; padding: 0 2px; box-shadow: inset 0 -2px 0 rgba(255,90,31,.45); }"
+    },
+    {
+      "name": "Station Sign",
+      "kind": "custom",
+      "refersTo": "station-sign",
+      "description": "Large bullet, narrowed station name, tabular count, and a 4px line stripe that sweeps in on arrival. Path only for child lines.",
+      "html": "<header class=\"ds-station\" style=\"--c:#c2255c\"><span class=\"ds-sb\">T</span><div><div class=\"ds-path\"><span class=\"ds-pb\"></span>Design</div><h1>Typography</h1></div><span class=\"ds-cnt\"><b>3</b> links</span></header>",
+      "css": ".ds-station { position: relative; display: flex; align-items: center; gap: 14px; padding: 20px 28px 18px; background: #fff; color: #16171a; font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-station::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--c); transform-origin: left; animation: ds-sweep .6s cubic-bezier(0.16,1,0.3,1); } @keyframes ds-sweep { from { transform: scaleX(0); } } .ds-sb { width: 46px; height: 46px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 22px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-stretch: 82%; } .ds-path { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: #686b73; } .ds-pb { width: 14px; height: 14px; border-radius: 50%; background: #5c6773; } .ds-station h1 { margin: 1px 0 0; font-size: 30px; line-height: 1.08; font-weight: 760; font-stretch: 85%; letter-spacing: -0.02em; } .ds-cnt { align-self: flex-end; padding-bottom: 4px; color: #686b73; font-size: 13px; font-variant-numeric: tabular-nums; } .ds-cnt b { color: #16171a; font-weight: 650; }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Signage-black pill with a line bullet and an ember undo action.",
+      "html": "<div class=\"ds-toast\"><span class=\"ds-tb\" style=\"--c:#2f5bd8\">E</span>Moved to Engineering<button>Undo</button></div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 12px; min-height: 42px; padding: 6px 8px 6px 16px; border-radius: 999px; background: #16171a; color: #f4f3ef; font: 540 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; box-shadow: 0 24px 48px -16px rgba(22,23,26,.32), 0 4px 12px rgba(22,23,26,.08); } .ds-tb { width: 18px; height: 18px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 8.6px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-toast button { border: 0; border-radius: 999px; height: 30px; padding: 0 12px; background: #2e3037; color: #ff5a1f; font: 700 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; } .ds-toast button:hover { background: var(--band-raised, #3a3d45); } .ds-toast button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Wayfinding Lines",
+    "overview": "Ember is drawn as an International-style transit system for links. Every collection is a coloured line, every place in the library is a stop, and the screen always says which station you are standing at. A signage-black enamel band runs down the left edge carrying white, bold, semi-condensed labels; the work area beside it is a clean near-white ground where bookmark cards sit like posters on a platform wall. The line colours are the only saturation on screen; everything else is ink, paper and hairline.\n\nThe density is that of a working tool, not a showcase: 14px body, 36px rows in the band, hairline rules and tabular figures wherever a number appears. Depth is soft and functional (cards lift slightly under the pointer, popovers and the drawer float on a diffuse offset shadow). Motion is short and eased with a long-tail curve; its one ceremonial moment is the line-colour stripe that sweeps across the station sign on arrival. Under reduced motion nothing slides, scales or sweeps, but nothing freezes either: the stripe, drawer, bulk bar, menus and toasts fade in, so every state change is still seen.\n\nThe world explicitly refuses the category default of a grey sidebar, a blue accent and anonymous folder icons. Collections are never folders; they are round line bullets carrying a one- or two-letter code. The density holds for the mouse and opens up for the finger: coarse pointers get 44px targets without changing the layout's character.",
+    "keyCharacteristics": [
+      "A black signage band (sidebar) against a near-white work ground, in both themes.",
+      "Solid round line bullets with 1–2 letter codes identify every collection, at every scale.",
+      "Bullet fill encodes state: solid = filed, outline ring = Unsorted, dashed ring = Trash.",
+      "Ember orange belongs to the system, never to a user line.",
+      "Archivo variable, bold and semi-condensed (width axis 80–87.5%) for every sign; normal width for reading text.",
+      "Hairline rules, tabular figures, soft diffuse shadows.",
+      "Status speaks in small tinted pills (dead, unverified, moved), never in line colours."
+    ],
+    "rules": [
+      {
+        "name": "The System Line Rule",
+        "body": "Ember Orange is the system's line and is never offered in the user palette. If a user could pick it, it would stop meaning \"this is Ember acting\".",
+        "section": "colors"
+      },
+      {
+        "name": "The Only Saturation Rule",
+        "body": "Line colours are the only saturated colour on screen apart from the system orange, the favourite amber, danger red and the warn/ok status tones. Chrome, borders and tags stay neutral.",
+        "section": "colors"
+      },
+      {
+        "name": "The Distinct Lines Rule",
+        "body": "A new line takes the least-used colour first, and among equally used colours the one with the greatest hue distance from colours already in use. Neighbouring lines must never default to the same hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Neutral Tag Rule",
+        "body": "Tags are neutral ink (`#` in ink-3, name in ink-2 on cards; band-ink on the band). Tags are never line-coloured. A tag pill in the band fills with ember only while it is the selected filter, because that is selection, not colouring.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Source Rule",
+        "body": "Every colour comes from a token, in CSS and in JS alike. Status tones on the band have their own band-* tokens rather than borrowing the light-surface values.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signage Width Rule",
+        "body": "Anything that names a place (station name, wordmark, bullet codes, headings, popup line name, cover host) uses the narrowed width (80–87.5%) at 700+ weight. Reading text never does.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Count Rule",
+        "body": "Every count, date and number uses tabular figures so columns of counts align, including the status codes in health chips.",
+        "section": "typography"
+      },
+      {
+        "name": "The On-Ramp Rule",
+        "body": "Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lift On Intent Rule",
+        "body": "Cards rise only under the pointer (`translateY(-2px)` plus Lift). List and headline rows never move, and under reduced motion no card moves; the shadow still changes.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Conditional Stop Rule",
+        "body": "A system stop that reports a problem (Broken links) appears only while the problem exists. An empty problem stop is noise.",
+        "section": "components"
+      },
+      {
+        "name": "The Focus Stays Put Rule",
+        "body": "Whatever re-renders or closes (grid, drawer, menu), keyboard focus lands back on the thing the person was working with, never on the page body.",
+        "section": "components"
+      },
+      {
+        "name": "The Fade Not Freeze Rule",
+        "body": "Reduced motion swaps movement for opacity; it never removes the transition outright.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** give every collection a round line bullet with a 1–2 letter code, and render it at every scale it appears (stop, path, card edge, station sign, toast, popup).",
+      "**Do** encode bullet state by fill: solid for filed, outline ring for Unsorted, dashed ring for Trash.",
+      "**Do** reserve Ember Orange (#ff5a1f) for the brand bullet, primary actions, focus, selection and the All-bookmarks stripe.",
+      "**Do** assign new line colours least-used first, then by greatest hue distance from colours in use.",
+      "**Do** mark the current stop with the band-active fill plus a ring around its bullet.",
+      "**Do** set every place name in bold, narrowed Archivo (80–87.5% width) and every number in tabular figures.",
+      "**Do** keep covers at one locked ratio (16:10) everywhere except the moodboard.",
+      "**Do** edit in the right-hand drawer sheet, treated as a modal dialog (app inert, focus returned to the card on close).",
+      "**Do** take every colour from a token, in CSS and JS; favourites read `--fav`, status on the band reads the band-* tokens.",
+      "**Do** keep radii on the scale: 2, 4, 6, 8, 10px, pill, circle.",
+      "**Do** give coarse pointers 44px targets and keep card actions reachable without hover.",
+      "**Do** turn slides, scales and sweeps into fades under reduced motion."
+    ],
+    "donts": [
+      "**Don't** put Ember Orange in the user line palette or use it for a collection.",
+      "**Don't** colour tags; they are neutral ink, never line-coloured, and ember only while selected.",
+      "**Don't** tell favourites apart by colour alone; the favourite amber equals the Amber line, so the star shape carries the meaning.",
+      "**Don't** mark the current stop with a side tab or edge bar.",
+      "**Don't** put a kicker or eyebrow above the station name; the path appears only for places that have a parent.",
+      "**Don't** use a grey sidebar, a blue default accent, or folder icons for collections.",
+      "**Don't** set white text on Ember Orange; its ink is signage black.",
+      "**Don't** show the Broken links stop when nothing is broken.",
+      "**Don't** load remote fonts or icon sets; Archivo is self-hosted and icons are the authored 24px, 1.75-stroke set."
+    ]
+  }
+}
