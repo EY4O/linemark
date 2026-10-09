@@ -109,8 +109,18 @@ export async function setMeta(key, value) {
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ember') : null;
 let quiet = false;
 
+const localListeners = new Set();
+
 function announce(store) {
-  if (channel && !quiet && store !== 'media') channel.postMessage({ type: 'changed', store });
+  if (quiet) return;
+  if (channel && store !== 'media') channel.postMessage({ type: 'changed', store });
+  localListeners.forEach((fn) => fn(store));
+}
+
+// Writes made in this context (the broadcast above only reaches other contexts).
+export function onLocalChange(fn) {
+  localListeners.add(fn);
+  return () => localListeners.delete(fn);
 }
 
 export function onRemoteChange(fn) {

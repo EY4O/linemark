@@ -2,6 +2,7 @@
 import * as db from './db.js';
 import * as M from './model.js';
 import * as IO from './io.js';
+import * as Sync from './sync.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
 
@@ -26,6 +27,8 @@ const S = {
   showAllTags: false,
   renaming: null,
   scan: null,
+  sync: { enabled: false },
+  syncSetup: false,
   texts: null,
   textsLoading: false,
   snippets: new Map(),
@@ -97,6 +100,7 @@ async function putBookmarks(list) {
 }
 const clean = (b) => { const { _hay, ...rest } = b; return rest; };
 async function putCollections(list) {
+  for (const c of list) c.updatedAt = Date.now();
   await db.putMany('collections', list);
   for (const c of list) if (!S.col.has(c.id)) S.collections.push(c);
   index();
@@ -104,6 +108,8 @@ async function putCollections(list) {
 
 function snapshot(ids) { return ids.map((id) => structuredClone(clean(S.bm.get(id)))); }
 async function restoreSnapshot(snap) {
+  // An undo is a new edit: stamp it now so sync doesn't let an older copy win.
+  for (const s of snap) s.updatedAt = Date.now();
   await db.putMany('bookmarks', snap);
   for (const s of snap) {
     const i = S.bookmarks.findIndex((b) => b.id === s.id);
@@ -310,7 +316,10 @@ function renderBand() {
     <div class="brand">
       <span class="bullet" style="--c:var(--ember);--bi:#16171a">E</span>
       <span class="brand-name">Ember</span>
-      <button class="icon-btn" data-act="add" title="Add link (N)" aria-label="Add link">${icon('plus', 18)}</button>
+      <span class="brand-tools">
+        ${S.sync.enabled ? `<a class="icon-btn sync-btn ${syncState()}" href="#/settings" title="${esc(syncLabel())}" aria-label="${esc(syncLabel())}">${icon('cloud', 18)}</a>` : ''}
+        <button class="icon-btn" data-act="add" title="Add link (N)" aria-label="Add link">${icon('plus', 18)}</button>
+      </span>
     </div>
     <div class="band-scroll">
       ${stop('all', 'All bookmarks', allBullet(20), S.counts.all)}
@@ -727,6 +736,7 @@ async function restore(ids) {
 async function destroy(ids) {
   const media = ids.map((id) => S.bm.get(id)?.cover).filter((c) => c?.startsWith('media:')).map((c) => c.slice(6));
   await db.delMany('bookmarks', ids);
+  await M.addTombstones(ids);
   await db.delMany('media', media);
   for (const m of media) mediaCache.get(m)?.then((u) => u && URL.revokeObjectURL(u)), mediaCache.delete(m);
   await db.delMany('texts', ids);
@@ -826,6 +836,7 @@ async function deleteLine(id) {
   const now = Date.now();
   await putBookmarks(bms.map((bid) => Object.assign(S.bm.get(bid), { trashedAt: now })));
   await db.delMany('collections', [...ids]);
+  await M.addTombstones([...ids]);
   S.collections = S.collections.filter((c) => !ids.has(c.id));
   index();
   if (S.route.kind === 'c' && ids.has(S.route.id)) go('#/all'); else renderAll();
@@ -1396,6 +1407,139 @@ function wireTagInput(b) {
   $('#d-tags').addEventListener('click', (e) => { if (e.target.id === 'd-tags') input.focus(); });
 }
 
+// ======================= sync (optional) =======================
+
+let syncTimer = null;
+let syncing = false;
+
+const syncState = () => (syncing ? 'busy' : S.sync.locked || S.sync.lastError ? 'warn' : 'ok');
+function syncLabel() {
+  if (syncing) return 'Sync: syncing now';
+  if (S.sync.locked) return 'Sync: locked, enter your passphrase in Settings';
+  if (S.sync.lastError) return 'Sync needs attention: ' + S.sync.lastError;
+  return S.sync.lastSync ? `Sync: up to date, ${relTime(S.sync.lastSync)}` : 'Sync: on';
+}
+
+async function refreshSyncState() {
+  const s = await Sync.settings();
+  S.sync = { enabled: !!s.enabled, lastSync: s.lastSync, lastError: s.lastError, lastStats: s.lastStats, clientId: s.clientId || '', locked: s.enabled && !(await Sync.hasKey()) };
+}
+
+// Changes sync a little after you stop editing, when the library opens, and every five minutes.
+function scheduleSync(delay = 15000) {
+  if (!S.sync.enabled || S.sync.locked) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(runSync, delay);
+}
+
+async function runSync({ interactive = false, announceResult = false } = {}) {
+  if (syncing) return;
+  syncing = true;
+  renderBand();
+  try {
+    const st = await Sync.syncNow({ interactive });
+    if (st && (st.received || st.removed || st.downloaded)) { await load(); renderAll(); }
+    if (announceResult) toast(st ? `Synced: ${plural(st.received, 'change')} received${st.removed ? `, ${st.removed} removed` : ''}` : 'Sync is off');
+  } catch (e) {
+    if (announceResult) toast(e.message, { duration: 8000 });
+  } finally {
+    syncing = false;
+    await refreshSyncState();
+    renderBand();
+    if (S.route.kind === 'settings') renderSettings();
+  }
+}
+
+function syncSection() {
+  const sy = S.sync;
+  const intro = `<p>Ember works fully on this computer, and sync stays off unless you turn it on. With sync, your library stays the same in Chrome, Edge, Brave or Vivaldi on your other computers. Everything is encrypted here with your passphrase before it reaches your own Google Drive, so Google only ever stores scrambled data.</p>`;
+  let rows;
+  if (!sy.enabled && !S.syncSetup) {
+    rows = `<div class="row"><div class="what"><b>Sync is off</b><span>Your library lives only in this browser profile.</span></div><div class="act"><button class="btn" data-act="sync-setup">${icon('cloud', 16)} Set up sync</button></div></div>`;
+  } else if (!sy.enabled) {
+    const redirect = Sync.redirectUrl();
+    rows = `<form class="sync-form" id="sync-form" novalidate>
+      <div class="field"><label for="sync-client">Google OAuth client ID</label>
+        <input class="input" id="sync-client" autocomplete="off" spellcheck="false" placeholder="1234567890-abc.apps.googleusercontent.com" value="${esc(sy.clientId)}" required>
+        <span class="hint">Create one in Google Cloud in about five minutes (steps in <b>docs/SYNC.md</b>). Use this as its authorised redirect URI:</span>
+        <span class="copy-row"><code id="sync-redirect">${esc(redirect || 'Available when Ember runs as an extension')}</code>${redirect ? `<button type="button" class="btn sm" data-act="copy-redirect">${icon('copy', 14)} Copy</button>` : ''}</span>
+      </div>
+      <div class="field"><label for="sync-pass">Passphrase</label><input class="input" id="sync-pass" type="password" autocomplete="new-password" minlength="10" required aria-describedby="sync-pass-hint"><span class="hint" id="sync-pass-hint">At least 10 characters. Use the same passphrase on every device. Ember can’t recover it; if it’s lost, only the cloud copy is lost, never this computer’s library.</span></div>
+      <div class="field"><label for="sync-pass2">Confirm passphrase</label><input class="input" id="sync-pass2" type="password" autocomplete="new-password" required></div>
+      <span class="field-error" id="sync-err" role="alert"></span>
+      <div class="form-actions"><button class="btn primary" type="submit" id="sync-go">${icon('cloud', 16)} Connect Google Drive and sync</button><button class="btn ghost" type="button" data-act="sync-cancel">Cancel</button></div>
+    </form>`;
+  } else if (sy.locked) {
+    rows = `<form class="sync-form" id="sync-unlock" novalidate>
+      <div class="field"><label for="sync-unlock-pass">Passphrase</label><input class="input" id="sync-unlock-pass" type="password" autocomplete="current-password" required><span class="hint">This device forgot its key. Enter your sync passphrase to carry on syncing.</span></div>
+      <span class="field-error" id="sync-err" role="alert"></span>
+      <div class="form-actions"><button class="btn primary" type="submit">${icon('cloud', 16)} Unlock and sync</button><button class="btn ghost" type="button" data-act="sync-off">Turn off sync</button></div>
+    </form>`;
+  } else {
+    const st = sy.lastStats;
+    rows = `
+      <div class="row"><div class="what"><b>${sy.lastSync ? `Synced ${relTime(sy.lastSync)}` : 'Sync is on'}</b><span>${st ? `${plural(st.links, 'link')} on ${plural(st.lines, 'line')} and ${plural(st.images, 'image')} in your encrypted cloud copy.` : 'Waiting for the first sync.'}</span>${sy.lastError ? `<span class="field-error">${esc(sy.lastError)}</span>` : ''}</div>
+        <div class="act"><button class="btn" data-act="sync-now" ${syncing ? 'disabled' : ''}>${icon('refresh', 16)} ${syncing ? 'Syncing…' : 'Sync now'}</button></div></div>
+      <div class="row"><div class="what"><b>This device</b><span>Remembers its encryption key, so sync runs by itself. Forget it to require the passphrase again.</span></div><div class="act"><button class="btn ghost" data-act="sync-forget">Forget key</button></div></div>
+      <div class="row"><div class="what"><b>Turn off sync</b><span>Stops syncing on this device. The encrypted cloud copy stays, so your other devices keep working. Deleting the cloud copy turns sync off everywhere.</span></div><div class="act"><button class="btn" data-act="sync-off">Turn off</button><button class="btn danger" data-act="sync-off-delete">${icon('trash', 16)} Delete cloud copy</button></div></div>`;
+  }
+  return `<section id="sync-section"><h2>${icon('cloud', 20)} Sync <span class="tag-optional">Optional</span></h2>${intro}<div class="rows">${rows}</div></section>`;
+}
+
+function wireSyncForms() {
+  const form = $('#sync-form');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = $('#sync-err');
+    const clientId = $('#sync-client').value.trim();
+    const pass = $('#sync-pass').value;
+    const fail = (msg, field) => { err.textContent = msg; field?.setAttribute('aria-invalid', 'true'); field?.focus(); };
+    $$('#sync-form [aria-invalid]').forEach((f) => f.removeAttribute('aria-invalid'));
+    if (!/\.apps\.googleusercontent\.com$/.test(clientId)) return fail('That doesn’t look like a Google OAuth client ID (it ends in .apps.googleusercontent.com).', $('#sync-client'));
+    if (pass.length < 10) return fail('Use a passphrase of at least 10 characters.', $('#sync-pass'));
+    if (pass !== $('#sync-pass2').value) return fail('The two passphrases don’t match.', $('#sync-pass2'));
+    // the identity permission has to be requested inside the click
+    const ok = await chrome.permissions.request({ permissions: ['identity'] }).catch(() => false);
+    if (!ok) return fail('Ember needs Chrome’s sign-in permission to connect to Google Drive.');
+    const btn = $('#sync-go');
+    btn.disabled = true;
+    btn.textContent = 'Connecting and encrypting…';
+    try {
+      syncing = true;
+      const st = await Sync.enable({ clientId, passphrase: pass });
+      syncing = false;
+      S.syncSetup = false;
+      await load();
+      await refreshSyncState();
+      renderAll();
+      toast(`Sync is on: ${plural(st.links, 'link')} encrypted and synced`);
+    } catch (ex) {
+      syncing = false;
+      await refreshSyncState();
+      btn.disabled = false;
+      btn.innerHTML = `${icon('cloud', 16)} Connect Google Drive and sync`;
+      fail(ex.message);
+    }
+  });
+  $('#sync-unlock')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = $('#sync-err');
+    try {
+      syncing = true;
+      await Sync.unlock($('#sync-unlock-pass').value);
+      syncing = false;
+      await load();
+      await refreshSyncState();
+      renderAll();
+      toast('Sync unlocked');
+    } catch (ex) {
+      syncing = false;
+      err.textContent = ex.message;
+      $('#sync-unlock-pass').setAttribute('aria-invalid', 'true');
+    }
+  });
+}
+
 // ======================= settings =======================
 
 // Stored images no bookmark (live or trashed) refers to any more.
@@ -1441,6 +1585,7 @@ async function renderSettings() {
         <div class="row"><div class="what"><b>Full backup (JSON)</b><span>Everything, including notes, saved screenshots and indexed page text.</span></div><div class="act"><button class="btn" data-act="export-json">${icon('download', 16)} Back up</button></div></div>
       </div>
     </section>
+    ${syncSection()}
     <section>
       <h2>${icon('refresh', 20)} Health &amp; search</h2>
       <p>Ember reads each saved page directly: once to see if it still works, and to keep its text for full-text search. One request per link, four at a time. Cover images are downloaded once and kept on this computer; the library never loads anything from the web while you browse it.</p>
@@ -1496,6 +1641,7 @@ async function renderSettings() {
       <div class="rows"><div class="row"><div class="what"><b class="tnum">${plural(S.counts.all, 'link')} on ${plural(S.collections.length, 'line')}, ${plural(S.counts.tags.size, 'tag')}</b><span>Using ${mb} of local storage in this Chrome profile.</span></div></div></div>
     </section>
   </div>`;
+  wireSyncForms();
 }
 
 let importing = false;
@@ -1683,6 +1829,19 @@ function bindEvents() {
       case 'scan-cancel': if (S.scan) S.scan.cancelled = true; break;
       case 'recheck': startScan('links', S.list.map((x) => x.id)); break;
       case 'trash-dead': trash(S.bookmarks.filter((x) => !x.trashedAt && x.health?.state === 'dead').map((x) => x.id)); break;
+      case 'sync-setup': S.syncSetup = true; renderSettings().then(() => $('#sync-client')?.focus()); break;
+      case 'sync-cancel': S.syncSetup = false; renderSettings(); break;
+      case 'copy-redirect': navigator.clipboard.writeText($('#sync-redirect').textContent).then(() => toast('Redirect URI copied')); break;
+      case 'sync-now': runSync({ interactive: true, announceResult: true }); break;
+      case 'sync-forget': await Sync.forgetKey(); await refreshSyncState(); renderAll(); toast('This device forgot its sync key'); break;
+      case 'sync-off': await Sync.disable(); await refreshSyncState(); renderAll(); toast('Sync is off. Your library stays on this computer.'); break;
+      case 'sync-off-delete': {
+        if (!armConfirm(actEl, 'Delete the cloud copy?')) break;
+        try { await Sync.disable({ deleteCloud: true }); toast('Cloud copy deleted. Sync is off; your library stays on this computer.'); }
+        catch (ex) { toast(ex.message, { duration: 8000 }); }
+        await refreshSyncState(); renderAll();
+        break;
+      }
       case 'reclaim': {
         const ids = await orphanMedia();
         await db.delMany('media', ids);
@@ -2034,8 +2193,13 @@ async function boot() {
   if (params.has('q') || params.has('edit')) history.replaceState(null, '', location.pathname + location.hash);
   S.route = parseHash();
   if (S.route.kind === 'c' && !S.col.has(S.route.id)) S.route = { kind: 'all' };
+  await refreshSyncState();
   bindEvents();
   renderAll();
+  // Optional sync: nothing runs unless it was turned on.
+  db.onLocalChange((store) => { if (store !== 'meta' && store !== 'media' && !syncing) scheduleSync(); });
+  scheduleSync(1500);
+  setInterval(() => scheduleSync(0), 5 * 60 * 1000);
 
   // The popup's "open" button asks an already-open manager to edit a link.
   if (typeof BroadcastChannel !== 'undefined') {
@@ -2046,7 +2210,8 @@ async function boot() {
     });
   }
 
-  db.onRemoteChange(debounce(async () => {
+  db.onRemoteChange(debounce(async (store) => {
+    if (store !== 'meta') scheduleSync();
     await load();
     renderAll();
     if (S.editing && S.bm.has(S.editing) && !$('#drawer').contains(document.activeElement)) renderDrawer();

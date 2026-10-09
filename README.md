@@ -25,6 +25,7 @@ Ember is a Chrome extension for people who save a lot of links and want to find 
 - 📥 **Chrome import**: bring in your whole Chrome bookmark tree in one click, or import an HTML export from any browser, Raindrop or Pocket.
 - 🧹 **Tidy-up tools**: a duplicate finder that merges tags and notes, bulk move and tag, a restorable Trash, and Undo on every change.
 - 💾 **Your data, portable**: export Chrome-compatible HTML, or a full JSON backup that includes screenshots.
+- 🔐 **Optional encrypted sync**: local by default. Turn on sync to keep Chrome, Edge, Brave and Vivaldi in step through your own Google Drive. Everything is encrypted on your device with your passphrase first, so Google only stores scrambled data.
 - 🌗 **Light and dark**: follows your system setting, or set it yourself.
 
 ## 📸 Screenshots
@@ -108,6 +109,16 @@ Replace the files in the folder, then click the reload arrow on Ember's card in 
 </details>
 
 <details>
+<summary><b>🔐 Optional encrypted sync</b></summary>
+
+- **Off by default.** Ember never needs an account; sync is an extra you can turn on in **Settings → Sync**.
+- **Where it goes:** your own Google Drive's hidden app folder, which your other files and other apps can't see.
+- **How it's protected:** your passphrase goes through PBKDF2-SHA256 (600,000 iterations) to make an AES-256-GCM key. The key is created on your device and can't be exported. Google only stores ciphertext, and Ember can't recover a forgotten passphrase.
+- **What syncs:** lines, bookmarks, deletions and stored images. Each device rebuilds its own full-text index.
+- **Setup:** you need your own free Google OAuth client ID, which takes about five minutes. Follow the steps in **[docs/SYNC.md](docs/SYNC.md)**.
+</details>
+
+<details>
 <summary><b>🔐 Permissions, and why</b></summary>
 
 | Permission | Used for |
@@ -119,6 +130,7 @@ Replace the files in the folder, then click the reload arrow on Ember's card in 
 | `storage`, `unlimitedStorage` | Keeping your library and screenshots locally |
 | `tabs` (optional, asked for when needed) | **Save all open tabs** |
 | Site access (optional, asked for when needed) | Link checking, indexing page text, fetching previews for imported links, and **Refresh** in the edit drawer |
+| `identity` (optional, asked for when you set up sync) | Signing in to Google for encrypted sync. Never requested while sync is off |
 </details>
 
 <details>

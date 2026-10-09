@@ -20,7 +20,7 @@ Ember is a local-only bookmark manager in the spirit of raindrop.io: collections
 
 ## Positioning
 
-Raindrop-class organization that never leaves the machine. No third-party services. The only network traffic is reading the pages you bookmark (and downloading each page's cover image once, to store it locally); the library itself never loads anything from the web.
+Raindrop-class organization that is local by default. Out of the box nothing leaves the machine: the only network traffic is reading the pages you bookmark (and downloading each page's cover image once, to store it locally), and the library itself never loads anything from the web. Sync across devices is an option, never a requirement: when you turn it on, everything is encrypted on your device with your passphrase before it reaches storage you own (your Google Drive's private app folder), so the storage provider only ever holds ciphertext.
 
 ## Operating Context
 
@@ -34,7 +34,8 @@ Raindrop-class organization that never leaves the machine. No third-party servic
 - Views: list, cards, headlines (compact), moodboard.
 - Previews: screenshot of the tab at save time, plus the page's own title/description/cover image. Imported bookmarks may optionally fetch metadata directly from each site (requires an opt-in host permission). Favicons from Chrome's local favicon cache.
 - Full JSON backup/restore; HTML export Chrome can import.
-- No accounts, no cloud, no analytics, no remote fonts or scripts.
+- No Ember account, no Ember server, no analytics, no remote fonts or scripts.
+- Optional sync (off by default): end-to-end encrypted with a passphrase-derived key (PBKDF2-SHA256 → AES-256-GCM), stored in the user's own Google Drive app-data folder. Every feature works identically with sync off. Losing the passphrase loses only the cloud copy; local data is unaffected.
 
 ## Brand Commitments
 
@@ -42,7 +43,7 @@ Name: **Ember**.
 
 ## Product Principles
 
-1. Local or nothing — every feature must work with zero third-party services.
+1. Local by default — every feature works with sync off and no third-party services. Sync is an opt-in extra: end-to-end encrypted, only to storage the user owns, and never required.
 2. Saving is one gesture; organizing can happen later (Unsorted is a first-class place).
 3. Finding beats filing — search, tags and filters must be instant.
 4. Never lose data — trash before delete, backups are one click.

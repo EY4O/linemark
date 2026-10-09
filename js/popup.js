@@ -125,6 +125,7 @@ function render() {
       if (bm.cover.startsWith('media:')) await db.del('media', bm.cover.slice(6));
       await db.del('texts', bm.id);
       await db.del('bookmarks', bm.id);
+      await M.addTombstones([bm.id]);
     }
     bm = null;
     window.close();
@@ -227,7 +228,7 @@ function pickLine(anchor) {
       if (!it) return;
       if (it.dataset.create) {
         const color = M.pickLineColor(collections.map((c) => c.color));
-        const c = { id: M.uid(), name: it.dataset.create, code: M.codeFor(it.dataset.create), color, parentId: null, order: collections.filter((x) => !x.parentId).length, expanded: false, createdAt: Date.now() };
+        const c = { id: M.uid(), name: it.dataset.create, code: M.codeFor(it.dataset.create), color, parentId: null, order: collections.filter((x) => !x.parentId).length, expanded: false, createdAt: Date.now(), updatedAt: Date.now() };
         await db.put('collections', c);
         collections.push(c);
         bm.collectionId = c.id;

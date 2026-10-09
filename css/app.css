@@ -917,3 +917,19 @@ body { overflow: hidden; }
 .card:has(.card-title:focus-visible) { outline: 2px solid var(--ember); outline-offset: 3px; }
 .grid.headlines .card:has(.card-title:focus-visible) { outline-offset: -2px; }
 .settings-note { margin-top: 10px; color: var(--ink-3); font-size: 0.8125rem; }
+
+/* ---------- sync ---------- */
+.tag-optional { margin-left: 2px; padding: 2px 8px; border-radius: 999px; background: var(--hover); color: var(--ink-3); font-size: 0.6875rem; font-weight: 650; font-stretch: 87.5%; letter-spacing: 0.02em; text-transform: uppercase; vertical-align: 2px; }
+.sync-form { display: grid; gap: 16px; padding: 18px; }
+.sync-form .hint { color: var(--ink-3); font-size: 0.8125rem; line-height: 1.45; }
+.copy-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.copy-row code { padding: 6px 9px; border-radius: var(--r-1); background: var(--surface-2); border: 1px solid var(--rule); font-size: 0.8125rem; overflow-wrap: anywhere; }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.row .field-error { display: block; margin-top: 4px; }
+.brand-tools { margin-left: auto; display: flex; gap: 2px; }
+.brand .brand-tools .icon-btn { margin-left: 0; }
+.brand .sync-btn { position: relative; }
+.brand .sync-btn::after { content: ''; position: absolute; right: 5px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--band-ok); box-shadow: 0 0 0 2px var(--band); }
+.brand .sync-btn.warn::after { background: var(--fav); }
+.brand .sync-btn.busy::after { background: var(--ember); animation: fade-in 0.8s ease-in-out infinite alternate; }
+

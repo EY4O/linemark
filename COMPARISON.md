@@ -61,11 +61,11 @@ Ember's entries describe what is built in this repository today.
 | Import from browsers and HTML files | ✅ | ✅ | ✅ Imports Chrome's bookmark tree directly, plus HTML from any browser, Raindrop or Pocket |
 | Export | ✅ | ✅ | ✅ Chrome-compatible HTML, plus a full JSON backup that includes screenshots |
 | Backups | — | ✅ Daily, in the cloud | ◐ Manual, saved as a local file |
-| Sync across devices | ✅ | ✅ | ❌ Data stays in one Chrome profile, by design |
+| Sync across devices | ✅ | ✅ | ◐ Optional and end-to-end encrypted, through your own Google Drive. Chromium browsers only for now; off by default |
 | Apps (Mac, iOS, Android, other browsers) | ✅ | ✅ | ❌ Chrome only (Chromium browsers should work but haven't been tested) |
 | Sharing and collaboration | ✅ | ✅ | ❌ |
 | Integrations | ✅ 2,600+ | ✅ | ❌ |
-| Account required | Yes | Yes | **No** |
+| Account required | Yes | Yes | **No.** Sync uses your own Google account, only if you turn it on |
 | Where your data lives | Raindrop's cloud | Raindrop's cloud | **Only in your browser profile (IndexedDB)** |
 | Third-party services contacted | Raindrop | Raindrop | **None.** Ember only reads the pages you save, and downloads each cover image once. Browsing the library never loads anything from the web |
 | Price | Free | Paid subscription | Free |

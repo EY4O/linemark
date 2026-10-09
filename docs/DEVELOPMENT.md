@@ -18,6 +18,7 @@ js/popup.js          Save-on-open popup
 js/background.js     Service worker: context menus, shortcuts, omnibox, opening the library
 js/io.js             Chrome tree import, Netscape HTML import/export, JSON backup/restore
 js/ui.js             Toasts, anchored menus, time formatting, downloads
+js/sync.js           Optional end-to-end encrypted sync through Google Drive's app-data folder (see docs/SYNC.md)
 js/icons.js          Authored SVG icon set
 fonts/               Archivo variable font (OFL)
 icons/               Extension icons
@@ -47,7 +48,7 @@ Then open `http://localhost:5178/app.html`. A page served this way has its own I
 | `collections` | `{ id, name, code, color, parentId, order, expanded, createdAt }`. These are the "lines" |
 | `media` | Stored cover images: screenshots and downloaded page images. A bookmark refers to one as `cover: "media:<id>"`; covers are never loaded from the web |
 | `texts` | `{ id, text }`: readable page text for full-text search, keyed by bookmark id |
-| `meta` | `ui` preferences (view, sort, card size, theme) |
+| `meta` | `ui` preferences (view, sort, card size, theme); `tombstones` (id → deletedAt, for sync); `sync` settings; `syncKey` (non-extractable CryptoKey, only when sync is on) |
 
 Writes made in one context (popup, service worker, library) are announced on the `ember` BroadcastChannel, so open library tabs reload automatically.
 
@@ -62,6 +63,7 @@ The suite needs Google Chrome but no npm packages (set `CHROME_PATH` if Chrome i
 - **Model and import/export:** URL normalisation, line-colour contrast and assignment, page metadata, link-health classification, the bookmark-HTML round trip, and backup validation (unsafe or malformed entries are dropped).
 - **Library:** first render, search filters, accessibility checks in all four views and at 320px (contrast, names, nesting, overflow), and keyboard access (line expand, menus, the drawer's focus trap and return).
 - **Link health, full-text search and local covers:** against local pages that answer 200, 404, 403, a cross-host redirect and an unreachable port.
+- **Encrypted sync:** a stand-in for Google Drive's app-data endpoints. It checks that two devices converge (library, images, edits and permanent deletions), that a wrong passphrase is refused, and that Drive never holds readable data.
 - **Real extension:** loads Ember unpacked into a fresh profile, then checks the first-run screen, Chrome bookmark import, Settings, dark mode, the popup and the service worker's shortcuts.
 
 Run it before every change. A first-run crash (a blank page on a fresh install) reached a user once; the extension suite now catches that class of bug.

@@ -15,6 +15,7 @@ function lineFrom(name, parentId, order) {
     order,
     expanded: false,
     createdAt: Date.now(),
+    updatedAt: Date.now(),
   };
 }
 

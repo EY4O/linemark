@@ -31,7 +31,7 @@
     "bookmarks",
     "favicon"
   ],
-  "optional_permissions": ["tabs"],
+  "optional_permissions": ["tabs", "identity"],
   "optional_host_permissions": ["<all_urls>"],
   "omnibox": { "keyword": "em" },
   "commands": {

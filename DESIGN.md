@@ -487,6 +487,13 @@ A 440px right sheet on surface with Float shadow and a 0.32s slide (a 0.2s fade 
 ### Menus and focus
 Menus open with a short pop (fade under reduced motion), take arrow-key focus, and hand focus back to the control that opened them when they close. Re-rendering the grid never drops the keyboard: focus returns to the same card and the same control on it.
 
+### Sync (optional)
+Sync lives in its own Settings section, after "Take links out", with an "Optional" pill beside the heading. It's off by default, and nothing about sync appears anywhere else until it's turned on.
+
+- **Setup:** an inline form, not a modal. It has the client ID field with the redirect URI in a copyable code chip, the passphrase and its confirmation, and inline errors that use `.field-error` and `aria-invalid`.
+- **Sync on:** a status row ("Synced 2m ago"), a row for this device's key, and a "Turn off sync" row. "Delete cloud copy" is a danger button with two-step confirmation.
+- **Status in the band:** a cloud icon button sits in the brand row, beside Add link, and links to Settings. A 7px dot on it reports the state: band-ok when up to date, fav amber when locked or needing attention, Ember orange (pulsing) while syncing. Its accessible name spells out the state.
+
 ### Popup
 A compact band header: line bullet (34px), a status sentence ("Saved to" with a band-ok check, or "Already saved") over the line name as a picker, favourite and open-in-manager icon buttons, and a 4px stripe in the line colour (band-ink-2 grey for Unsorted). Below on surface: thumbnail with a Page / Screen / None cover switch, the editable title, host, tags, note, and a Remove / Done footer.
 

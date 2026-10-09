@@ -160,6 +160,16 @@ export async function saveCoverBlob(blob) {
   return 'media:' + id;
 }
 
+// Hard deletes leave a tombstone (id -> deletedAt) so sync can remove the record on other devices
+// instead of bringing it back. Trash is a soft delete and needs none.
+export async function addTombstones(ids) {
+  if (!ids.length) return;
+  const t = await db.getMeta('tombstones', {});
+  const now = Date.now();
+  for (const id of ids) t[id] = now;
+  await db.setMeta('tombstones', t);
+}
+
 // Swap a bookmark's cover, deleting the stored image it replaces so nothing is orphaned.
 export async function setCover(b, cover) {
   const old = b.cover || '';

@@ -25,8 +25,40 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // ---------------------------------------------------------------- local server
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown', '.txt': 'text/plain' };
 let PORT = 0;
-const server = http.createServer((req, res) => {
+
+// A minimal stand-in for the Google Drive v3 endpoints Ember's sync uses.
+const drive = new Map(); // id -> { id, name, modifiedTime, data: Buffer }
+let driveSeq = 0;
+function handleDrive(req, res, url, body) {
+  const json = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(obj === undefined ? '' : JSON.stringify(obj)); };
+  if (url.pathname === '/__drive/_dump') return json(200, [...drive.values()].map((f) => ({ name: f.name, base64: f.data.toString('base64') })));
+  if (req.headers.authorization !== 'Bearer test-token') return json(401, { error: 'unauthorized' });
+  const p = url.pathname.replace('/__drive', '');
+  const idOf = (prefix) => p.slice(prefix.length);
+  if (req.method === 'GET' && p === '/drive/v3/files') return json(200, { files: [...drive.values()].map(({ id, name, modifiedTime }) => ({ id, name, modifiedTime })) });
+  if (req.method === 'GET' && p.startsWith('/drive/v3/files/')) { const f = drive.get(idOf('/drive/v3/files/')); if (!f) return json(404, {}); res.writeHead(200, { 'Content-Type': 'application/octet-stream' }); return res.end(f.data); }
+  if (req.method === 'DELETE' && p.startsWith('/drive/v3/files/')) { drive.delete(idOf('/drive/v3/files/')); res.writeHead(204); return res.end(); }
+  if (req.method === 'PATCH' && p.startsWith('/upload/drive/v3/files/')) { const f = drive.get(idOf('/upload/drive/v3/files/')); if (!f) return json(404, {}); f.data = body; f.modifiedTime = new Date().toISOString(); return json(200, { id: f.id, name: f.name, modifiedTime: f.modifiedTime }); }
+  if (req.method === 'POST' && p === '/upload/drive/v3/files') {
+    const boundary = '--' + /boundary=([^;]+)/.exec(req.headers['content-type'])[1];
+    const parts = []; let at = body.indexOf(boundary);
+    while (at >= 0) { const next = body.indexOf(boundary, at + boundary.length); if (next < 0) break; parts.push(body.subarray(at + boundary.length + 2, next - 2)); at = next; }
+    const content = (part) => part.subarray(part.indexOf('\r\n\r\n') + 4);
+    const meta = JSON.parse(content(parts[0]).toString('utf8'));
+    if (!meta.parents?.includes('appDataFolder')) return json(400, { error: 'Ember must only write to appDataFolder' });
+    const f = { id: 'f' + ++driveSeq, name: meta.name, modifiedTime: new Date().toISOString(), data: Buffer.from(content(parts[1])) };
+    drive.set(f.id, f);
+    return json(200, { id: f.id, name: f.name, modifiedTime: f.modifiedTime });
+  }
+  return json(404, { error: 'not handled' });
+}
+
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
+  if (url.pathname.startsWith('/__drive')) {
+    const chunks = []; for await (const c of req) chunks.push(c);
+    return handleDrive(req, res, url, Buffer.concat(chunks));
+  }
   const send = (code, body, type = 'text/plain', extra = {}) => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*', ...extra }); res.end(body); };
   if (url.pathname === '/__test/moved') return send(302, '', 'text/plain', { Location: `http://localhost:${PORT}/__test/page1.html` });
   if (url.pathname === '/__test/forbidden') return send(403, 'Forbidden');
@@ -279,6 +311,87 @@ console.log('Link health, full-text search and local covers');
   });
   await test('no page errors', async () => assert(!p.errors.length, p.errors.join('\n')));
   await p.close();
+}
+
+console.log('Encrypted sync (stand-in Google Drive)');
+{
+  const PASS = 'correct horse battery staple';
+  const setUp = async (p, pass = PASS) => {
+    await p.ev(`location.hash = '#/settings';`);
+    await p.until(`return !!document.querySelector('[data-act=sync-setup]')`);
+    await p.ev(`document.querySelector('[data-act=sync-setup]').click();`);
+    await p.until(`return !!document.querySelector('#sync-form')`);
+    await p.ev(`document.querySelector('#sync-section').scrollIntoView();`);
+    await p.shot('settings-sync-setup');
+    await p.ev(`document.querySelector('#sync-client').value = '123-test.apps.googleusercontent.com';
+      document.querySelector('#sync-pass').value = ${JSON.stringify(pass)}; document.querySelector('#sync-pass2').value = ${JSON.stringify(pass)};
+      document.querySelector('#sync-form').requestSubmit();`);
+  };
+  const a = await open(`${BASE}/__test/seed.html?to=/all`);
+  await a.until(`return document.querySelectorAll('#grid .card').length === 6`);
+  // give device A a stored cover image so image sync is exercised
+  await a.ev(`const M = await import('/js/model.js'); const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b1');
+    b.cover = await M.storeImage(location.origin + '/icons/icon128.png'); b.updatedAt = Date.now(); await db.put('bookmarks', b);`);
+  await test('sync is off until you turn it on', async () => {
+    await a.ev(`location.hash = '#/settings';`);
+    await a.until(`return document.querySelector('#sync-section')?.textContent.includes('Sync is off')`);
+    assert(!(await a.ev(`return !!document.querySelector('.sync-btn')`)), 'sync indicator shown while sync is off');
+  });
+  await test('device A turns sync on and uploads an encrypted copy', async () => {
+    await setUp(a);
+    await a.until(`return document.querySelector('#sync-section')?.textContent.includes('Synced')`, 30000);
+    const names = (await (await fetch(`${BASE}/__drive/_dump`)).json()).map((f) => f.name).sort();
+    assert(names.includes('ember-vault.json') && names.includes('ember-library.enc') && names.some((n) => n.startsWith('m-')), names.join(', '));
+  });
+  await test('Google Drive only ever holds ciphertext', async () => {
+    const files = await (await fetch(`${BASE}/__drive/_dump`)).json();
+    const leaks = [];
+    for (const f of files) {
+      const text = Buffer.from(f.base64, 'base64').toString('latin1');
+      for (const secret of ['Typography', 'Vignelli', 'rust', 'practicaltypography', 'grid chapter', 'PNG', 'WEBP']) if (f.name !== 'ember-vault.json' && text.includes(secret)) leaks.push(`${f.name}: ${secret}`);
+    }
+    assert(!leaks.length, 'plaintext found: ' + leaks.join(', '));
+  });
+  const b = await open(`${BASE}/__test/app.html#/all`);
+  await test('device B with the same passphrase receives the library and images', async () => {
+    await b.until(`return document.querySelector('.empty h2')?.textContent === 'Every link gets a line'`);
+    await setUp(b);
+    await b.until(`return document.querySelector('#sync-section')?.textContent.includes('Synced')`, 30000);
+    const r = await b.ev(`const db = await import('/js/db.js'); const bm = await db.getAll('bookmarks'); const b1 = bm.find((x) => x.id === 'b1');
+      return { n: bm.length, live: bm.filter((x) => !x.trashedAt).length, lines: (await db.getAll('collections')).length, img: !!(b1 && (await db.get('media', b1.cover.slice(6)))?.blob?.size) };`);
+    assert(r.n === 7 && r.live === 6 && r.lines === 5 && r.img, JSON.stringify(r));
+  });
+  await test('edits and permanent deletions travel back to device A', async () => {
+    await b.ev(`const db = await import('/js/db.js'); const M = await import('/js/model.js');
+      const x = await db.get('bookmarks', 'b3'); x.title = 'Refactoring UI (edited on B)'; x.updatedAt = Date.now(); await db.put('bookmarks', x);
+      await db.del('bookmarks', 'b6'); await M.addTombstones(['b6']);
+      location.hash = '#/all'; await new Promise((r) => setTimeout(r, 200)); location.hash = '#/settings';`);
+    await b.until(`return !!document.querySelector('[data-act=sync-now]') && !document.querySelector('[data-act=sync-now]').disabled`);
+    await b.ev(`document.querySelector('[data-act=sync-now]').click();`);
+    await b.until(`const db = await import('/js/db.js'); const st = (await db.getMeta('sync')).lastStats; return !document.querySelector('[data-act=sync-now]')?.disabled && st && st.links === 6`, 20000);
+    await a.until(`return !!document.querySelector('[data-act=sync-now]') && !document.querySelector('[data-act=sync-now]').disabled`);
+    await a.ev(`document.querySelector('[data-act=sync-now]').click();`);
+    await a.until(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3'))?.title === 'Refactoring UI (edited on B)' && !(await db.get('bookmarks', 'b6'))`, 20000);
+  });
+  await test('a wrong passphrase is refused', async () => {
+    const c = await open(`${BASE}/__test/app.html#/all`);
+    await c.until(`return !!document.querySelector('.empty h2')`);
+    await setUp(c, 'not the right passphrase');
+    await c.until(`return /match/.test(document.querySelector('#sync-err')?.textContent || '')`, 20000);
+    await c.ev(`document.querySelector('#sync-section').scrollIntoView();`);
+    await c.shot('settings-sync-wrong-pass');
+    const n = await c.ev(`const db = await import('/js/db.js'); return (await db.getAll('bookmarks')).length;`);
+    assert(n === 0, 'device with the wrong passphrase received data');
+    await c.close();
+  });
+  await test('settings pass accessibility checks with sync on', async () => {
+    await a.ev(`location.hash = '#/settings';`); await sleep(300);
+    await a.ev(`document.querySelector('#sync-section').scrollIntoView();`); await sleep(200);
+    assertA11y(await a.ev(A11Y), 'settings with sync');
+    await a.shot('settings-sync-on');
+  });
+  await test('no page errors on either device', async () => assert(!a.errors.length && !b.errors.length, [...a.errors, ...b.errors].join('\n')));
+  await a.close(); await b.close();
 }
 
 console.log('Real extension (fresh install)');
