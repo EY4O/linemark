@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Ember test suite. Needs Google Chrome; no npm packages.
+// Linemark test suite. Needs Google Chrome; no npm packages.
 //
 //   node tests/run.mjs            run everything (headless)
 //   node tests/run.mjs --headed   watch it run
 //   CHROME_PATH=/path/to/chrome node tests/run.mjs
 //
-// It starts a small local server, drives Chrome over the DevTools protocol, loads Ember as a real
+// It starts a small local server, drives Chrome over the DevTools protocol, loads Linemark as a real
 // unpacked extension for the extension tests, and never contacts the internet.
 
 import http from 'node:http';
@@ -26,7 +26,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown', '.txt': 'text/plain' };
 let PORT = 0;
 
-// A minimal stand-in for the Google Drive v3 endpoints Ember's sync uses.
+// A minimal stand-in for the Google Drive v3 endpoints Linemark's sync uses.
 const drive = new Map(); // id -> { id, name, modifiedTime, data: Buffer }
 let driveSeq = 0;
 function handleDrive(req, res, url, body) {
@@ -45,7 +45,7 @@ function handleDrive(req, res, url, body) {
     while (at >= 0) { const next = body.indexOf(boundary, at + boundary.length); if (next < 0) break; parts.push(body.subarray(at + boundary.length + 2, next - 2)); at = next; }
     const content = (part) => part.subarray(part.indexOf('\r\n\r\n') + 4);
     const meta = JSON.parse(content(parts[0]).toString('utf8'));
-    if (!meta.parents?.includes('appDataFolder')) return json(400, { error: 'Ember must only write to appDataFolder' });
+    if (!meta.parents?.includes('appDataFolder')) return json(400, { error: 'Linemark must only write to appDataFolder' });
     const f = { id: 'f' + ++driveSeq, name: meta.name, modifiedTime: new Date().toISOString(), data: Buffer.from(content(parts[1])) };
     drive.set(f.id, f);
     return json(200, { id: f.id, name: f.name, modifiedTime: f.modifiedTime });
@@ -173,7 +173,7 @@ const assertA11y = (r, where) => {
 };
 
 // ---------------------------------------------------------------- suites
-console.log(`\nEmber tests (server ${BASE}, Chrome ${HEADED ? 'headed' : 'headless'})\n`);
+console.log(`\nLinemark tests (server ${BASE}, Chrome ${HEADED ? 'headed' : 'headless'})\n`);
 
 console.log('Model and import/export');
 {
@@ -190,10 +190,10 @@ console.log('Model and import/export');
       return M.LINE_COLORS.filter((c) => cr(c.value, M.bulletInk(c.value)) < 4.5).map((c) => c.name);`);
     assert(!bad.length, 'low contrast: ' + bad.join(', '));
   });
-  await test('new lines avoid colours next to ones in use, and never use Ember orange', async () => {
+  await test('new lines avoid colours next to ones in use, and never use Linemark orange', async () => {
     const r = await p.ev(`const M = await import('/js/model.js'); const c = M.pickLineColor(['#2f5bd8']); return [c, M.LINE_COLORS.some((x) => x.value === '#ff5a1f')];`);
     assert(!['#2f5bd8', '#1c8fd6', '#7048e8'].includes(r[0]), 'picked a neighbour of cobalt: ' + r[0]);
-    assert(!r[1], 'Ember orange is in the user palette');
+    assert(!r[1], 'Linemark orange is in the user palette');
   });
   await test('page metadata is read from HTML', async () => {
     const m = await p.ev(`const M = await import('/js/model.js'); return M.parseMeta(document.documentElement.outerHTML, location.href);`);
@@ -467,7 +467,7 @@ console.log('Real extension (fresh install)');
       assert(sw, 'service worker not running');
       const { sessionId } = await cdp('Target.attachToTarget', { targetId: sw.targetId, flatten: true });
       const r = await cdp('Runtime.evaluate', { expression: `chrome.commands.getAll().then((c) => c.map((x) => x.name).sort().join())`, awaitPromise: true, returnByValue: true }, sessionId);
-      assert(r.result.value === '_execute_action,open-ember', r.result.value);
+      assert(r.result.value === '_execute_action,open-linemark', r.result.value);
     });
   }
 }

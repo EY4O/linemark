@@ -5,7 +5,7 @@ primary_target: "app.html"
 related_targets: ["popup.html"]
 ---
 
-# Ember manager (app.html) + quick-save popup
+# Linemark manager (app.html) + quick-save popup
 
 Scope: the full-page manager tab and the toolbar popup. Mode: Operate.
 
@@ -17,9 +17,9 @@ Scene: a desk in Chrome, daylight and evening lamp, flicking between mostly-whit
 
 ## Direction contract
 
-THESIS: Ember is a transit system for links: every collection is a coloured line, and the screen always says where you are. It refuses the category default of a grey sidebar, blue accent and anonymous folder icons.
+THESIS: Linemark is a transit system for links: every collection is a coloured line, and the screen always says where you are. It refuses the category default of a grey sidebar, blue accent and anonymous folder icons.
 
-OWN-WORLD: a signage-black enamel sidebar band with white bold semi-condensed grotesk labels (self-hosted Archivo variable, wdth axis); a clean near-white work ground; line colours are the only saturation; collections are solid round line bullets carrying a 1–2 letter code; Ember orange is the system's own line (primary action, focus, selection). State by fill: solid = filed, outline ring = Unsorted, dashed ring = Trash. Hairline rules, tabular figures, soft offset shadows.
+OWN-WORLD: a signage-black enamel sidebar band with white bold semi-condensed grotesk labels (self-hosted Archivo variable, wdth axis); a clean near-white work ground; line colours are the only saturation; collections are solid round line bullets carrying a 1–2 letter code; Linemark orange is the system's own line (primary action, focus, selection). State by fill: solid = filed, outline ring = Unsorted, dashed ring = Trash. Hairline rules, tabular figures, soft offset shadows.
 
 STORY: the visitor sees their links grouped by line, knows exactly which station they are at, and saves, searches, tags, drags-to-file and restores without hunting.
 

@@ -1,14 +1,14 @@
-# Ember vs Raindrop.io: feature comparison
+# Linemark vs Raindrop.io: feature comparison
 
 Raindrop's plan contents come from [raindrop.io/pro/buy](https://raindrop.io/pro/buy) and [raindrop.io/pro](https://raindrop.io/pro), checked 9 Oct 2026. Neither page shows the Pro price.
 
-Ember's entries describe what is built in this repository today.
+Linemark's entries describe what is built in this repository today.
 
 **Key:** ✅ = yes · ◐ = partly · ❌ = no · — = not stated on Raindrop's pages
 
 ## Organising
 
-| Feature | Raindrop Free | Raindrop Pro | Ember |
+| Feature | Raindrop Free | Raindrop Pro | Linemark |
 |---|:-:|:-:|:-:|
 | Unlimited bookmarks and collections | ✅ | ✅ | ✅ Limited only by disk space |
 | Nested collections | ✅ | ✅ | ✅ "Lines" with branch lines; drag to nest or reorder |
@@ -24,7 +24,7 @@ Ember's entries describe what is built in this repository today.
 
 ## Saving
 
-| Feature | Raindrop Free | Raindrop Pro | Ember |
+| Feature | Raindrop Free | Raindrop Pro | Linemark |
 |---|:-:|:-:|:-:|
 | One-click save from the toolbar | ✅ | ✅ | ✅ Saved the moment the popup opens; refine it afterwards |
 | Right-click to save a page or link | ✅ | ✅ | ✅ |
@@ -37,16 +37,16 @@ Ember's entries describe what is built in this repository today.
 
 ## Finding
 
-| Feature | Raindrop Free | Raindrop Pro | Ember |
+| Feature | Raindrop Free | Raindrop Pro | Linemark |
 |---|:-:|:-:|:-:|
 | Search titles, URLs, tags and notes | ✅ | ✅ | ✅ Supports `#tag`, `site:`, `type:`, `is:fav` and `has:note` |
 | Full-text search of page contents | ❌ | ✅ | ✅ Page text is kept when you save. Imported links can be indexed from **Settings**. Results show the matching passage |
-| Search from the address bar | — | — | ✅ Type `em`, then Space |
+| Search from the address bar | — | — | ✅ Type `lm`, then Space |
 | Keyboard navigation | — | — | ✅ `/`, N, 1–4, E, F, arrow keys, Del |
 
 ## Keeping the library healthy
 
-| Feature | Raindrop Free | Raindrop Pro | Ember |
+| Feature | Raindrop Free | Raindrop Pro | Linemark |
 |---|:-:|:-:|:-:|
 | Duplicate finder | ❌ | ✅ | ✅ Keeps the oldest copy and merges tags and notes into it |
 | Broken link finder | ❌ | ✅ | ✅ Sorts links into **Dead**, **Moved** (one click to update the address) and **Unverified**. Includes a **Broken links** view and bulk trash |
@@ -56,7 +56,7 @@ Ember's entries describe what is built in this repository today.
 
 ## Data, platforms and privacy
 
-| Feature | Raindrop Free | Raindrop Pro | Ember |
+| Feature | Raindrop Free | Raindrop Pro | Linemark |
 |---|:-:|:-:|:-:|
 | Import from browsers and HTML files | ✅ | ✅ | ✅ Imports Chrome's bookmark tree directly, plus HTML from any browser, Raindrop or Pocket |
 | Export | ✅ | ✅ | ✅ Chrome-compatible HTML, plus a full JSON backup that includes screenshots |
@@ -67,12 +67,12 @@ Ember's entries describe what is built in this repository today.
 | Integrations | ✅ 2,600+ | ✅ | ❌ |
 | Account required | Yes | Yes | **No.** Sync uses your own Google account, only if you turn it on |
 | Where your data lives | Raindrop's cloud | Raindrop's cloud | **Only in your browser profile (IndexedDB)** |
-| Third-party services contacted | Raindrop | Raindrop | **None.** Ember only reads the pages you save, and downloads each cover image once. Browsing the library never loads anything from the web |
+| Third-party services contacted | Raindrop | Raindrop | **None.** Linemark only reads the pages you save, and downloads each cover image once. Browsing the library never loads anything from the web |
 | Price | Free | Paid subscription | Free |
 
-## Gaps that fit Ember's local-only approach
+## Gaps that fit Linemark's local-only approach
 
-These are the remaining Raindrop features Ember could add without a server. Broken-link checking and full-text search have since been built.
+These are the remaining Raindrop features Linemark could add without a server. Broken-link checking and full-text search have since been built.
 
 1. **Reminders:** use Chrome's built-in alarms and notifications.
 2. **Highlights:** add a content script that stores highlights per page.

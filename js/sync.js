@@ -20,7 +20,7 @@ const LIBRARY = 'ember-library.enc';
 const ITERATIONS = 600000;
 const CHECK = 'ember-sync-v1';
 // The test suite points this at a local stand-in for Google Drive; in the extension it is always Google.
-const API = () => globalThis.__EMBER_TEST_DRIVE__ || 'https://www.googleapis.com';
+const API = () => globalThis.__LINEMARK_TEST_DRIVE__ || 'https://www.googleapis.com';
 
 export const settings = () => db.getMeta('sync', { enabled: false });
 const saveSettings = (s) => db.setMeta('sync', s);
@@ -80,11 +80,11 @@ export const redirectUrl = () => (globalThis.chrome?.identity ? chrome.identity.
 
 // How this build can sign in to Google, best first:
 //   'chrome' — Chrome's own account (chrome.identity.getAuthToken): one click, renewed silently. Google Chrome only.
-//   'web'    — Google's sign-in window with Ember's built-in web client: Edge, Brave, Vivaldi (and Chrome as a fallback).
+//   'web'    — Google's sign-in window with Linemark's built-in web client: Edge, Brave, Vivaldi (and Chrome as a fallback).
 //   'own'    — the user's own Google Cloud client ID ("Use your own Google project" in Settings).
 const manifestClient = () => globalThis.chrome?.runtime?.getManifest?.()?.oauth2?.client_id;
 // The test suite can stand in a web client; in the extension it always comes from config.js.
-const webClient = () => globalThis.__EMBER_TEST_WEB_CLIENT__ || GOOGLE_WEB_CLIENT_ID;
+const webClient = () => globalThis.__LINEMARK_TEST_WEB_CLIENT__ || GOOGLE_WEB_CLIENT_ID;
 export function signInOptions() {
   return {
     chrome: isConfigured(manifestClient()) && typeof globalThis.chrome?.identity?.getAuthToken === 'function',
@@ -100,7 +100,7 @@ async function token(interactive) {
   if (auth === 'chrome') return chromeToken(interactive);
   if (s.token && s.tokenExp > Date.now() + 60000) return s.token;
   const clientId = auth === 'own' ? s.clientId : webClient();
-  if (!isConfigured(clientId)) throw new SyncError(auth === 'own' ? 'Add your Google OAuth client ID first.' : 'This copy of Ember has no built-in Google sign-in. Use your own Google project instead.');
+  if (!isConfigured(clientId)) throw new SyncError(auth === 'own' ? 'Add your Google OAuth client ID first.' : 'This copy of Linemark has no built-in Google sign-in. Use your own Google project instead.');
   const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
     client_id: clientId,
     response_type: 'token',
@@ -178,7 +178,7 @@ async function listFiles(interactive) {
 const download = async (id) => (await drive(`/drive/v3/files/${id}?alt=media`, { raw: true })).arrayBuffer();
 
 async function create(name, bytes, type = 'application/octet-stream') {
-  const boundary = 'ember' + crypto.getRandomValues(new Uint32Array(2)).join('');
+  const boundary = 'linemark' + crypto.getRandomValues(new Uint32Array(2)).join('');
   const meta = JSON.stringify({ name, parents: ['appDataFolder'] });
   const body = new Blob([`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: ${type}\r\n\r\n`, bytes, `\r\n--${boundary}--`]);
   return drive('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime', { method: 'POST', body, headers: { 'Content-Type': `multipart/related; boundary=${boundary}` } });
@@ -210,13 +210,13 @@ export function merge(local, remote) {
 
 // ---------------------------------------------------------------- setup / unlock
 // Turn sync on. First device: creates the vault. Later devices: the passphrase must match it.
-// With no clientId, Ember signs in with its built-in Google sign-in (Chrome's account first).
+// With no clientId, Linemark signs in with its built-in Google sign-in (Chrome's account first).
 export async function enable({ clientId = '', passphrase }) {
   if (!passphrase || passphrase.length < 10) throw new SyncError('Use a passphrase of at least 10 characters.');
   const own = clientId.trim();
   const opts = signInOptions();
   const auth = own ? 'own' : opts.chrome ? 'chrome' : opts.web ? 'web' : null;
-  if (!auth) throw new SyncError('This copy of Ember has no built-in Google sign-in. Use your own Google project instead.');
+  if (!auth) throw new SyncError('This copy of Linemark has no built-in Google sign-in. Use your own Google project instead.');
   const s = { ...(await settings()), auth, clientId: own, token: null, enabled: false, lastError: '' };
   await saveSettings(s);
   let files;
@@ -253,7 +253,7 @@ export async function enable({ clientId = '', passphrase }) {
 // Unlock on a device that turned sync on before but forgot its key.
 export async function unlock(passphrase) {
   const files = await listFiles(true);
-  if (!files.has(VAULT)) throw new SyncError('There is no Ember sync data on this Google account yet.');
+  if (!files.has(VAULT)) throw new SyncError('There is no Linemark sync data on this Google account yet.');
   const vault = JSON.parse(td.decode(await download(files.get(VAULT).id)));
   const key = await deriveKey(passphrase, unb64(vault.salt), vault.iterations);
   try {

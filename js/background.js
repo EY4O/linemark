@@ -6,28 +6,28 @@ const APP = chrome.runtime.getURL('app.html');
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({ id: 'ember-save-page', title: 'Save page to Ember', contexts: ['page', 'frame', 'selection'] });
-    chrome.contextMenus.create({ id: 'ember-save-link', title: 'Save link to Ember', contexts: ['link'] });
-    chrome.contextMenus.create({ id: 'ember-open', title: 'Open Ember library', contexts: ['action'] });
+    chrome.contextMenus.create({ id: 'linemark-save-page', title: 'Save page to Linemark', contexts: ['page', 'frame', 'selection'] });
+    chrome.contextMenus.create({ id: 'linemark-save-link', title: 'Save link to Linemark', contexts: ['link'] });
+    chrome.contextMenus.create({ id: 'linemark-open', title: 'Open Linemark library', contexts: ['action'] });
   });
   chrome.action.setBadgeBackgroundColor({ color: '#ff5a1f' });
   if (chrome.action.setBadgeTextColor) chrome.action.setBadgeTextColor({ color: '#16171a' });
-  if (reason === 'install') openEmber();
+  if (reason === 'install') openLibrary();
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'ember-open') return openEmber();
-  if (info.menuItemId === 'ember-save-page' && tab) return savePage(tab);
-  if (info.menuItemId === 'ember-save-link' && info.linkUrl) return saveLink(info.linkUrl, info.selectionText, tab);
+  if (info.menuItemId === 'linemark-open') return openLibrary();
+  if (info.menuItemId === 'linemark-save-page' && tab) return savePage(tab);
+  if (info.menuItemId === 'linemark-save-link' && info.linkUrl) return saveLink(info.linkUrl, info.selectionText, tab);
 });
 
 chrome.commands.onCommand.addListener((cmd) => {
-  if (cmd === 'open-ember') openEmber();
+  if (cmd === 'open-linemark') openLibrary();
 });
 
 chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
-  if (msg?.type === 'open-ember') {
-    openEmber(msg.edit).then(() => reply({ ok: true }));
+  if (msg?.type === 'open-linemark') {
+    openLibrary(msg.edit).then(() => reply({ ok: true }));
     return true;
   }
 });
@@ -80,7 +80,7 @@ async function saveLink(url, text, tab) {
   }
 }
 
-async function openEmber(editId) {
+async function openLibrary(editId) {
   const contexts = chrome.runtime.getContexts ? await chrome.runtime.getContexts({ contextTypes: ['TAB'] }) : [];
   const open = contexts.find((c) => c.documentUrl?.startsWith(APP));
   if (open && open.tabId >= 0) {
@@ -95,7 +95,7 @@ async function openEmber(editId) {
 // ---------- omnibox: type "em" + space in the address bar ----------
 const xml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
 
-chrome.omnibox.setDefaultSuggestion({ description: 'Search Ember for <match>%s</match>' });
+chrome.omnibox.setDefaultSuggestion({ description: 'Search Linemark for <match>%s</match>' });
 
 chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
   const words = text.toLowerCase().split(/\s+/).filter(Boolean);

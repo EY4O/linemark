@@ -1,12 +1,12 @@
 ---
-name: Ember
+name: Linemark
 description: A local-only bookmark manager drawn as a transit system, where every collection is a coloured line.
 colors:
-  ember: "#ff5a1f"
-  ember-hover: "#ff6f3a"
-  ember-ink: "#16171a"
-  ember-text: "#c23c0b"
-  ember-soft: "rgba(255, 90, 31, 0.13)"
+  brand: "#ff5a1f"
+  brand-hover: "#ff6f3a"
+  brand-ink: "#16171a"
+  brand-text: "#c23c0b"
+  brand-soft: "rgba(255, 90, 31, 0.13)"
   ink: "#16171a"
   ink-2: "#474a51"
   ink-3: "#686b73"
@@ -154,16 +154,16 @@ spacing:
   touch-target: "44px"
 components:
   button-primary:
-    backgroundColor: "{colors.ember}"
-    textColor: "{colors.ember-ink}"
+    backgroundColor: "{colors.brand}"
+    textColor: "{colors.brand-ink}"
     rounded: "{rounded.sm}"
     height: "34px"
     padding: "0 13px"
   button-primary-hover:
-    backgroundColor: "{colors.ember-hover}"
+    backgroundColor: "{colors.brand-hover}"
   button-primary-station:
-    backgroundColor: "{colors.ember}"
-    textColor: "{colors.ember-ink}"
+    backgroundColor: "{colors.brand}"
+    textColor: "{colors.brand-ink}"
     rounded: "{rounded.pill}"
     height: "38px"
     padding: "0 16px 0 12px"
@@ -222,8 +222,8 @@ components:
     height: "26px"
     padding: "0 9px"
   tag-pill-selected:
-    backgroundColor: "{colors.ember}"
-    textColor: "{colors.ember-ink}"
+    backgroundColor: "{colors.brand}"
+    textColor: "{colors.brand-ink}"
   scan-status:
     backgroundColor: "{colors.band-hover}"
     textColor: "{colors.band-ink}"
@@ -263,7 +263,7 @@ components:
     rounded: "{rounded.xs}"
     padding: "0 5px"
   snippet-mark:
-    backgroundColor: "{colors.ember-soft}"
+    backgroundColor: "{colors.brand-soft}"
     textColor: "{colors.ink}"
     rounded: "{rounded.xs}"
     padding: "0 2px"
@@ -290,13 +290,13 @@ components:
     padding: "6px 6px 6px 16px"
 ---
 
-# Design System: Ember
+# Design System: Linemark
 
 ## Overview
 
 **Creative North Star: "Wayfinding Lines"**
 
-Ember is drawn as an International-style transit system for links. Every collection is a coloured line, every place in the library is a stop, and the screen always says which station you are standing at. A signage-black enamel band runs down the left edge carrying white, bold, semi-condensed labels; the work area beside it is a clean near-white ground where bookmark cards sit like posters on a platform wall. The line colours are the only saturation on screen; everything else is ink, paper and hairline.
+Linemark is drawn as an International-style transit system for links. Every collection is a coloured line, every place in the library is a stop, and the screen always says which station you are standing at. A signage-black enamel band runs down the left edge carrying white, bold, semi-condensed labels; the work area beside it is a clean near-white ground where bookmark cards sit like posters on a platform wall. The line colours are the only saturation on screen; everything else is ink, paper and hairline.
 
 The density is that of a working tool, not a showcase: 14px body, 36px rows in the band, hairline rules and tabular figures wherever a number appears. Depth is soft and functional (cards lift slightly under the pointer, popovers and the drawer float on a diffuse offset shadow). Motion is short and eased with a long-tail curve; its one ceremonial moment is the line-colour stripe that sweeps across the station sign on arrival. Under reduced motion nothing slides, scales or sweeps, but nothing freezes either: the stripe, drawer, bulk bar, menus and toasts fade in, so every state change is still seen.
 
@@ -306,7 +306,7 @@ The world explicitly refuses the category default of a grey sidebar, a blue acce
 - A black signage band (sidebar) against a near-white work ground, in both themes.
 - Solid round line bullets with 1–2 letter codes identify every collection, at every scale.
 - Bullet fill encodes state: solid = filed, outline ring = Unsorted, dashed ring = Trash.
-- Ember orange belongs to the system, never to a user line.
+- Linemark orange belongs to the system, never to a user line.
 - Archivo variable, bold and semi-condensed (width axis 80–87.5%) for every sign; normal width for reading text.
 - Hairline rules, tabular figures, soft diffuse shadows.
 - Status speaks in small tinted pills (dead, unverified, moved), never in line colours.
@@ -316,9 +316,9 @@ The world explicitly refuses the category default of a grey sidebar, a blue acce
 Ink-and-paper neutrals carry the whole interface; saturation is spent only on line colours, the single system orange, and a small set of status tones.
 
 ### Primary
-- **Ember Orange** (ember): the system's own line. Used for the brand bullet, primary actions, focus rings, selection (selected cards, checkboxes, switches, range and progress fills, drop indicators, the selected tag pill in the band) and the All-bookmarks station stripe. Text on it is signage black (ember-ink), never white. Hover lightens to ember-hover.
-- **Ember Text** (ember-text): the orange darkened for legibility when it must appear as text or a check mark on a light surface (menu checks). Lightened in dark theme (see the sidecar).
-- **Ember Haze** (ember-soft): 13% orange used for the focus halo around fields, the text-selection highlight, and the highlight behind matched words in titles and full-text snippets.
+- **Linemark Orange** (orange): the system's own line. Used for the brand bullet, primary actions, focus rings, selection (selected cards, checkboxes, switches, range and progress fills, drop indicators, the selected tag pill in the band) and the All-bookmarks station stripe. Text on it is signage black (brand-ink), never white. Hover lightens to brand-hover.
+- **Brand Text** (brand-text): the orange darkened for legibility when it must appear as text or a check mark on a light surface (menu checks). Lightened in dark theme (see the sidecar).
+- **Brand Haze** (brand-soft): 13% orange used for the focus halo around fields, the text-selection highlight, and the highlight behind matched words in titles and full-text snippets.
 
 ### Secondary: the line palette
 Twelve line colours, the only user-assignable hues: Signal (line-signal), Magenta, Violet, Cobalt, Sky, Teal, Green, Olive, Amber, Clay, Slate and Rose. Each paints a collection's bullet, its station-sign stripe, its sidebar stem, its placeholder cover and the popup's band stripe. Bullet lettering is chosen per colour by contrast: whichever of white or signage black reads better on that fill. Colour swatches carry a 1px on-color-rule inner hairline so pale fills keep an edge on white.
@@ -337,18 +337,18 @@ Twelve line colours, the only user-assignable hues: Signal (line-signal), Magent
 - **Poster White** (surface) and **Poster Grey** (surface-2): cards, sign, drawer, menus; surface-2 for cover wells, notes and the resting search field.
 - **Ink 2 / Ink 3** (ink-2, ink-3): secondary text (excerpts, snippets, tags) and tertiary text (meta, placeholders, field labels, icons).
 - **Hairline / Strong Hairline** (rule, rule-strong): dividers and card borders; field, button and chip outlines.
-- **Overlays** (band-selection, ember-ink-soft, tile, cover-veil, cover-edge, knob, scrim, match-underline, shimmer): the alpha layers that sit over covers, photos or the page: text selection on the band, the selected tag pill's count, the white favicon tile, the checkbox veil and edge on covers, the switch knob, the drawer and sidebar scrim (deeper in dark theme), the search-match underline and the popup's loading shimmer. They are tokens like every other colour.
+- **Overlays** (band-selection, brand-ink-soft, tile, cover-veil, cover-edge, knob, scrim, match-underline, shimmer): the alpha layers that sit over covers, photos or the page: text selection on the band, the selected tag pill's count, the white favicon tile, the checkbox veil and edge on covers, the switch knob, the drawer and sidebar scrim (deeper in dark theme), the search-match underline and the popup's loading shimmer. They are tokens like every other colour.
 
-Dark theme keeps the same roles with re-tuned values (see the sidecar); the band stays black and Ember Orange stays unchanged.
+Dark theme keeps the same roles with re-tuned values (see the sidecar); the band stays black and Linemark Orange stays unchanged.
 
 ### Named Rules
-**The System Line Rule.** Ember Orange is the system's line and is never offered in the user palette. If a user could pick it, it would stop meaning "this is Ember acting".
+**The System Line Rule.** Linemark Orange is the system's line and is never offered in the user palette. If a user could pick it, it would stop meaning "this is Linemark acting".
 
 **The Only Saturation Rule.** Line colours are the only saturated colour on screen apart from the system orange, the favourite amber, danger red and the warn/ok status tones. Chrome, borders and tags stay neutral.
 
 **The Distinct Lines Rule.** A new line takes the least-used colour first, and among equally used colours the one with the greatest hue distance from colours already in use. Neighbouring lines must never default to the same hue.
 
-**The Neutral Tag Rule.** Tags are neutral ink (`#` in ink-3, name in ink-2 on cards; band-ink on the band). Tags are never line-coloured. A tag pill in the band fills with ember only while it is the selected filter, because that is selection, not colouring.
+**The Neutral Tag Rule.** Tags are neutral ink (`#` in ink-3, name in ink-2 on cards; band-ink on the band). Tags are never line-coloured. A tag pill in the band fills with orange only while it is the selected filter, because that is selection, not colouring.
 
 **The One Source Rule.** Every colour comes from a token, in CSS and in JS alike. Status tones on the band have their own band-* tokens rather than borrowing the light-surface values.
 
@@ -364,7 +364,7 @@ Dark theme keeps the same roles with re-tuned values (see the sidecar); the band
 ### Hierarchy
 - **Display** (760, 30px, 1.08, 85% width): the station name in the station sign. 22px under 860px.
 - **Headline** (760, 26px, 1.15, 85% width): empty-state headings, balanced wrap.
-- **Wordmark** (760, 22px, 1, 87.5% width): "Ember" beside the brand bullet in the band.
+- **Wordmark** (760, 22px, 1, 87.5% width): "Linemark" beside the brand bullet in the band.
 - **Section** (740, 18px, 85% width): settings section headings, the popup line name and the popup empty-state heading. The drawer's title field also runs at 18px, but at reading width and 650.
 - **Title** (720, 17px, 87.5% width): the drawer heading and in-content group headings.
 - **Cover Host** (760, 80% width, 1.1): the host name on a placeholder cover. In the grid it scales with the card-size slider, `clamp(14px, card-w × 0.073, 28px)`; elsewhere 18px, and 14px in list view and under 860px. The favicon tile on the same cover scales as `clamp(30px, card-w × 0.15, 56px)` with its fallback letter at `clamp(14px, card-w × 0.07, 26px)`.
@@ -437,18 +437,18 @@ The header of the work area: a 46px bullet, the station name in Display, a count
 - **Line row:** a row holding real controls side by side: a twisty button (aria-expanded) for lines with children, the stop link whose hit area fills the whole row, the count, and a "more" options button that replaces the count on hover or focus. Keyboard focus on the link rings the whole row. F2 on a line row renames it in place (a 26px ember-bordered field on band black).
 - **Current stop:** band-active fill, 650 weight, and a ring around the bullet (2px band-active gap, 2px line-colour ring). Marked for assistive tech with aria-current. There is no side tab or edge bar.
 - **Broken links stop:** a solid danger-red bullet with a white alert mark, directly under Favorites. It exists only while at least one link is dead, moved or unverified.
-- **Drag targets:** a 1px inset ring in the line colour for drop-into; a 2px ember bar for drop-before/after.
-- **Tag pills:** 26px pills on band-hover with a tabular count; the selected tag fills ember with signage-black text.
+- **Drag targets:** a 1px inset ring in the line colour for drop-into; a 2px orange bar for drop-before/after.
+- **Tag pills:** 26px pills on band-hover with a tabular count; the selected tag fills orange with signage-black text.
 - **Scan status:** while links are being checked or indexed, a 10px-radius band-hover panel sits above the band foot with a bold status line, a tabular count, a cancel icon button and a progress bar on a band-active track. It is a live status region.
 
 ### Buttons
 - **Shape:** gently rounded (6px), 34px tall; small variant 28px.
-- **Primary:** ember fill, signage-black text at 680 weight. In the station sign it becomes a 38px pill with a leading plus icon.
+- **Primary:** orange fill, signage-black text at 680 weight. In the station sign it becomes a 38px pill with a leading plus icon.
 - **Secondary:** surface fill, strong-hairline border, 560 weight; hover to the hover tone; press nudges down 1px (no nudge under reduced motion).
 - **Ghost:** transparent, ink-2 text; hover gains the hover tone.
 - **Danger:** danger text; hover gains danger-soft fill and danger border. On the band (bulk bar) danger reads in band-danger.
 - **Icon button:** 32px (26px small) transparent square, ink-2 icon.
-- **Focus:** 2px ember outline, 2px offset, everywhere.
+- **Focus:** 2px orange outline, 2px offset, everywhere.
 
 ### Chips
 - **Tag chip (editor):** 24px pill, hover-tone fill, ink-2 text, round remove button.
@@ -462,15 +462,15 @@ The header of the work area: a 46px bullet, the station name in Display, a count
 - **Shadow Strategy:** Rest, Lift on hover (see Elevation).
 - **Cover:** 16:10, screenshots anchored top-centre; with no image, a placeholder in the line colour carrying a white favicon tile and the host name in Cover Host type.
 - **Internal Padding:** 18px top (clearing the cover bullet), 15px sides, 13px bottom; 6px internal gap.
-- **Full-text match:** when a search matches page text, the excerpt is replaced by a three-line snippet led by a small "In page" label (Micro type, ink-3 on the hover tone, 4px radius); matched words in the snippet and title get an ember-soft highlight with a 2px ember underline.
-- **Selected:** 2px ember ring plus Lift; the corner checkbox fills ember.
+- **Full-text match:** when a search matches page text, the excerpt is replaced by a three-line snippet led by a small "In page" label (Micro type, ink-3 on the hover tone, 4px radius); matched words in the snippet and title get an brand-soft highlight with a 2px orange underline.
+- **Selected:** 2px orange ring plus Lift; the corner checkbox fills orange.
 - **Actions:** a floating surface strip of icon buttons at top-right, appearing on hover or focus. On touch it is a single always-visible menu button.
 
 **Covers are local.** A cover is a stored screenshot or a page image downloaded once; the library never loads an image from the web. A cover that still points at a website renders the line-coloured placeholder until it is stored.
 
 ### Inputs / Fields
 - **Style:** 36px, surface fill, strong-hairline border, 6px radius; hover darkens the border to ink-3.
-- **Focus:** ember border plus a 3px ember-soft halo; caret is ember.
+- **Focus:** orange border plus a 3px brand-soft halo; caret is orange.
 - **Error:** the field turns its border danger (aria-invalid) and an inline message appears beneath in Meta size and danger colour, announced as an alert and linked by aria-describedby. The message slot takes no space while empty.
 - **Search:** 38px pill on surface-2 with a leading search icon and a `/` key hint; turns surface on focus.
 - **Line picker:** a field-shaped button showing the chosen line's bullet and name.
@@ -479,7 +479,7 @@ The header of the work area: a 46px bullet, the station name in Display, a count
 A definition list above the Broken links grid: one column per state, each a health chip over a one-sentence plain-language meaning in 13px ink-2 (Dead, Moved, Unverified), with the next action named in bold where there is one.
 
 ### Navigation feedback: Toasts and Bulk Bar
-Both are signage-black pills with Float shadow, reading as fragments of the band. Toast actions are band-active pills with ember text, raising to band-raised on hover. The bulk bar shows a tabular count, transparent band-ink buttons and band-rule separators, and slides up from below (fades in under reduced motion).
+Both are signage-black pills with Float shadow, reading as fragments of the band. Toast actions are band-active pills with orange text, raising to band-raised on hover. The bulk bar shows a tabular count, transparent band-ink buttons and band-rule separators, and slides up from below (fades in under reduced motion).
 
 ### Drawer
 A 440px right sheet on surface with Float shadow and a 0.32s slide (a 0.2s fade under reduced motion); header with title, auto-save indicator and close; body stacks the cover, title field, URL row, line picker, tags, note, toggles and metadata at 16px gaps. It is a modal dialog: while open, the app behind it is inert and the scrim catches outside clicks. Focus moves to the title field on open and returns to the edited card's title on close.
@@ -492,7 +492,7 @@ Sync lives in its own Settings section, after "Take links out", with an "Optiona
 
 - **Setup:** an inline form, not a modal. It has the client ID field with the redirect URI in a copyable code chip, the passphrase and its confirmation, and inline errors that use `.field-error` and `aria-invalid`.
 - **Sync on:** a status row ("Synced 2m ago"), a row for this device's key, and a "Turn off sync" row. "Delete cloud copy" is a danger button with two-step confirmation.
-- **Status in the band:** a cloud icon button sits in the brand row, beside Add link, and links to Settings. A 7px dot on it reports the state: band-ok when up to date, fav amber when locked or needing attention, Ember orange (pulsing) while syncing. Its accessible name spells out the state.
+- **Status in the band:** a cloud icon button sits in the brand row, beside Add link, and links to Settings. A 7px dot on it reports the state: band-ok when up to date, fav amber when locked or needing attention, Linemark orange (pulsing) while syncing. Its accessible name spells out the state.
 
 ### Popup
 A compact band header: line bullet (34px), a status sentence ("Saved to" with a band-ok check, or "Already saved") over the line name as a picker, favourite and open-in-manager icon buttons, and a 4px stripe in the line colour (band-ink-2 grey for Unsorted). Below on surface: thumbnail with a Page / Screen / None cover switch, the editable title, host, tags, note, and a Remove / Done footer.
@@ -509,7 +509,7 @@ A compact band header: line bullet (34px), a status sentence ("Saved to" with a 
 ### Do:
 - **Do** give every collection a round line bullet with a 1–2 letter code, and render it at every scale it appears (stop, path, card edge, station sign, toast, popup).
 - **Do** encode bullet state by fill: solid for filed, outline ring for Unsorted, dashed ring for Trash.
-- **Do** reserve Ember Orange (#ff5a1f) for the brand bullet, primary actions, focus, selection and the All-bookmarks stripe.
+- **Do** reserve Linemark Orange (#ff5a1f) for the brand bullet, primary actions, focus, selection and the All-bookmarks stripe.
 - **Do** assign new line colours least-used first, then by greatest hue distance from colours in use.
 - **Do** mark the current stop with the band-active fill plus a ring around its bullet.
 - **Do** set every place name in bold, narrowed Archivo (80–87.5% width) and every number in tabular figures.
@@ -521,12 +521,12 @@ A compact band header: line bullet (34px), a status sentence ("Saved to" with a 
 - **Do** turn slides, scales and sweeps into fades under reduced motion.
 
 ### Don't:
-- **Don't** put Ember Orange in the user line palette or use it for a collection.
-- **Don't** colour tags; they are neutral ink, never line-coloured, and ember only while selected.
+- **Don't** put Linemark Orange in the user line palette or use it for a collection.
+- **Don't** colour tags; they are neutral ink, never line-coloured, and orange only while selected.
 - **Don't** tell favourites apart by colour alone; the favourite amber equals the Amber line, so the star shape carries the meaning.
 - **Don't** mark the current stop with a side tab or edge bar.
 - **Don't** put a kicker or eyebrow above the station name; the path appears only for places that have a parent.
 - **Don't** use a grey sidebar, a blue default accent, or folder icons for collections.
-- **Don't** set white text on Ember Orange; its ink is signage black.
+- **Don't** set white text on Linemark Orange; its ink is signage black.
 - **Don't** show the Broken links stop when nothing is broken.
 - **Don't** load remote fonts or icon sets; Archivo is self-hosted and icons are the authored 24px, 1.75-stroke set.

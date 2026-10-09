@@ -1,4 +1,4 @@
-// Domain helpers shared by every Ember context. No DOM access here: the service worker imports it too.
+// Domain helpers shared by every Linemark context. No DOM access here: the service worker imports it too.
 import * as db from './db.js';
 
 export const hasChrome = typeof chrome !== 'undefined' && !!chrome.runtime?.id;

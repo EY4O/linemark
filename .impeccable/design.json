@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-09T21:44:48.351Z",
-  "title": "Design System: Ember",
+  "title": "Design System: Linemark",
   "extensions": {
     "colorMeta": {
-      "ember": {
+      "brand": {
         "role": "primary",
-        "displayName": "Ember Orange",
+        "displayName": "Linemark Orange",
         "canonical": "#ff5a1f",
         "oklch": "oklch(68.2% 0.211 37.7)",
         "tonalRamp": [
@@ -21,9 +21,9 @@
         ],
         "purpose": "System line only: brand bullet, primary actions, focus, selection (cards, checkboxes, switches, fills, drop bars, selected tag pill), All-bookmarks stripe. Never in the user palette."
       },
-      "ember-hover": {
+      "brand-hover": {
         "role": "primary",
-        "displayName": "Ember Orange Hover",
+        "displayName": "Brand Orange Hover",
         "canonical": "#ff6f3a",
         "oklch": "oklch(71.0% 0.188 39.6)",
         "tonalRamp": [
@@ -37,9 +37,9 @@
           "#feeae3"
         ]
       },
-      "ember-ink": {
+      "brand-ink": {
         "role": "primary",
-        "displayName": "Ink on Ember",
+        "displayName": "Ink on Brand Orange",
         "canonical": "#16171a",
         "oklch": "oklch(20.5% 0.006 271.1)",
         "tonalRamp": [
@@ -53,9 +53,9 @@
           "#edeef3"
         ]
       },
-      "ember-text": {
+      "brand-text": {
         "role": "primary",
-        "displayName": "Ember Text",
+        "displayName": "Brand Text",
         "canonical": "#c23c0b",
         "oklch": "oklch(54.8% 0.178 36.9)",
         "tonalRamp": [
@@ -70,9 +70,9 @@
         ],
         "darkTheme": "#ff7d4a"
       },
-      "ember-soft": {
+      "brand-soft": {
         "role": "primary",
-        "displayName": "Ember Haze",
+        "displayName": "Brand Haze",
         "canonical": "rgba(255, 90, 31, 0.13)",
         "darkTheme": "rgba(255, 90, 31, 0.18)",
         "purpose": "Focus halo on fields, text selection, highlight behind matched words in titles and full-text snippets."
@@ -669,7 +669,7 @@
       },
       "wordmark": {
         "displayName": "Wordmark",
-        "purpose": "Ember wordmark beside the brand bullet."
+        "purpose": "Linemark wordmark beside the brand bullet."
       },
       "section": {
         "displayName": "Section Heading",
@@ -783,7 +783,7 @@
       {
         "name": "match-underline",
         "value": "inset 0 -2px 0 rgba(255, 90, 31, 0.45)",
-        "purpose": "Ember underline under matched words (with ember-soft fill)."
+        "purpose": "Orange underline under matched words (with brand-soft fill)."
       }
     ],
     "motion": [
@@ -863,7 +863,7 @@
       "legend": "auto-fit columns, min 240px, gaps 10px 28px",
       "touchTarget": "44px"
     },
-    "lineColorAssignment": "Least-used colour first; ties broken by greatest hue distance from colours in use. Ember orange is excluded from the palette.",
+    "lineColorAssignment": "Least-used colour first; ties broken by greatest hue distance from colours in use. Linemark orange is excluded from the palette.",
     "iconography": "Authored stroke set, 24px grid, 1.75 stroke, round joins, inline SVG (js/icons.js).",
     "fluidSizes": [
       {
@@ -911,7 +911,7 @@
     "sizing": "All font sizes are rem on the browser root (body 0.875rem = 14px at the default 16px), so Chrome's default font-size setting scales the UI; text-bearing controls use min-height so they grow instead of clipping. Bullet letters scale with the bullet, not the root.",
     "overlayTokens": {
       "band-selection": "rgba(255, 90, 31, 0.4)",
-      "ember-ink-soft": "rgba(22, 23, 26, 0.7)",
+      "brand-ink-soft": "rgba(22, 23, 26, 0.7)",
       "tile": "rgba(255, 255, 255, 0.94)",
       "cover-veil": "rgba(22, 23, 26, 0.35)",
       "cover-edge": "rgba(255, 255, 255, 0.95)",
@@ -926,7 +926,7 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary-station",
-      "description": "Ember-orange action with signage-black text; the station-sign Add link pill.",
+      "description": "Linemark-orange action with signage-black text; the station-sign Add link pill.",
       "html": "<button class=\"ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>Add link</button>",
       "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px 0 12px; border-radius: 999px; border: 1px solid #ff5a1f; background: #ff5a1f; color: #16171a; font: 680 14px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; transition: background .15s, transform .15s cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { background: #ff6f3a; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }"
     },
@@ -950,7 +950,7 @@
       "name": "Search Field",
       "kind": "input",
       "refersTo": "search",
-      "description": "Pill search on surface-2 with leading icon and slash key hint; ember border and haze on focus.",
+      "description": "Pill search on surface-2 with leading icon and slash key hint; orange border and haze on focus.",
       "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"m20 20-4.2-4.2\"/></svg><input placeholder=\"Search, #tag, site:, type:video\"><kbd>/</kbd></label>",
       "css": ".ds-search { position: relative; display: flex; align-items: center; width: 340px; color: #686b73; font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-search svg { position: absolute; left: 11px; } .ds-search input { width: 100%; height: 38px; padding: 0 40px 0 36px; border: 1px solid #cdcdc7; border-radius: 999px; background: #f7f7f5; color: #16171a; font: 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; caret-color: #ff5a1f; outline: none; transition: border-color .15s, box-shadow .15s, background .15s; } .ds-search input:hover { border-color: #686b73; } .ds-search input:focus { background: #fff; border-color: #ff5a1f; box-shadow: 0 0 0 3px rgba(255,90,31,.13); } .ds-search kbd { position: absolute; right: 12px; font: 600 11px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; padding: 3px 5px; border: 1px solid #cdcdc7; border-bottom-width: 2px; border-radius: 4px; background: #fff; }"
     },
@@ -958,7 +958,7 @@
       "name": "Text Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "Labelled field with strong hairline; ember border and haze on focus; danger border and inline message when invalid.",
+      "description": "Labelled field with strong hairline; orange border and haze on focus; danger border and inline message when invalid.",
       "html": "<label class=\"ds-field\"><span>Link</span><input class=\"ds-input\" aria-invalid=\"true\" value=\"not a link\"><em class=\"ds-err\">Enter a web address, like example.com</em></label>",
       "css": ".ds-field { display: grid; gap: 6px; width: 300px; font-family: 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-field span { font-size: 12px; font-weight: 650; font-stretch: 87.5%; letter-spacing: .02em; color: #686b73; } .ds-input { height: 36px; padding: 8px 10px; border: 1px solid #cdcdc7; border-radius: 6px; background: #fff; color: #16171a; font: 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; caret-color: #ff5a1f; outline: none; transition: border-color .15s, box-shadow .15s; } .ds-input:hover { border-color: #686b73; } .ds-input:focus { border-color: #ff5a1f; box-shadow: 0 0 0 3px rgba(255,90,31,.13); } .ds-input[aria-invalid=\"true\"] { border-color: #c4282f; } .ds-err { font-style: normal; color: #c4282f; font-size: 12.5px; } .ds-input::placeholder { color: #686b73; }"
     },
@@ -966,7 +966,7 @@
       "name": "Line Bullets",
       "kind": "custom",
       "refersTo": "bullet",
-      "description": "The atom: solid = filed line, outline ring = Unsorted, dashed ring = Trash; ember is the system line.",
+      "description": "The atom: solid = filed line, outline ring = Unsorted, dashed ring = Trash; orange is the system line.",
       "html": "<div class=\"ds-bullets\"><span class=\"ds-bullet\" style=\"--c:#ff5a1f;--bi:#16171a\">E</span><span class=\"ds-bullet\" style=\"--c:#c2255c;--bi:#fff\">T</span><span class=\"ds-bullet two\" style=\"--c:#0b7a75;--bi:#fff\">RL</span><span class=\"ds-bullet\" style=\"--c:#f0a800;--bi:#16171a\">C</span><span class=\"ds-bullet ring\" style=\"--c:#686b73\"></span><span class=\"ds-bullet dashed\" style=\"--c:#686b73\"></span></div>",
       "css": ".ds-bullets { display: flex; gap: 10px; align-items: center; } .ds-bullet { --bs: 30px; width: var(--bs); height: var(--bs); border-radius: 50%; background: var(--c); color: var(--bi); display: inline-grid; place-items: center; font: 800 calc(var(--bs) * .48)/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-stretch: 82%; letter-spacing: -0.02em; box-sizing: border-box; } .ds-bullet.two { font-size: calc(var(--bs) * .4); } .ds-bullet.ring { background: transparent; box-shadow: inset 0 0 0 2px var(--c); } .ds-bullet.dashed { background: transparent; border: 2px dashed var(--c); }"
     },
@@ -998,7 +998,7 @@
       "name": "Full-text Match Snippet",
       "kind": "custom",
       "refersTo": "snippet-label",
-      "description": "Replaces the excerpt when search matches page text: an In page label, three-line clamp, ember-soft highlight with ember underline.",
+      "description": "Replaces the excerpt when search matches page text: an In page label, three-line clamp, brand-soft highlight with orange underline.",
       "html": "<p class=\"ds-snippet\"><span class=\"ds-snip-label\">In page</span> the grid is a <mark>typographic</mark> system that relates every element on the page to a common measure.</p>",
       "css": ".ds-snippet { margin: 0; width: 260px; color: #474a51; font: 400 13px/1.45 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } .ds-snip-label { display: inline-block; margin-right: 4px; padding: 0 5px; border-radius: 4px; background: #efefeb; color: #686b73; font-size: 11px; font-weight: 650; font-stretch: 87.5%; letter-spacing: .02em; vertical-align: 1px; } .ds-snippet mark { background: rgba(255,90,31,.13); color: #16171a; border-radius: 4px; padding: 0 2px; box-shadow: inset 0 -2px 0 rgba(255,90,31,.45); }"
     },
@@ -1014,19 +1014,19 @@
       "name": "Toast",
       "kind": "custom",
       "refersTo": "toast",
-      "description": "Signage-black pill with a line bullet and an ember undo action.",
+      "description": "Signage-black pill with a line bullet and an orange undo action.",
       "html": "<div class=\"ds-toast\"><span class=\"ds-tb\" style=\"--c:#2f5bd8\">E</span>Moved to Engineering<button>Undo</button></div>",
       "css": ".ds-toast { display: inline-flex; align-items: center; gap: 12px; min-height: 42px; padding: 6px 8px 6px 16px; border-radius: 999px; background: #16171a; color: #f4f3ef; font: 540 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; box-shadow: 0 24px 48px -16px rgba(22,23,26,.32), 0 4px 12px rgba(22,23,26,.08); } .ds-tb { width: 18px; height: 18px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font: 800 8.6px/1 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-toast button { border: 0; border-radius: 999px; height: 30px; padding: 0 12px; background: #2e3037; color: #ff5a1f; font: 700 14px 'Archivo', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; } .ds-toast button:hover { background: var(--band-raised, #3a3d45); } .ds-toast button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 2px; }"
     }
   ],
   "narrative": {
     "northStar": "Wayfinding Lines",
-    "overview": "Ember is drawn as an International-style transit system for links. Every collection is a coloured line, every place in the library is a stop, and the screen always says which station you are standing at. A signage-black enamel band runs down the left edge carrying white, bold, semi-condensed labels; the work area beside it is a clean near-white ground where bookmark cards sit like posters on a platform wall. The line colours are the only saturation on screen; everything else is ink, paper and hairline.\n\nThe density is that of a working tool, not a showcase: 14px body, 36px rows in the band, hairline rules and tabular figures wherever a number appears. Depth is soft and functional (cards lift slightly under the pointer, popovers and the drawer float on a diffuse offset shadow). Motion is short and eased with a long-tail curve; its one ceremonial moment is the line-colour stripe that sweeps across the station sign on arrival. Under reduced motion nothing slides, scales or sweeps, but nothing freezes either: the stripe, drawer, bulk bar, menus and toasts fade in, so every state change is still seen.\n\nThe world explicitly refuses the category default of a grey sidebar, a blue accent and anonymous folder icons. Collections are never folders; they are round line bullets carrying a one- or two-letter code. The density holds for the mouse and opens up for the finger: coarse pointers get 44px targets without changing the layout's character.",
+    "overview": "Linemark is drawn as an International-style transit system for links. Every collection is a coloured line, every place in the library is a stop, and the screen always says which station you are standing at. A signage-black enamel band runs down the left edge carrying white, bold, semi-condensed labels; the work area beside it is a clean near-white ground where bookmark cards sit like posters on a platform wall. The line colours are the only saturation on screen; everything else is ink, paper and hairline.\n\nThe density is that of a working tool, not a showcase: 14px body, 36px rows in the band, hairline rules and tabular figures wherever a number appears. Depth is soft and functional (cards lift slightly under the pointer, popovers and the drawer float on a diffuse offset shadow). Motion is short and eased with a long-tail curve; its one ceremonial moment is the line-colour stripe that sweeps across the station sign on arrival. Under reduced motion nothing slides, scales or sweeps, but nothing freezes either: the stripe, drawer, bulk bar, menus and toasts fade in, so every state change is still seen.\n\nThe world explicitly refuses the category default of a grey sidebar, a blue accent and anonymous folder icons. Collections are never folders; they are round line bullets carrying a one- or two-letter code. The density holds for the mouse and opens up for the finger: coarse pointers get 44px targets without changing the layout's character.",
     "keyCharacteristics": [
       "A black signage band (sidebar) against a near-white work ground, in both themes.",
       "Solid round line bullets with 1–2 letter codes identify every collection, at every scale.",
       "Bullet fill encodes state: solid = filed, outline ring = Unsorted, dashed ring = Trash.",
-      "Ember orange belongs to the system, never to a user line.",
+      "Linemark orange belongs to the system, never to a user line.",
       "Archivo variable, bold and semi-condensed (width axis 80–87.5%) for every sign; normal width for reading text.",
       "Hairline rules, tabular figures, soft diffuse shadows.",
       "Status speaks in small tinted pills (dead, unverified, moved), never in line colours."
@@ -1034,7 +1034,7 @@
     "rules": [
       {
         "name": "The System Line Rule",
-        "body": "Ember Orange is the system's line and is never offered in the user palette. If a user could pick it, it would stop meaning \"this is Ember acting\".",
+        "body": "Linemark Orange is the system's line and is never offered in the user palette. If a user could pick it, it would stop meaning \"this is Linemark acting\".",
         "section": "colors"
       },
       {
@@ -1049,7 +1049,7 @@
       },
       {
         "name": "The Neutral Tag Rule",
-        "body": "Tags are neutral ink (`#` in ink-3, name in ink-2 on cards; band-ink on the band). Tags are never line-coloured. A tag pill in the band fills with ember only while it is the selected filter, because that is selection, not colouring.",
+        "body": "Tags are neutral ink (`#` in ink-3, name in ink-2 on cards; band-ink on the band). Tags are never line-coloured. A tag pill in the band fills with orange only while it is the selected filter, because that is selection, not colouring.",
         "section": "colors"
       },
       {
@@ -1096,7 +1096,7 @@
     "dos": [
       "**Do** give every collection a round line bullet with a 1–2 letter code, and render it at every scale it appears (stop, path, card edge, station sign, toast, popup).",
       "**Do** encode bullet state by fill: solid for filed, outline ring for Unsorted, dashed ring for Trash.",
-      "**Do** reserve Ember Orange (#ff5a1f) for the brand bullet, primary actions, focus, selection and the All-bookmarks stripe.",
+      "**Do** reserve Linemark Orange (#ff5a1f) for the brand bullet, primary actions, focus, selection and the All-bookmarks stripe.",
       "**Do** assign new line colours least-used first, then by greatest hue distance from colours in use.",
       "**Do** mark the current stop with the band-active fill plus a ring around its bullet.",
       "**Do** set every place name in bold, narrowed Archivo (80–87.5% width) and every number in tabular figures.",
@@ -1108,13 +1108,13 @@
       "**Do** turn slides, scales and sweeps into fades under reduced motion."
     ],
     "donts": [
-      "**Don't** put Ember Orange in the user line palette or use it for a collection.",
-      "**Don't** colour tags; they are neutral ink, never line-coloured, and ember only while selected.",
+      "**Don't** put Linemark Orange in the user line palette or use it for a collection.",
+      "**Don't** colour tags; they are neutral ink, never line-coloured, and orange only while selected.",
       "**Don't** tell favourites apart by colour alone; the favourite amber equals the Amber line, so the star shape carries the meaning.",
       "**Don't** mark the current stop with a side tab or edge bar.",
       "**Don't** put a kicker or eyebrow above the station name; the path appears only for places that have a parent.",
       "**Don't** use a grey sidebar, a blue default accent, or folder icons for collections.",
-      "**Don't** set white text on Ember Orange; its ink is signage black.",
+      "**Don't** set white text on Linemark Orange; its ink is signage black.",
       "**Don't** show the Broken links stop when nothing is broken.",
       "**Don't** load remote fonts or icon sets; Archivo is self-hosted and icons are the authored 24px, 1.75-stroke set."
     ]

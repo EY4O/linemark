@@ -1,4 +1,4 @@
-// Import / export: Chrome bookmark tree, Netscape bookmark HTML, Ember JSON backups.
+// Import / export: Chrome bookmark tree, Netscape bookmark HTML, Linemark JSON backups.
 import * as db from './db.js';
 import * as M from './model.js';
 
@@ -238,7 +238,8 @@ function cleanBookmark(b, mediaIds) {
 
 export async function restoreBackup(text) {
   const data = JSON.parse(text);
-  if (!data || data.app !== 'ember' || !Array.isArray(data.bookmarks)) throw new Error('This file is not an Ember backup.');
+  // 'ember' is the backup format id from before the rename to Linemark; both are accepted.
+  if (!data || !['ember', 'linemark'].includes(data.app) || !Array.isArray(data.bookmarks)) throw new Error('This file is not a Linemark backup.');
   const media = [];
   for (const m of Array.isArray(data.media) ? data.media : []) {
     if (!isId(m?.id) || typeof m.data !== 'string' || !/^data:image\//.test(m.data)) continue;

@@ -1,4 +1,4 @@
-/* Ember quick-save popup. */
+/* Linemark quick-save popup. */
 html, body { background: var(--surface); }
 body { width: 380px; min-height: 200px; }
 
@@ -85,6 +85,6 @@ body { width: 380px; min-height: 200px; }
 .pop-empty p { margin: 0 0 6px; color: var(--ink-2); }
 .toasts { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
 .toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px; background: var(--band); color: var(--band-ink); font-size: 0.8125rem; box-shadow: var(--shadow-3); white-space: nowrap; }
-.toast button { border: 0; border-radius: 999px; padding: 4px 10px; background: var(--band-active); color: var(--ember); font-weight: 700; }
+.toast button { border: 0; border-radius: 999px; padding: 4px 10px; background: var(--band-active); color: var(--brand); font-weight: 700; }
 .toast.out { opacity: 0; transition: 0.2s; }
 .thumb-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-3); }

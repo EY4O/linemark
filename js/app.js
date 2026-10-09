@@ -1,4 +1,4 @@
-// Ember manager: state, rendering and interaction for app.html.
+// Linemark manager: state, rendering and interaction for app.html.
 import * as db from './db.js';
 import * as M from './model.js';
 import * as IO from './io.js';
@@ -314,8 +314,8 @@ function renderBand() {
 
   $('#band').innerHTML = `
     <div class="brand">
-      <span class="bullet" style="--c:var(--ember);--bi:#16171a">E</span>
-      <span class="brand-name">Ember</span>
+      <span class="bullet" style="--c:var(--brand);--bi:var(--brand-ink)">L</span>
+      <span class="brand-name">Linemark</span>
       <span class="brand-tools">
         ${S.sync.enabled ? `<a class="icon-btn sync-btn ${syncState()}" href="#/settings" title="${esc(syncLabel())}" aria-label="${esc(syncLabel())}">${icon('cloud', 18)}</a>` : ''}
         <button class="icon-btn" data-act="add" title="Add link (N)" aria-label="Add link">${icon('plus', 18)}</button>
@@ -370,7 +370,7 @@ function stationInfo() {
       const p = pathOf(r.id).slice(0, -1);
       return { name: c.name, bullet: lineBullet(c, 46), color: c.color, path: p.map((x) => ({ label: x.name, hash: '#/c/' + x.id, bullet: lineBullet(x, 14) })) };
     }
-    default: return { name: 'All bookmarks', bullet: allBullet(46, 'var(--ember)', '#16171a'), color: 'var(--ember)', path: [] };
+    default: return { name: 'All bookmarks', bullet: allBullet(46, 'var(--brand)', '#16171a'), color: 'var(--brand)', path: [] };
   }
 }
 
@@ -416,7 +416,7 @@ function renderStation() {
     <span class="station-count">${count}</span>`;
   if (searchVal === undefined) $('#search').value = S.query;
   syncSearchChrome();
-  document.title = `${info.name} · Ember`;
+  document.title = `${info.name} · Linemark`;
 }
 
 function syncSearchChrome() {
@@ -625,22 +625,22 @@ document.addEventListener('error', (e) => {
 
 function emptyHTML() {
   const sample = S.collections.slice(0, 3);
-  const bullets = `<div class="bullets">${sample.length ? sample.map((c) => lineBullet(c, 40)).join('') : `<span class="bullet" style="--bs:40px;--c:var(--ember);--bi:var(--ember-ink)">E</span>${lineBullet({ code: 'R', color: lineColor('Teal') }, 40)}${lineBullet({ code: 'D', color: lineColor('Cobalt') }, 40)}`}</div>`;
+  const bullets = `<div class="bullets">${sample.length ? sample.map((c) => lineBullet(c, 40)).join('') : `<span class="bullet" style="--bs:40px;--c:var(--brand);--bi:var(--brand-ink)">L</span>${lineBullet({ code: 'R', color: lineColor('Teal') }, 40)}${lineBullet({ code: 'D', color: lineColor('Cobalt') }, 40)}`}</div>`;
   if (S.query || S.type !== 'all') {
     const scope = S.counts.indexed ? `titles, tags, notes and the text of ${plural(S.counts.indexed, 'saved page')}` : 'titles, addresses, tags and notes';
     return `<div class="empty">${bullets}<h2>Nothing matches “${esc(S.query || S.type)}”</h2>
-      <p>Ember searched ${scope}. Try fewer words, or narrow with <b>#tag</b>, <b>site:github.com</b>, <b>type:video</b>, <b>is:fav</b> or <b>is:broken</b>.</p>
+      <p>Linemark searched ${scope}. Try fewer words, or narrow with <b>#tag</b>, <b>site:github.com</b>, <b>type:video</b>, <b>is:fav</b> or <b>is:broken</b>.</p>
       <div class="actions"><button class="btn" data-act="clear-search">${icon('x', 16)} Clear search</button>${S.route.kind !== 'all' ? `<button class="btn primary" data-act="search-all">${icon('search', 16)} Search all bookmarks</button>` : ''}</div></div>`;
   }
   if (!S.bookmarks.length) {
     return `<div class="empty">${bullets}<h2>Every link gets a line</h2>
-      <p>Ember keeps your bookmarks on this machine, organised into colour-coded lines. Start by bringing in what you already have.</p>
+      <p>Linemark keeps your bookmarks on this machine, organised into colour-coded lines. Start by bringing in what you already have.</p>
       <div class="actions">
         ${M.hasChrome ? `<button class="btn primary" data-act="import-chrome">${icon('download', 17)} Import Chrome bookmarks</button>` : ''}
         <button class="btn" data-act="import-html">${icon('upload', 17)} Import HTML file</button>
         <button class="btn" data-act="add">${icon('plus', 17)} Add a link</button>
       </div>
-      <p class="hint">Save any page with the toolbar button or <kbd>Alt</kbd><kbd>Shift</kbd><kbd>S</kbd> · search from the address bar with <kbd>em</kbd> <kbd>Space</kbd></p></div>`;
+      <p class="hint">Save any page with the toolbar button or <kbd>Alt</kbd><kbd>Shift</kbd><kbd>S</kbd> · search from the address bar with <kbd>lm</kbd> <kbd>Space</kbd></p></div>`;
   }
   const msgs = {
     trash: ['Trash is empty', 'Deleted links wait here until you restore them or empty the trash.'],
@@ -1091,7 +1091,7 @@ async function addUrls(urls, defaults) {
 
 async function saveAllTabs() {
   const ok = await chrome.permissions.request({ permissions: ['tabs'] }).catch(() => false);
-  if (!ok) { toast('Ember needs the “tabs” permission to read your open tabs.'); return; }
+  if (!ok) { toast('Linemark needs the “tabs” permission to read your open tabs.'); return; }
   const tabs = await chrome.tabs.query({ currentWindow: true });
   const urls = tabs.map((t) => t.url).filter((u) => M.isSavable(u));
   if (!urls.length) { toast('No web pages open in this window'); return; }
@@ -1146,7 +1146,7 @@ async function scan(ids, { kind = 'quiet', quiet = false, onProgress } = {}) {
           pendingDead.push([cur, health]);
           if (pendingDead.length >= 8) {
             job.cancelled = true;
-            toast('Ember couldn’t reach any site. Check your connection and try again.');
+            toast('Linemark couldn’t reach any site. Check your connection and try again.');
           }
         } else {
           if (!r.network) reached = true;
@@ -1231,7 +1231,7 @@ const SCAN_KINDS = {
 async function startScan(kind, ids) {
   // permissions.request must run inside the click, before any other await.
   const granted = await chrome.permissions.request({ origins: ['<all_urls>'] }).catch(() => false);
-  if (!granted) { toast('Ember needs permission to read sites for this. Nothing was fetched.'); return; }
+  if (!granted) { toast('Linemark needs permission to read sites for this. Nothing was fetched.'); return; }
   ids ??= S.bookmarks.filter((b) => !b.trashedAt && SCAN_KINDS[kind].pick(b)).map((b) => b.id);
   if (!ids.length) return;
   const total = ids.length;
@@ -1452,7 +1452,7 @@ async function runSync({ interactive = false, announceResult = false } = {}) {
 
 function syncSection() {
   const sy = S.sync;
-  const intro = `<p>Ember works fully on this computer, and sync stays off unless you turn it on. With sync, your library stays the same in Chrome, Edge, Brave or Vivaldi on your other computers. Everything is encrypted here with your passphrase before it reaches your own Google Drive, so Google only ever stores scrambled data.</p>`;
+  const intro = `<p>Linemark works fully on this computer, and sync stays off unless you turn it on. With sync, your library stays the same in Chrome, Edge, Brave or Vivaldi on your other computers. Everything is encrypted here with your passphrase before it reaches your own Google Drive, so Google only ever stores scrambled data.</p>`;
   let rows;
   if (!sy.enabled && !S.syncSetup) {
     rows = `<div class="row"><div class="what"><b>Sync is off</b><span>Your library lives only in this browser profile.</span></div><div class="act"><button class="btn" data-act="sync-setup">${icon('cloud', 16)} Set up sync</button></div></div>`;
@@ -1462,11 +1462,11 @@ function syncSection() {
     const own = `<div class="field"><label for="sync-client">Google OAuth client ID</label>
         <input class="input" id="sync-client" autocomplete="off" spellcheck="false" placeholder="1234567890-abc.apps.googleusercontent.com" value="${esc(sy.clientId)}">
         <span class="hint">Create one in Google Cloud in about five minutes (steps in <b>docs/SYNC.md</b>). Use this as its authorised redirect URI:</span>
-        <span class="copy-row"><code id="sync-redirect">${esc(redirect || 'Available when Ember runs as an extension')}</code>${redirect ? `<button type="button" class="btn sm" data-act="copy-redirect">${icon('copy', 14)} Copy</button>` : ''}</span>
+        <span class="copy-row"><code id="sync-redirect">${esc(redirect || 'Available when Linemark runs as an extension')}</code>${redirect ? `<button type="button" class="btn sm" data-act="copy-redirect">${icon('copy', 14)} Copy</button>` : ''}</span>
       </div>`;
     rows = `<form class="sync-form" id="sync-form" novalidate>
-      ${builtIn ? '<p class="hint">Sign in with your Google account, then choose a passphrase. Sign-in only gives Ember its private app folder in your Drive; the passphrase is what encrypts your library.</p>' : '<p class="hint">This copy of Ember has no built-in Google sign-in yet, so sync uses a Google project you own.</p>'}
-      <div class="field"><label for="sync-pass">Passphrase</label><input class="input" id="sync-pass" type="password" autocomplete="new-password" minlength="10" required aria-describedby="sync-pass-hint"><span class="hint" id="sync-pass-hint">At least 10 characters. Use the same passphrase on every device. Ember can’t recover it; if it’s lost, only the cloud copy is lost, never this computer’s library.</span></div>
+      ${builtIn ? '<p class="hint">Sign in with your Google account, then choose a passphrase. Sign-in only gives Linemark its private app folder in your Drive; the passphrase is what encrypts your library.</p>' : '<p class="hint">This copy of Linemark has no built-in Google sign-in yet, so sync uses a Google project you own.</p>'}
+      <div class="field"><label for="sync-pass">Passphrase</label><input class="input" id="sync-pass" type="password" autocomplete="new-password" minlength="10" required aria-describedby="sync-pass-hint"><span class="hint" id="sync-pass-hint">At least 10 characters. Use the same passphrase on every device. Linemark can’t recover it; if it’s lost, only the cloud copy is lost, never this computer’s library.</span></div>
       <div class="field"><label for="sync-pass2">Confirm passphrase</label><input class="input" id="sync-pass2" type="password" autocomplete="new-password" required></div>
       ${builtIn ? `<details class="advanced" ${sy.clientId ? 'open' : ''}><summary>Advanced: use your own Google project</summary>${own}</details>` : own}
       <span class="field-error" id="sync-err" role="alert"></span>
@@ -1507,7 +1507,7 @@ function wireSyncForms() {
     if (pass !== $('#sync-pass2').value) return fail('The two passphrases don’t match.', $('#sync-pass2'));
     // the identity permission has to be requested inside the click
     const ok = await chrome.permissions.request({ permissions: ['identity'] }).catch(() => false);
-    if (!ok) return fail('Ember needs Chrome’s sign-in permission to connect to Google Drive.');
+    if (!ok) return fail('Linemark needs Chrome’s sign-in permission to connect to Google Drive.');
     const btn = $('#sync-go');
     btn.disabled = true;
     btn.textContent = 'Signing in and encrypting…';
@@ -1579,9 +1579,9 @@ async function renderSettings() {
       <h2>${icon('download', 20)} Bring links in</h2>
       <p>Folders become lines, and links you already have are skipped.</p>
       <div class="rows">
-        ${M.hasChrome ? `<div class="row"><div class="what"><b>Chrome bookmarks</b><span>Copies your bookmarks bar and other folders into Ember. Chrome’s own bookmarks are left untouched.</span></div><div class="act"><button class="btn primary" data-act="import-chrome">${icon('download', 16)} Import</button></div></div>` : ''}
+        ${M.hasChrome ? `<div class="row"><div class="what"><b>Chrome bookmarks</b><span>Copies your bookmarks bar and other folders into Linemark. Chrome’s own bookmarks are left untouched.</span></div><div class="act"><button class="btn primary" data-act="import-chrome">${icon('download', 16)} Import</button></div></div>` : ''}
         <div class="row"><div class="what"><b>Bookmark HTML file</b><span>The standard export from Chrome, Edge, Firefox, Safari, Raindrop or Pocket. Tags and descriptions are kept.</span></div><div class="act"><button class="btn" data-act="import-html">${icon('upload', 16)} Choose file</button></div></div>
-        <div class="row"><div class="what"><b>Ember backup</b><span>Restores lines, links, notes and screenshots from a JSON backup. Matching links are updated.</span></div><div class="act"><button class="btn" data-act="import-json">${icon('upload', 16)} Restore</button></div></div>
+        <div class="row"><div class="what"><b>Linemark backup</b><span>Restores lines, links, notes and screenshots from a JSON backup. Matching links are updated.</span></div><div class="act"><button class="btn" data-act="import-json">${icon('upload', 16)} Restore</button></div></div>
       </div>
     </section>
     <section>
@@ -1595,7 +1595,7 @@ async function renderSettings() {
     ${syncSection()}
     <section>
       <h2>${icon('refresh', 20)} Health &amp; search</h2>
-      <p>Ember reads each saved page directly: once to see if it still works, and to keep its text for full-text search. One request per link, four at a time. Cover images are downloaded once and kept on this computer; the library never loads anything from the web while you browse it.</p>
+      <p>Linemark reads each saved page directly: once to see if it still works, and to keep its text for full-text search. One request per link, four at a time. Cover images are downloaded once and kept on this computer; the library never loads anything from the web while you browse it.</p>
       <div class="rows">
         ${scanRow('links', 'Broken links',
           !S.counts.checked ? 'No links checked yet.' : `${S.counts.dead ? plural(S.counts.dead, 'dead link') : 'No dead links'}${S.counts.broken - S.counts.dead ? `, ${S.counts.broken - S.counts.dead} to look at` : ''}${S.ui.lastCheck ? ` · last full check ${relTime(S.ui.lastCheck)}` : ''}.`,
@@ -1610,7 +1610,7 @@ async function renderSettings() {
         ${remote ? scanRow('covers', 'Covers not stored yet',
           `${plural(remote, 'cover')} still point${remote === 1 ? 's' : ''} at another website, so ${remote === 1 ? 'it shows' : 'they show'} a placeholder. Store them once and they load from this computer.`,
           remote, `Store ${remote.toLocaleString()}`) : ''}
-        ${host ? `<div class="row"><div class="what"><b>Site access</b><span>Granted. Ember uses it only for the actions above and the Refresh button.</span></div><div class="act"><button class="btn ghost" data-act="revoke-host">Revoke</button></div></div>` : ''}
+        ${host ? `<div class="row"><div class="what"><b>Site access</b><span>Granted. Linemark uses it only for the actions above and the Refresh button.</span></div><div class="act"><button class="btn ghost" data-act="revoke-host">Revoke</button></div></div>` : ''}
       </div>
     </section>
     <section>
@@ -1630,8 +1630,8 @@ async function renderSettings() {
       <h2>${icon('keyboard', 20)} Shortcuts</h2>
       <div class="rows"><div class="keys">
         <div>Save current page <span><kbd>Alt</kbd><kbd>Shift</kbd><kbd>S</kbd></span></div>
-        <div>Open Ember <span><kbd>Alt</kbd><kbd>Shift</kbd><kbd>E</kbd></span></div>
-        <div>Search from address bar <span><kbd>em</kbd><kbd>Space</kbd></span></div>
+        <div>Open Linemark <span><kbd>Alt</kbd><kbd>Shift</kbd><kbd>L</kbd></span></div>
+        <div>Search from address bar <span><kbd>lm</kbd><kbd>Space</kbd></span></div>
         <div>Search <span><kbd>/</kbd></span></div>
         <div>Add link <span><kbd>N</kbd></span></div>
         <div>Switch view <span><kbd>1</kbd>–<kbd>4</kbd></span></div>
@@ -1804,7 +1804,7 @@ function bindEvents() {
       }
       case 'refetch': {
         const granted = await chrome.permissions.request({ origins: ['<all_urls>'] }).catch(() => false);
-        if (!granted) { toast('Ember needs permission to read the page.'); break; }
+        if (!granted) { toast('Linemark needs permission to read the page.'); break; }
         const b = S.bm.get(S.editing);
         actEl.disabled = true;
         const r = await M.probe(b.url, { wantHtml: true });
@@ -1830,8 +1830,8 @@ function bindEvents() {
       case 'import-chrome': guarded(doImportChrome); break;
       case 'import-html': guarded(doImportHTML); break;
       case 'import-json': guarded(doImportJSON); break;
-      case 'export-html': download(`ember-bookmarks-${stamp()}.html`, new Blob([IO.toNetscape(S)], { type: 'text/html' })); break;
-      case 'export-json': download(`ember-backup-${stamp()}.json`, await IO.toBackup()); break;
+      case 'export-html': download(`linemark-bookmarks-${stamp()}.html`, new Blob([IO.toNetscape(S)], { type: 'text/html' })); break;
+      case 'export-json': download(`linemark-backup-${stamp()}.json`, await IO.toBackup()); break;
       case 'scan': startScan(actEl.dataset.kind); break;
       case 'scan-cancel': if (S.scan) S.scan.cancelled = true; break;
       case 'recheck': startScan('links', S.list.map((x) => x.id)); break;
@@ -2073,8 +2073,8 @@ function closeBandOnMobile() {
 
 // ======================= drag & drop =======================
 
-const BM_MIME = 'application/x-ember-bookmarks';
-const LINE_MIME = 'application/x-ember-line';
+const BM_MIME = 'application/x-linemark-bookmarks';
+const LINE_MIME = 'application/x-linemark-line';
 
 function bindDrag() {
   let dragIds = null;
@@ -2186,7 +2186,7 @@ function bindDrag() {
 
 // IndexedDB writes can fail (quota, corrupted profile). Say so instead of failing silently.
 window.addEventListener('unhandledrejection', (e) => {
-  const msg = e.reason?.name === 'QuotaExceededError' ? 'Chrome is out of storage space for Ember. Free some disk space, then try again.' : `Something went wrong: ${e.reason?.message || e.reason}`;
+  const msg = e.reason?.name === 'QuotaExceededError' ? 'Chrome is out of storage space for Linemark. Free some disk space, then try again.' : `Something went wrong: ${e.reason?.message || e.reason}`;
   toast(msg, { duration: 8000 });
 });
 
@@ -2228,9 +2228,9 @@ async function boot() {
 // If startup fails, say so on the page instead of leaving it blank.
 boot().catch((e) => {
   console.error(e);
-  $('#content').innerHTML = `<div class="empty"><h2>Ember couldn’t start</h2>
+  $('#content').innerHTML = `<div class="empty"><h2>Linemark couldn’t start</h2>
     <p>${esc(e?.message || String(e))}</p>
-    <p>Your bookmarks are stored in this Chrome profile and haven’t been touched. Try reloading. If it keeps happening, open <b>chrome://extensions</b> and check Ember’s <b>Errors</b>.</p>
+    <p>Your bookmarks are stored in this Chrome profile and haven’t been touched. Try reloading. If it keeps happening, open <b>chrome://extensions</b> and check Linemark’s <b>Errors</b>.</p>
     <div class="actions"><button class="btn primary" id="boot-retry">Reload</button></div></div>`;
   $('#boot-retry').addEventListener('click', () => location.reload());
 });

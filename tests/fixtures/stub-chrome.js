@@ -5,8 +5,8 @@
 // ?sso=edge    oauth2 is configured but getAuthToken fails, as in Edge/Brave; a built-in web client exists
 // (none)       no built-in sign-in: the user brings their own Google project
 const sso = new URLSearchParams(location.search).get('sso');
-window.__EMBER_TEST_DRIVE__ = location.origin + '/__drive';
-if (sso === 'edge') window.__EMBER_TEST_WEB_CLIENT__ = 'built-in-web.apps.googleusercontent.com';
+window.__LINEMARK_TEST_DRIVE__ = location.origin + '/__drive';
+if (sso === 'edge') window.__LINEMARK_TEST_WEB_CLIENT__ = 'built-in-web.apps.googleusercontent.com';
 window.__authCalls = { getAuthToken: 0, launchWebAuthFlow: 0 };
 window.chrome = {
   runtime: {

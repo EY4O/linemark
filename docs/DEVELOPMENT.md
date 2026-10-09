@@ -1,6 +1,6 @@
-# Developing Ember
+# Developing Linemark
 
-Ember is plain HTML, CSS and JavaScript (ES modules). There is no build step and no package manager.
+Linemark is plain HTML, CSS and JavaScript (ES modules). There is no build step and no package manager.
 
 ## Layout
 
@@ -30,7 +30,7 @@ icons/               Extension icons
 1. Open `chrome://extensions`, turn on **Developer mode**, then **Load unpacked** this folder.
 2. After editing:
    - **Library or popup pages:** reload the page.
-   - **`background.js`, `manifest.json` or anything the service worker imports:** click the reload arrow on Ember's extension card.
+   - **`background.js`, `manifest.json` or anything the service worker imports:** click the reload arrow on Linemark's extension card.
 3. To debug, open the library tab's DevTools. For the service worker, click **Inspect views: service worker** on the extension card.
 
 `app.html` also runs as a plain web page served from any static server. The `chrome.*` features are missing there: Chrome import, favicons, saving tabs and the popup. This is handy for UI work:
@@ -53,6 +53,8 @@ Then open `http://localhost:5178/app.html`. A page served this way has its own I
 
 Writes made in one context (popup, service worker, library) are announced on the `ember` BroadcastChannel, so open library tabs reload automatically.
 
+**Why some identifiers still say `ember`:** Linemark was first called Ember. A few internal names keep the old word because existing data depends on them: the IndexedDB database (`ember`), the BroadcastChannel, the `ember-theme` localStorage key, the sync files in Drive (`ember-vault.json`, `ember-library.enc`, and the `ember-sync-v1` check value), and the backup format id (`app: "ember"`; `"linemark"` is accepted too). Don't rename them without a migration.
+
 ## Tests
 
 ```bash
@@ -66,7 +68,7 @@ The suite needs Google Chrome but no npm packages (set `CHROME_PATH` if Chrome i
 - **Link health, full-text search and local covers:** against local pages that answer 200, 404, 403, a cross-host redirect and an unreachable port.
 - **Sign-in paths:** one-click Chrome sign-in (no client ID), the fallback to the sign-in window in Edge-style browsers, and the user's own project.
 - **Encrypted sync:** a stand-in for Google Drive's app-data endpoints. It checks that two devices converge (library, images, edits and permanent deletions), that a wrong passphrase is refused, and that Drive never holds readable data.
-- **Real extension:** loads Ember unpacked into a fresh profile, then checks the first-run screen, Chrome bookmark import, Settings, dark mode, the popup and the service worker's shortcuts.
+- **Real extension:** loads Linemark unpacked into a fresh profile, then checks the first-run screen, Chrome bookmark import, Settings, dark mode, the popup and the service worker's shortcuts.
 
 Run it before every change. A first-run crash (a blank page on a fresh install) reached a user once; the extension suite now catches that class of bug.
 

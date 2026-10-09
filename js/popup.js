@@ -88,10 +88,10 @@ function renderBand() {
       <button class="pop-line" id="line-btn" title="Change line"><span>${esc(c ? c.name : 'Unsorted')}</span>${icon('chevronDown', 16)}</button>
     </div>
     <button class="icon-btn${bm.favorite ? ' on' : ''}" id="fav-btn" title="${bm.favorite ? 'Unfavorite' : 'Favorite'}" aria-pressed="${bm.favorite}">${icon(bm.favorite ? 'starFilled' : 'star', 19)}</button>
-    <button class="icon-btn" id="open-btn" title="Open Ember (Alt+Shift+E)">${icon('external', 18)}</button>`;
+    <button class="icon-btn" id="open-btn" title="Open Linemark (Alt+Shift+L)">${icon('external', 18)}</button>`;
   $('#line-btn').addEventListener('click', (e) => pickLine(e.currentTarget));
   $('#fav-btn').addEventListener('click', () => { bm.favorite = !bm.favorite; persist(); renderBand(); });
-  $('#open-btn').addEventListener('click', () => openEmber(bm.id));
+  $('#open-btn').addEventListener('click', () => openLibrary(bm.id));
 }
 
 function render() {
@@ -245,19 +245,19 @@ function pickLine(anchor) {
 }
 
 function renderUnsavable() {
-  $('#band').innerHTML = `${ring(34, 'var(--band-ink-2)')}<div class="pop-status"></div><button class="icon-btn" id="open-btn" title="Open Ember (Alt+Shift+E)">${icon('external', 18)}</button>`;
-  $('#open-btn').addEventListener('click', () => openEmber());
+  $('#band').innerHTML = `${ring(34, 'var(--band-ink-2)')}<div class="pop-status"></div><button class="icon-btn" id="open-btn" title="Open Linemark (Alt+Shift+L)">${icon('external', 18)}</button>`;
+  $('#open-btn').addEventListener('click', () => openLibrary());
   $('#body').innerHTML = `<div class="pop-empty">
     <h2>This page can’t be bookmarked</h2>
     <p>Browser pages such as the new-tab page, settings and the Web Store can’t be saved. Open a website and try again.</p>
-    <div><button class="btn primary" id="open">${icon('external', 16)} Open Ember</button></div>
+    <div><button class="btn primary" id="open">${icon('external', 16)} Open Linemark</button></div>
   </div>`;
-  $('#open').addEventListener('click', () => openEmber());
+  $('#open').addEventListener('click', () => openLibrary());
 }
 
-async function openEmber(editId) {
+async function openLibrary(editId) {
   await persist.flush();
-  await chrome.runtime.sendMessage({ type: 'open-ember', edit: editId || null });
+  await chrome.runtime.sendMessage({ type: 'open-linemark', edit: editId || null });
   window.close();
 }
 

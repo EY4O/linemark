@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Ember — Bookmark Manager",
-  "short_name": "Ember",
+  "name": "Linemark — Bookmark Manager",
+  "short_name": "Linemark",
   "version": "1.0.0",
-  "description": "A local-only bookmark manager: lines (collections), tags, notes, previews and fast search. Nothing leaves your machine.",
+  "description": "Bookmarks on colour-coded lines: tags, notes, previews, full-text search and a broken-link checker. Local by default, with optional encrypted sync.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -11,7 +11,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Save to Ember",
+    "default_title": "Save to Linemark",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -37,15 +37,15 @@
     "client_id": "YOUR_CHROME_EXTENSION_CLIENT_ID.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/drive.appdata"]
   },
-  "omnibox": { "keyword": "em" },
+  "omnibox": { "keyword": "lm" },
   "commands": {
     "_execute_action": {
       "suggested_key": { "default": "Alt+Shift+S" },
       "description": "Save the current page"
     },
-    "open-ember": {
-      "suggested_key": { "default": "Alt+Shift+E" },
-      "description": "Open the Ember library"
+    "open-linemark": {
+      "suggested_key": { "default": "Alt+Shift+L" },
+      "description": "Open the Linemark library"
     }
   }
 }
