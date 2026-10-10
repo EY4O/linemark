@@ -4,7 +4,7 @@
 //                         app, with a station-ring lens on one detail. The app is captured at 2x into
 //                         store/images/raw/ (demo library: store/demo-seed.html), with each lens target in meta.json.
 //   promo-small.png       440x280 small promo tile   (store/promo/promo.html)
-//   promo-marquee.png     1400x560 marquee tile
+//   promo-marquee.png     1400x560 marquee tile (the terminus layout: the logo with lines departing from it)
 //   icon-128.png          the store icon (same file as icons/icon128.png)
 //
 //   node tools/store-assets.mjs        (needs Google Chrome; set CHROME_PATH if it isn't found)
@@ -113,9 +113,9 @@ for (let n = 1; n <= 5; n++) {
 }
 
 // promo tiles
-for (const [size, w, h] of [['small', 440, 280], ['marquee', 1400, 560]]) {
+for (const [size, w, h, extra] of [['small', 440, 280, ''], ['marquee', 1400, 560, '&v=terminus']]) {
   p = await page(w, h);
-  await p.go(`/__store/promo/promo.html?size=${size}`); await p.until(`return document.title === 'ready'`);
+  await p.go(`/__store/promo/promo.html?size=${size}${extra}`); await p.until(`return document.title === 'ready'`);
   await p.shot(`promo-${size}.png`);
   await p.close();
 }
