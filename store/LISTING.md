@@ -20,9 +20,9 @@ Paste each section into the matching field of the [Developer Dashboard](https://
 **Description** (plain text):
 
 ```
-Bookmarks on lines
+A bookmark manager drawn like a transit map.
 
-A bookmark manager drawn like a transit map. Local by default, sync optional.
+Every collection is a coloured line and every link a stop, with full-text search and a broken-link checker. Local by default; sync optional.
 
 Save in one gesture
 Save any page from the toolbar, the right-click menu or Alt+Shift+S, with its title, description and cover.
