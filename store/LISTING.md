@@ -20,47 +20,39 @@ Paste each section into the matching field of the [Developer Dashboard](https://
 **Description** (plain text):
 
 ```
-Linemark is a bookmark manager drawn like a transit map. Every collection is a coloured line, every link is a stop, and the screen always tells you where you are.
+Bookmarks on lines
 
-SAVE IN ONE GESTURE
-• Click the toolbar button or press Alt+Shift+S: the page is saved straight away, with its title, description and a cover.
-• Right-click any page or link → Save to Linemark.
-• Save all your open tabs at once.
+A bookmark manager drawn like a transit map. Local by default, sync optional.
 
-ORGANISE ON LINES
-• Lines are colour-coded collections that can branch into sub-lines. Drag links onto a line to file them, or type Cooking/Baking to make a branch as you save.
-• A link can stop on more than one line, like an interchange station.
-• Smart lines: keep any search (#tag, site:, is:fav…) as a line that fills itself.
-• Give each line an icon (240 built in) or any emoji.
-• Tags, notes, favorites, and a Trash with undo.
-• Five views: cards, list, compact headlines, moodboard and a network map that draws your library as a transit map, with each link a station in the shape of its kind (article, video, document, image or plain link).
-• Unsorted fills up like a crowded platform: a ring sweeps round it as links wait, so you can see when it's time to file.
-• Open a line as a Chrome tab group in its colour, or keep your tab groups as lines.
+Save in one gesture
+Save any page from the toolbar, the right-click menu or Alt+Shift+S, with its title, description and cover.
+Save a whole window of tabs, or bring in your Chrome bookmarks in one click.
 
-COME BACK TO IT
-• Give a link a day to revisit. On that day it appears on the Departures board.
-• Optional suggestions for a line, tags and a summary, made by Chrome's built-in AI on your computer (where Chrome offers it). Nothing is sent anywhere.
+Organise on lines
+Colour-coded lines that branch into sub-lines, each with an icon or emoji. Type Cooking/Baking to make a branch as you save.
+A link can stop on several lines, and smart lines keep a search as a line that fills itself.
+Tags, notes, favourites, and five views, including a network map of your library.
 
-MAKE IT YOURS
-• City palettes: recolour every line after London, Paris, Tokyo, New York, Berlin or Seoul, and switch back any time.
-• Linemark Wrapped: your year on the lines, as a summary or as a ride through the year month by month, with a picture you can save and share.
-• An optional station chime when you save a page (off by default).
+Find anything again
+Search the words inside every page you save, and see the passage that matched.
+Filter by #tag, site:, type: or is:fav, or search from the address bar by typing lm.
 
-FIND ANYTHING AGAIN
-• Full-text search covers titles, tags, notes and the text of the pages themselves, and shows you the passage that matched.
-• Filters: #tag, site:, type:video, is:fav, is:broken.
-• Search from the address bar: type "lm", then Space.
+Keep links healthy
+The link checker sorts dead, moved and unverified links, with one-click fixes and the Internet Archive's copy of a dead page.
+A duplicate finder merges tags and notes into the copy it keeps.
 
-KEEP IT HEALTHY
-• The broken-link checker sorts links into dead, moved (update the address in one click) and unverified.
-• A duplicate finder merges tags and notes into the copy it keeps.
+Come back to it
+Give a link a day to revisit, and it waits for you on the Departures board.
+Linemark Wrapped shows your year on the lines, month by month.
 
-YOURS, AND PRIVATE
-• Local by default: no account, no server, no tracking. Your library stays in your browser profile.
-• Optional end-to-end encrypted sync through your own Google Drive. Your passphrase encrypts everything on your device, so Google only ever stores scrambled data.
-• Import your Chrome bookmarks in one click. Export to HTML or a full JSON backup at any time.
+Make it yours
+Recolour every line after London, Paris, Tokyo, New York, Berlin or Seoul, in light or dark.
+Optional suggestions for a line, tags and a summary from Chrome's built-in AI, worked out on your computer.
 
-Light and dark themes, full keyboard support, and 44px touch targets on touchscreens.
+Private by default
+No account, no server, no tracking. Your library stays in your browser.
+Optional sync through your own Google Drive, encrypted on your device with AES-256 before it leaves.
+Export to HTML or a full JSON backup at any time.
 ```
 
 **Graphic assets** (all in `store/images/`):
@@ -133,7 +125,7 @@ It is published from the public repository [EY4O/linemark-site](https://github.c
 ## Uploading 1.2.4 (the update after 1.0.0)
 
 1. **Package → Upload new package:** `dist/linemark-1.2.4.zip`.
-2. **Store listing → Description:** paste the description above. Since 1.0.0 it adds the network map's shapes, the crowded Unsorted ring, city palettes, Wrapped, the station chime and the `Cooking/Baking` example; the rest is unchanged.
+2. **Store listing → Description:** replace the 1.0.0 text with the description above (rewritten for 1.2.4: shorter sections, and the features added since 1.0.0).
 3. **Privacy:** the justifications above already cover the optional `tabs`, `tabGroups` and `identity` permissions and the archive.org lookup that 1.2.4 asks for.
 4. **Submit for review.** The only permission new since 1.0.0 is the optional `tabGroups`, which may make this review a little longer.
 
