@@ -1,0 +1,108 @@
+<!doctype html><meta charset="utf-8"><title>store demo seed</title>
+<script type="module">
+// Demo library for the Chrome Web Store screenshots (tools/store-assets.mjs).
+// Real public sites with factual titles; covers are abstract drawings standing in for page screenshots.
+const q = new URLSearchParams(location.search);
+const db = await import('/js/db.js');
+const M = await import('/js/model.js');
+const day = 86400000, now = Date.now();
+const L = (id, name, color, icon = '', parentId = null, order = 0, expanded = false) => ({ id, name, code: M.codeFor(name), color, icon, parentId, order, expanded, createdAt: now - 90 * day, updatedAt: now - 90 * day });
+const cols = [
+  L('read', 'Reading list', '#0b7a75', 'lucide:book-open', null, 0),
+  L('design', 'Design', '#c2255c', 'lucide:palette', null, 1, true),
+  L('type', 'Typography', '#7048e8', 'lucide:type', 'design', 0),
+  L('colour', 'Colour', '#f0a800', 'lucide:swatch-book', 'design', 1),
+  L('eng', 'Engineering', '#2f5bd8', 'lucide:code-xml', null, 2, true),
+  L('rust', 'Rust', '#9a5b36', '', 'eng', 0),
+  L('japan', 'Japan trip', '#d92a3a', 'lucide:train-front', null, 3),
+  L('cook', 'Recipes', '#2f9e44', 'lucide:chef-hat', null, 4),
+  L('watch', 'Watch later', '#5c6773', 'emoji:🎬', null, 5),
+];
+let i = 0;
+const B = (col, url, title, o = {}) => Object.assign(M.newBookmark({ url, title, collectionId: col, createdAt: now - (i++) * day * 0.55 - 3600000 }), { id: 's' + i, metaFetched: true, ...o });
+const bms = [
+  B('type', 'https://practicaltypography.com/', 'Butterick’s Practical Typography', { excerpt: 'A free online book about typography for people who write documents.', tags: ['type', 'reference'], favorite: true, k: 'article' }),
+  B('design', 'https://www.vignelli.com/canon.pdf', 'The Vignelli Canon', { excerpt: 'Massimo Vignelli’s short book on the intangible and tangible parts of design.', tags: ['grid', 'signage'], note: 'Re-read the grid chapter before the wayfinding project.', k: 'doc' }),
+  B('colour', 'https://oklch.com/', 'OKLCH Color Picker & Converter', { excerpt: 'Pick colours in a perceptually uniform space and convert between formats.', tags: ['tools', 'colour'], k: 'tool' }),
+  B('eng', 'https://developer.chrome.com/docs/extensions/', 'Chrome Extensions documentation', { excerpt: 'Guides and reference for building, testing and publishing extensions.', tags: ['docs', 'chrome'], k: 'docs' }),
+  B('read', 'https://www.inkandswitch.com/local-first/', 'Local-first software', { excerpt: 'You own your data, in spite of the cloud.', tags: ['essays', 'local-first'], favorite: true, k: 'article' }),
+  B('japan', 'https://en.wikipedia.org/wiki/Shinkansen', 'Shinkansen', { excerpt: 'Japan’s network of high-speed railway lines.', tags: ['rail', 'japan'], k: 'photo' }),
+  B('cook', 'https://www.seriouseats.com/', 'Serious Eats', { excerpt: 'Recipes, techniques and the science of good cooking.', tags: ['cooking'], k: 'recipe' }),
+  B('rust', 'https://doc.rust-lang.org/book/', 'The Rust Programming Language', { excerpt: 'The book: an overview of Rust from first principles.', tags: ['rust', 'book'], k: 'docs' }),
+  B('watch', 'https://www.youtube.com/', 'Talk: The design of everyday maps', { excerpt: 'Why the best transit diagrams leave geography out.', tags: ['maps', 'talks'], k: 'video' }),
+  B('design', 'https://refactoringui.com/', 'Refactoring UI', { excerpt: 'Learn how to design better interfaces with specific tactics.', tags: ['ui', 'book'], k: 'article' }),
+  B('read', 'https://danluu.com/', 'Dan Luu', { excerpt: 'Long-form essays on programming, hardware and how organisations work.', tags: ['essays'], k: 'article' }),
+  B('japan', 'https://www.japan-guide.com/', 'Japan travel guide', { excerpt: 'Regions, routes, rail passes and seasonal highlights.', tags: ['japan', 'travel'], note: 'Book the Kyoto ryokan before March.', k: 'photo' }),
+  B('type', 'https://fonts.google.com/knowledge', 'Google Fonts Knowledge', { excerpt: 'Guides to understanding and using type.', tags: ['type', 'learning'], k: 'article' }),
+  B('eng', 'https://web.dev/articles/indexeddb', 'Working with IndexedDB', { excerpt: 'Store large amounts of structured data in the browser.', tags: ['storage', 'docs'], k: 'docs' }),
+  B('cook', 'https://cooking.nytimes.com/', 'Weeknight dinners', { excerpt: 'Quick recipes for busy evenings.', tags: ['cooking', 'quick'], k: 'recipe' }),
+  B('colour', 'https://colorandcontrast.com/', 'Color and Contrast', { excerpt: 'An interactive guide to colour and contrast for accessibility.', tags: ['a11y', 'colour'], k: 'tool' }),
+  B('watch', 'https://vimeo.com/', 'Signage systems, a short film', { excerpt: 'How cities guide millions of people every day.', tags: ['signage', 'film'], k: 'video' }),
+  B(null, 'https://news.ycombinator.com/', 'Hacker News', { k: 'article' }),
+  B(null, 'https://www.are.na/', 'Are.na', { tags: ['tools'], k: 'tool' }),
+];
+// link health for the Broken links screenshot
+const h = (state, code, note) => ({ state, code, note, checkedAt: now - 3600000 });
+bms[13].health = h('dead', 404, 'Page not found');
+bms[17].health = h('warn', 403, 'Site refused the check');
+bms[16].health = { ...h('moved', 200, 'Now at vimeo.com'), finalUrl: 'https://vimeo.com/channels/staffpicks' };
+bms[10].health = h('dead', 0, 'Site unreachable');
+for (const b of bms) if (!b.health) b.health = h('ok', 200);
+
+// page text for the full-text search screenshot
+const texts = {
+  [bms[1].id]: 'The grid is the underlying structure of all good layouts. A grid gives order and clarity, and lets many people work on one system.',
+  [bms[9].id]: 'Start with a grid of spacing values rather than picking numbers as you go. A constrained grid speeds up every decision.',
+  [bms[4].id]: 'Seven ideals for local-first software: no spinners, your work is not trapped, the network is optional, and you keep ownership of your data.',
+  [bms[5].id]: 'Timetables run on a precise grid of departures; the Tokaido line carries hundreds of trains every day.',
+};
+
+// abstract cover drawings, one style per kind of page
+const col = (id) => cols.find((c) => c.id === id)?.color || '#5c6773';
+async function draw(kind, accent) {
+  const c = new OffscreenCanvas(960, 600); const g = c.getContext('2d');
+  const R = (x, y, w, h, f, r = 0) => { g.fillStyle = f; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); };
+  if (kind === 'video') {
+    R(0, 0, 960, 600, '#121317'); R(0, 0, 960, 600, accent + '33');
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(480, 300, 92, 0, 7); g.fill();
+    g.fillStyle = '#121317'; g.beginPath(); g.moveTo(452, 252); g.lineTo(452, 348); g.lineTo(534, 300); g.fill();
+    R(60, 520, 840, 10, '#ffffff33', 5); R(60, 520, 300, 10, accent, 5);
+  } else if (kind === 'photo') {
+    R(0, 0, 960, 600, '#f6efe6'); g.fillStyle = accent; g.beginPath(); g.arc(700, 190, 90, 0, 7); g.fill();
+    g.fillStyle = '#2d3142'; g.beginPath(); g.moveTo(0, 600); g.lineTo(300, 260); g.lineTo(520, 600); g.fill();
+    g.fillStyle = '#4f5d75'; g.beginPath(); g.moveTo(260, 600); g.lineTo(600, 220); g.lineTo(960, 600); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(560, 265); g.lineTo(600, 220); g.lineTo(642, 268); g.lineTo(612, 258); g.lineTo(600, 272); g.lineTo(588, 258); g.fill();
+  } else if (kind === 'recipe') {
+    R(0, 0, 960, 600, '#f3e9dc'); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(480, 300, 200, 0, 7); g.fill();
+    g.fillStyle = accent; g.beginPath(); g.arc(480, 300, 140, 0, 7); g.fill();
+    g.fillStyle = '#f0a800'; for (const [x, y] of [[430, 260], [520, 250], [500, 340], [440, 340]]) { g.beginPath(); g.arc(x, y, 26, 0, 7); g.fill(); }
+  } else if (kind === 'docs') {
+    R(0, 0, 960, 600, '#ffffff'); R(0, 0, 220, 600, '#f2f3f5'); for (let y = 60; y < 420; y += 44) R(36, y, 140 - (y % 3) * 20, 14, '#c9ccd3', 7);
+    R(270, 60, 420, 34, '#16171a', 6); for (let y = 130; y < 220; y += 30) R(270, y, 600 - (y % 4) * 40, 14, '#9aa0aa', 7);
+    R(270, 260, 640, 260, '#16171a', 14); for (let y = 300; y < 480; y += 34) { R(304, y, 70, 14, accent, 7); R(390, y, 300 - (y % 5) * 30, 14, '#5b6170', 7); }
+  } else if (kind === 'tool') {
+    R(0, 0, 960, 600, '#fafafa'); const sw = ['#d92a3a', '#f0a800', '#2f9e44', '#1c8fd6', '#7048e8', accent];
+    sw.forEach((s, j) => R(80 + j * 136, 140, 112, 220, s, 16)); R(80, 400, 800, 22, '#d6d8dd', 11); R(80, 400, 420, 22, accent, 11);
+  } else if (kind === 'doc') {
+    R(0, 0, 960, 600, '#f4f1ea'); R(300, 40, 360, 520, '#ffffff', 6); R(340, 90, 280, 40, '#16171a'); for (let y = 160; y < 520; y += 26) R(340, y, 280 - (y % 3) * 30, 10, '#b9b3a6', 5);
+    R(340, 280, 120, 120, accent);
+  } else {
+    R(0, 0, 960, 600, '#ffffff'); R(0, 0, 960, 70, '#f3f3f1'); R(48, 24, 140, 22, '#16171a', 4);
+    R(48, 120, 560, 46, '#16171a', 6); R(48, 186, 420, 46, '#16171a', 6);
+    for (let y = 270; y < 560; y += 30) R(48, y, 500 - (y % 4) * 40, 13, '#a2a6ae', 7);
+    R(640, 120, 272, 400, accent, 12);
+  }
+  return M.saveCoverBlob(await c.convertToBlob({ type: 'image/webp', quality: 0.9 }));
+}
+
+if (!(await db.getAll('bookmarks')).length) {
+  for (const b of bms) { b.cover = await draw(b.k, col(b.collectionId)); b.coverSource = 'shot'; delete b.k; }
+  for (const b of bms) if (texts[b.id]) b.textAt = now;
+  await db.putMany('collections', cols);
+  await db.putMany('bookmarks', bms);
+  await db.putMany('texts', Object.entries(texts).map(([id, text]) => ({ id, text })));
+}
+await db.setMeta('ui', { view: q.get('view') || 'cards', sort: 'newest', size: 260, theme: q.get('theme') || 'light' });
+localStorage.setItem('ember-theme', q.get('theme') || 'light');
+location.replace('/__store/app.html' + (q.get('edit') ? '?edit=' + q.get('edit') : '') + '#' + (q.get('to') || '/all'));
+</script>

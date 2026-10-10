@@ -1,0 +1,27 @@
+# Lucide icons bundled for line bullets (one name per line, from lucide.dev).
+# Edit this list, then run: node tools/build-icon-pack.mjs
+
+# reading & knowledge
+book book-open book-marked library library-big newspaper notebook notebook-pen file-text scroll bookmark quote lightbulb brain glasses graduation-cap school languages pen-line pencil highlighter sticky-note
+# work & productivity
+briefcase building-2 landmark calendar calendar-days clock alarm-clock hourglass timer inbox mail send message-circle megaphone users user handshake presentation kanban list-todo list-checks square-check clipboard-list target goal flag trophy medal award
+# code & tech
+code code-xml terminal git-branch git-pull-request bug database server cloud cpu hard-drive monitor laptop smartphone keyboard mouse printer wifi rss plug battery bot binary braces brackets blocks puzzle layers layout-grid workflow webhook
+# science & numbers
+flask-conical microscope telescope atom dna sigma calculator chart-line chart-bar chart-pie trending-up activity
+# design & making
+palette brush pen-tool shapes type image camera aperture frame ruler swatch-book component scissors hammer wrench drill paintbrush spray-can
+# media & fun
+music headphones mic video tv film clapperboard play podcast radio gamepad-2 dice-5 joystick ticket party-popper drama
+# travel & places
+plane train-front train-track tram-front bus car bike ship sailboat anchor map map-pin compass globe earth mountain mountain-snow tent luggage hotel signpost route milestone footprints tree-palm tree-pine trees waves umbrella sun cloud-sun snowflake
+# food & drink
+utensils chef-hat coffee pizza apple cherry carrot wine beer cake salad soup cookie croissant egg sandwich ice-cream-cone
+# home & life
+house sofa lamp bed bath sprout leaf flower-2 heart heart-pulse baby dog cat paw-print fish bird shirt gift sparkles star crown gem dumbbell volleyball smile laugh ghost
+# money & shopping
+shopping-cart shopping-bag store tag receipt wallet credit-card piggy-bank coins banknote
+# health
+stethoscope pill hospital
+# general
+archive box package folder folder-open link paperclip pin key lock shield eye search zap bell hash at-sign circle-help info triangle-alert recycle rocket satellite flame infinity

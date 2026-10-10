@@ -17,6 +17,7 @@ Linemark is a Chrome extension for people who save a lot of links and want to fi
 ## ✨ Key Features
 
 - 🚇 **Lines and branches**: colour-coded collections that nest. Drag links onto a line to file them, or drag lines to reorder and nest them.
+- 🎨 **Line icons**: give each line's bullet one of 240 built-in icons (Lucide) or any emoji, chosen from a searchable picker in the line's menu.
 - ⚡ **One-click save**: the popup saves the page as soon as it opens. Change the line, tags, note or cover afterwards if you want.
 - 🖼️ **Real previews, stored locally**: each card shows the page's own cover image or a screenshot taken when you saved it. Both are downloaded once and kept on your computer, so browsing your library never loads anything from the web.
 - 🔎 **Full-text search**: search titles, tags and notes, plus the text of the pages themselves. Results show the passage that matched. Filters include `#tag`, `site:`, `type:` and `is:fav`. You can also search from the address bar by typing `lm`, then Space.
@@ -179,6 +180,8 @@ Run the test suite with `node tests/run.mjs` (needs Chrome, no packages). It cov
 Issues and pull requests are welcome. Please load the extension unpacked and try the popup, the library and an import before opening a PR.
 
 ## 🙏 Credits
+
+- [Lucide](https://lucide.dev): the line-bullet icons (ISC licence, `icons/LUCIDE-LICENSE.txt`). The bundled set is listed in `tools/icon-list.txt`.
 
 - [Raindrop.io](https://raindrop.io/): the product that inspired Linemark's feature set.
 - [Archivo](https://github.com/Omnibus-Type/Archivo) by Omnibus-Type, self-hosted from [Fontsource](https://fontsource.org/fonts/archivo) under the SIL Open Font License (`fonts/OFL.txt`).

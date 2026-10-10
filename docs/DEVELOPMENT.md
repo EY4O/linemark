@@ -20,6 +20,10 @@ js/io.js             Chrome tree import, Netscape HTML import/export, JSON backu
 js/ui.js             Toasts, anchored menus, time formatting, downloads
 js/sync.js           Optional end-to-end encrypted sync through Google Drive's app-data folder (see docs/SYNC.md)
 js/config.js         Publisher sign-in configuration: the built-in Google web client ID (placeholder until set up)
+js/bullets.js        Line bullets (letters, icon or emoji), the icon search and emoji check
+js/icon-pack.js      Generated: the bundled Lucide icons (tools/build-icon-pack.mjs)
+tools/               build-icon-pack.mjs (icon pack), store-assets.mjs (store images), package.mjs (store ZIP)
+store/               Store listing text (LISTING.md), promo art, demo library and rendered images
 js/icons.js          Authored SVG icon set
 fonts/               Archivo variable font (OFL)
 icons/               Extension icons
@@ -74,6 +78,21 @@ Run it before every change. A first-run crash (a blank page on a fresh install) 
 
 Test fixtures live in `tests/fixtures/`. The library tests run `app.html` with a small `chrome.*` stub, each in its own isolated browser context so storage starts empty.
 
-## Packaging
+## Line icons
 
-Zip the folder contents. Leave out `.impeccable/`, `.claude/`, `docs/`, `tests/` and the Markdown files if you want a smaller package. Upload the zip through the Chrome Web Store developer dashboard.
+The icons are a curated set of [Lucide](https://lucide.dev) icons, bundled so Linemark works offline. To change the set, edit `tools/icon-list.txt` and run:
+
+```bash
+node tools/build-icon-pack.mjs
+```
+
+A line stores its bullet as `icon: "lucide:<name>"` or `icon: "emoji:<emoji>"`. With no icon, it shows its one- or two-letter `code`.
+
+## Store assets and packaging
+
+```bash
+node tools/store-assets.mjs   # screenshots, promo tiles and icon, into store/images/
+node tools/package.mjs        # dist/linemark-<version>.zip for upload
+```
+
+`store/LISTING.md` has every listing field ready to paste: description, permission justifications and the data-usage answers. `PRIVACY.md` and `docs/privacy.html` are the privacy policy; publish the HTML page and use its URL in the listing.

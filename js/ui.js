@@ -77,6 +77,17 @@ export function openMenu(anchor, build, { align = 'start', width } = {}) {
   };
   const onKey = (e) => {
     if (e.key === 'Escape') { e.stopPropagation(); closeMenu(); }
+    const cell = document.activeElement?.closest?.('.icon-cell');
+    if (cell && ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
+      e.preventDefault();
+      const cells = $$('.icon-cell', m);
+      // columns = cells sharing the first cell's row (robust to gaps and padding)
+      const cols = Math.max(1, cells.filter((c) => c.offsetTop === cells[0].offsetTop).length);
+      const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
+      const i = cells.indexOf(cell) + step;
+      if (i < 0) $('.menu-search', m)?.focus(); else cells[Math.min(cells.length - 1, i)]?.focus();
+      return;
+    }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       const items = $$('.menu-item, .swatch', m);
       if (!items.length) return;

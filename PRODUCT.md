@@ -30,7 +30,7 @@ Raindrop-class organization that is local by default. Out of the box nothing lea
 
 ## Capabilities and Constraints
 
-- Collections (nested), tags, favorites, notes, trash with restore.
+- Collections (nested), tags, favorites, notes, trash with restore. Each line's bullet can show letters, a bundled icon (Lucide) or an emoji.
 - Views: list, cards, headlines (compact), moodboard.
 - Previews: screenshot of the tab at save time, plus the page's own title/description/cover image. Imported bookmarks may optionally fetch metadata directly from each site (requires an opt-in host permission). Favicons from Chrome's local favicon cache.
 - Full JSON backup/restore; HTML export Chrome can import.

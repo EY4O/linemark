@@ -3,6 +3,7 @@ import * as db from './db.js';
 import * as M from './model.js';
 import * as IO from './io.js';
 import * as Sync from './sync.js';
+import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji } from './bullets.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
 
@@ -268,8 +269,7 @@ function computeList() {
 const bs = (size) => (size ? `--bs:${size}px;` : '');
 function lineBullet(c, size = 20, cls = '', title = '') {
   if (!c) return unsortedBullet(size, 'currentColor', cls);
-  const code = c.code || M.codeFor(c.name);
-  return `<span class="bullet${[...code].length > 1 ? ' two' : ''} ${cls}" style="${bs(size)}--c:${c.color};--bi:${M.bulletInk(c.color)}"${title ? ` title="${esc(title)}"` : ''}>${esc(code)}</span>`;
+  return lineBulletHTML(c, size, cls, title);
 }
 const lineColor = (name) => M.LINE_COLORS.find((c) => c.name === name).value;
 const unsortedBullet = (size = 20, color = 'currentColor', cls = '') => `<span class="bullet ring ${cls}" style="${bs(size)}--c:${color}" title="Unsorted"></span>`;
@@ -450,7 +450,7 @@ function renderSubbar() {
   const extra = S.route.kind === 'trash' && S.counts.trash
     ? `<button class="btn sm danger" data-act="empty-trash">${icon('trash', 15)}<span class="lbl">Empty trash</span></button>`
     : S.route.kind === 'broken' && S.list.length
-      ? `${S.counts.dead ? `<button class="btn sm danger" data-act="trash-dead">${icon('trash', 15)}<span class="lbl">Trash ${plural(S.counts.dead, 'dead link')}</span></button>` : ''}<button class="btn sm" data-act="recheck" ${S.scan ? 'disabled' : ''}>${icon('refresh', 15)}<span class="lbl">Check these again</span></button>`
+      ? `${S.counts.dead ? `<button class="btn sm danger" data-act="trash-dead">${icon('trash', 15)}<span class="lbl">Trash ${S.counts.dead} dead</span></button>` : ''}<button class="btn sm" data-act="recheck" ${S.scan ? 'disabled' : ''}>${icon('refresh', 15)}<span class="lbl">Check again</span></button>`
     : S.route.kind === 'duplicates' && S.list.length
       ? `<button class="btn sm" data-act="dedupe">${icon('trash', 15)}<span class="lbl">Keep oldest, trash the rest</span></button>`
       : S.route.kind === 'c'
@@ -466,7 +466,7 @@ function renderSubbar() {
     </div>` : ''}
     <span class="spacer"></span>
     ${extra}
-    ${sizeable ? `<label class="size-ctl" title="Card size">${icon('image', 15)}<input type="range" id="size" min="180" max="420" step="10" value="${S.ui.size}" aria-label="Card size">${icon('image', 19)}</label>` : ''}
+    ${sizeable && !extra.includes('data-act="empty-trash"') && !extra.includes('data-act="dedupe"') && !extra.includes('data-act="recheck"') ? `<label class="size-ctl" title="Card size">${icon('image', 15)}<input type="range" id="size" min="180" max="420" step="10" value="${S.ui.size}" aria-label="Card size">${icon('image', 19)}</label>` : ''}
     ${S.route.kind === 'trash' || S.route.kind === 'duplicates' ? '' : `<span class="select-wrap">
       <select id="sort" aria-label="Sort">
         ${[['newest', 'Newest first'], ['oldest', 'Oldest first'], ['updated', 'Recently edited'], ['title', 'Title A–Z'], ['site', 'By site']].map(([v, l]) => `<option value="${v}" ${S.ui.sort === v ? 'selected' : ''}>${l}</option>`).join('')}
@@ -884,8 +884,13 @@ function lineMenu(anchor, id) {
       <div class="menu-sep"></div>
       <div class="label" style="padding:4px 9px 0">Line colour</div>
       <div class="swatches" role="radiogroup" aria-label="Line colour">${M.LINE_COLORS.map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
-      <div class="label" style="padding:2px 9px 0">Bullet letters</div>
-      <div style="padding:6px 8px 8px"><input class="input" id="code-input" maxlength="2" value="${esc(c.code || '')}" aria-label="Bullet letters" style="height:32px;text-transform:uppercase"></div>
+      <div class="label" style="padding:2px 9px 0">Bullet</div>
+      <div class="bullet-row">
+        ${lineBullet(c, 30)}
+        <input class="input" id="code-input" maxlength="2" value="${esc(c.icon ? '' : c.code || '')}" placeholder="${esc(M.codeFor(c.name))}" aria-label="Bullet letters" title="One or two letters">
+        <button type="button" class="btn sm" data-mi="icon">${icon('image', 15)} Icon or emoji…</button>
+      </div>
+      ${c.icon ? menuItem({ label: 'Use letters instead', iconName: 'x', action: 'no-icon' }) : ''}
       <div class="menu-sep"></div>
       ${menuItem({ label: 'Delete line', iconName: 'trash', action: 'delete', danger: true })}`;
     m.addEventListener('click', async (e) => {
@@ -901,6 +906,8 @@ function lineMenu(anchor, id) {
       if (!act) return;
       close();
       if (act === 'rename') { S.renaming = id; renderBand(); }
+      if (act === 'icon') iconPicker(anchor, c);
+      if (act === 'no-icon') { c.icon = ''; await putCollections([c]); renderAll(); }
       if (act === 'child') newLine(id);
       if (act === 'open') openTabs(S.bookmarks.filter((b) => b.collectionId === id && !b.trashedAt).map((b) => b.url));
       if (act === 'delete') deleteLine(id);
@@ -910,11 +917,47 @@ function lineMenu(anchor, id) {
       const v = codeInput.value.trim().toUpperCase();
       c.code = v || M.codeFor(c.name);
       c.autoCode = !v;
+      if (v) c.icon = ''; // typing letters means "show letters"
       await putCollections([c]);
       renderAll();
     });
     codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { codeInput.blur(); close(); } });
   });
+}
+
+// Icon picker for a line's bullet: bundled Lucide icons (searchable) or any emoji.
+function iconPicker(anchor, c) {
+  openMenu(anchor, (m, close) => {
+    m.classList.add('icon-picker');
+    m.innerHTML = `
+      <div class="picker-head">${lineBullet(c, 30, 'picker-preview')}<input class="input menu-search" placeholder="Search icons: book, code, travel…" aria-label="Search icons"></div>
+      <div class="icon-grid" role="group" aria-label="Icons"></div>
+      <form class="emoji-row"><label class="label" for="emoji-in">Or any emoji</label><input class="input" id="emoji-in" placeholder="🚆" autocomplete="off" aria-describedby="emoji-err"><button class="btn sm" type="submit">Use</button><span class="field-error" id="emoji-err" role="alert"></span></form>`;
+    const grid = $('.icon-grid', m);
+    const draw = (q = '') => {
+      const names = searchIcons(q);
+      grid.innerHTML = names.length
+        ? names.map((n) => `<button type="button" class="icon-cell" data-icon="${n}" aria-label="${n.replace(/-/g, ' ')}" title="${n.replace(/-/g, ' ')}" aria-pressed="${c.icon === 'lucide:' + n}">${iconSvg(n, 2)}</button>`).join('')
+        : `<div class="menu-empty">No icons match “${esc(q)}”. Try an emoji below.</div>`;
+    };
+    draw();
+    const set = async (value) => {
+      c.icon = value;
+      await putCollections([c]);
+      close();
+      renderAll();
+    };
+    const search = $('.menu-search', m);
+    search.addEventListener('input', () => draw(search.value));
+    search.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); $('.icon-cell', grid)?.focus(); } });
+    grid.addEventListener('click', (e) => { const b = e.target.closest('[data-icon]'); if (b) set('lucide:' + b.dataset.icon); });
+    $('.emoji-row', m).addEventListener('submit', (e) => {
+      e.preventDefault();
+      const emo = cleanEmoji($('#emoji-in', m).value);
+      if (!emo) { $('#emoji-err', m).textContent = 'Type or paste a single emoji.'; $('#emoji-in', m).setAttribute('aria-invalid', 'true'); return; }
+      set('emoji:' + emo);
+    });
+  }, { width: 352 });
 }
 
 // Line picker (used by Move, the drawer, and Add link).

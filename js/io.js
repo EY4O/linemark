@@ -207,6 +207,9 @@ function cleanCollection(c, i) {
     expanded: !!c.expanded,
     createdAt: num(c.createdAt, Date.now()),
     ...(c.autoCode === false ? { autoCode: false } : {}),
+    // bullet face: a bundled icon name or a single emoji; anything else is dropped
+    ...(typeof c.icon === 'string' && (/^lucide:[a-z0-9-]{1,40}$/.test(c.icon) || /^emoji:[^<>&"'\s]{1,16}$/u.test(c.icon)) ? { icon: c.icon } : {}),
+    ...(Number.isFinite(c.updatedAt) ? { updatedAt: c.updatedAt } : {}),
   };
 }
 

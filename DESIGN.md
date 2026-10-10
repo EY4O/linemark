@@ -429,6 +429,13 @@ The atom of the system. A circle (default 22px) filled with the line colour, car
 - **On the cover edge:** each card's bullet rides the bottom edge of its cover, half over, with a 3px surface-coloured halo; it scales with the card-size slider, `clamp(18px, card-w × 0.092, 32px)`, alongside the placeholder lettering. In list view it rides the cover's right edge at 22px.
 - Sizes in use: 14 (path), 16 (headlines), 18 (toast, pickers), 20 (stop), 22 (drawer, settings headings), 30 (brand), 34 (popup), 38–46 (station sign), 40 (empty state).
 
+**Bullet faces.** A bullet shows one of three faces, always on the line's colour disc:
+- **Letters:** the one- or two-letter code, the default.
+- **Icon:** one of 240 bundled Lucide icons, drawn at 60% of the bullet with a 2.4 stroke so it holds up at 14px.
+- **Emoji:** at 60% of the bullet.
+
+The ink colour still comes from `bulletInk`. The picker is a menu, not a modal: a search field, an 8-column grid of 20px icons (keyboard: arrow keys move in two dimensions), and an emoji field. The selected icon is marked with the brand-soft fill and a 1.5px brand ring.
+
 ### Station Sign (signature)
 The header of the work area: a 46px bullet, the station name in Display, a count in Meta with the number in ink, and a 4px stripe in the line colour along its bottom edge that sweeps in from the left on arrival (0.6s; a 0.3s fade under reduced motion). The parent path (small bullets, chevron separators, each a link) renders above the name only when the place has a parent: child lines, and Broken links, which lives under Settings. Top-level lines and the other system stops show no text above the name.
 

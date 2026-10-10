@@ -143,6 +143,8 @@ img { display: block; max-width: 100%; }
 .bullet.ring { background: transparent; box-shadow: inset 0 0 0 2px var(--c); }
 .bullet.dashed { background: transparent; border: 2px dashed var(--c); }
 .bullet.two { font-size: calc(var(--bs) * 0.4); }
+.bullet.has-icon .ic { width: 60%; height: 60%; }
+.bullet.has-emoji .emo { font-size: calc(var(--bs) * 0.6); line-height: 1; }
 
 /* ---------- buttons ---------- */
 .btn {

@@ -3,6 +3,7 @@ import * as db from './db.js';
 import * as M from './model.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, menuItem, armConfirm, relTime } from './ui.js';
+import { lineBulletHTML } from './bullets.js';
 
 let bm = null;          // the bookmark being saved/edited
 let existed = false;    // true when the page was already in the library
@@ -15,8 +16,7 @@ let coverMode = 'none'; // 'page' | 'shot' | 'none'
 const ring = (size, color) => `<span class="bullet ring" style="--bs:${size}px;--c:${color}"></span>`;
 function bullet(c, size) {
   if (!c) return ring(size, 'var(--band-ink-2)');
-  const code = c.code || M.codeFor(c.name);
-  return `<span class="bullet${[...code].length > 1 ? ' two' : ''}" style="--bs:${size}px;--c:${c.color};--bi:${M.bulletInk(c.color)}">${esc(code)}</span>`;
+  return lineBulletHTML(c, size);
 }
 const lineOf = () => collections.find((c) => c.id === bm.collectionId) || null;
 

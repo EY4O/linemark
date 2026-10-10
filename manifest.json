@@ -3,7 +3,7 @@
   "name": "Linemark — Bookmark Manager",
   "short_name": "Linemark",
   "version": "1.0.0",
-  "description": "Bookmarks on colour-coded lines: tags, notes, previews, full-text search and a broken-link checker. Local by default, with optional encrypted sync.",
+  "description": "Bookmarks on colour-coded lines, with tags, notes, full-text search and a broken-link checker. Local by default; sync optional.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

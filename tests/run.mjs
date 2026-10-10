@@ -128,7 +128,7 @@ async function open(url, { isolated = true, width = 1440, height = 900, mobile =
     },
     until: async (body, ms = 8000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await page.ev(body).catch(() => false)) return true; await sleep(150); } throw new Error('Timed out waiting for: ' + body); },
     key: async (key, text) => {
-      const code = { Enter: 13, Escape: 27, Tab: 9, F2: 113 }[key] ?? key.toUpperCase().charCodeAt(0);
+      const code = { Enter: 13, Escape: 27, Tab: 9, F2: 113, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40 }[key] ?? key.toUpperCase().charCodeAt(0);
       await cdp('Input.dispatchKeyEvent', { type: text ? 'keyDown' : 'rawKeyDown', key, windowsVirtualKeyCode: code, text }, sessionId);
       await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, windowsVirtualKeyCode: code }, sessionId);
       await sleep(150);
@@ -220,10 +220,11 @@ console.log('Model and import/export');
         { id: 'bad1', url: 'javascript:alert(1)', title: 'Script' },
         { id: '../x', url: 'https://example.org/2' },
         { url: 'https://example.org/3' },
-      ], collections: [{ id: 'c1', name: 'Line', color: 'red; background:url(x)' }, { id: 'c2' }] };
+      ], collections: [{ id: 'c1', name: 'Line', color: 'red; background:url(x)', icon: 'lucide:book' }, { id: 'c2' }, { id: 'c3', name: 'Bad icon', icon: 'emoji:<img src=x onerror=alert(1)>' }] };
       const res = await IO.restoreBackup(JSON.stringify(backup));
-      const b = await db.get('bookmarks', 'ok1'); const c = await db.get('collections', 'c1');
-      return { res, tags: b.tags.join(), cover: b.cover, color: c.color, bad: !!(await db.get('bookmarks', 'bad1')) };`);
+      const b = await db.get('bookmarks', 'ok1'); const c = await db.get('collections', 'c1'); const c3 = await db.get('collections', 'c3');
+      return { res, tags: b.tags.join(), cover: b.cover, color: c.color, icon: c.icon, badIcon: c3.icon, bad: !!(await db.get('bookmarks', 'bad1')) };`);
+    assert(r.icon === 'lucide:book' && r.badIcon === undefined, 'icon field not validated: ' + r.icon + ' / ' + r.badIcon);
     assert(r.res.bookmarks === 1 && r.res.skipped === 3, 'kept/skipped: ' + JSON.stringify(r.res));
     assert(r.tags === 'a,b', 'tags not cleaned: ' + r.tags);
     assert(r.cover === '', 'cover pointing at a missing image should be cleared');
@@ -260,6 +261,31 @@ console.log('Library (plain page with stubbed Chrome APIs)');
       await p.shot('library-' + view);
     });
   }
+  await test('a line can show an icon from the bundled set', async () => {
+    await p.ev(`document.querySelector('.line-stop[data-id=c_read] .more').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=icon]')`);
+    await p.ev(`document.querySelector('.menu [data-mi=icon]').click();`);
+    await p.until(`return document.querySelectorAll('.icon-picker .icon-cell').length > 100`);
+    await p.ev(`const s = document.querySelector('.icon-picker .menu-search'); s.value = 'book open'; s.dispatchEvent(new Event('input'));`);
+    await p.until(`return document.querySelector('.icon-picker .icon-cell')?.dataset.icon === 'book-open'`);
+    await p.shot('icon-picker');
+    await p.ev(`document.querySelector('.icon-picker .icon-cell').click();`);
+    await p.until(`return !!document.querySelector('.line-stop[data-id=c_read] .bullet.has-icon svg')`);
+    const r = await p.ev(`const db = await import('/js/db.js'); return (await db.get('collections', 'c_read')).icon;`);
+    assert(r === 'lucide:book-open', r);
+  });
+  await test('…or any emoji, and arrow keys move through the icon grid', async () => {
+    await p.ev(`document.querySelector('.line-stop[data-id=c_eng] .more').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=icon]')`);
+    await p.ev(`document.querySelector('.menu [data-mi=icon]').click();`);
+    await p.until(`return !!document.querySelector('.icon-picker .icon-cell')`);
+    await p.ev(`document.querySelector('.icon-picker .icon-cell').focus();`);
+    await p.key('ArrowRight'); await p.key('ArrowDown');
+    const idx = await p.ev(`const cells = [...document.querySelectorAll('.icon-picker .icon-cell')]; return cells.indexOf(document.activeElement);`);
+    assert(idx === 9, 'arrow keys landed on cell ' + idx);
+    await p.ev(`document.querySelector('#emoji-in').value = '🚆'; document.querySelector('.emoji-row').requestSubmit();`);
+    await p.until(`return document.querySelector('.line-stop[data-id=c_eng] .bullet.has-emoji .emo')?.textContent === '🚆'`);
+  });
   await test('keyboard: expand a line, open its menu, Escape returns focus', async () => {
     await p.ev(`document.querySelector('.line-stop[data-id=c_design] .twisty').focus();`);
     await p.key('Enter', '\r');

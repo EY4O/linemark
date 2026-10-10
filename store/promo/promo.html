@@ -1,0 +1,60 @@
+<!doctype html>
+<!-- Store promo tiles. Rendered to PNG by tools/store-assets.mjs.
+     ?size=small   440x280 small promo tile
+     ?size=marquee 1400x560 marquee tile
+     Google asks for no text, saturated colour, a filled frame and crisp edges, readable at half size.
+     The art is Linemark's own world: coloured lines meeting at an interchange marked by the orange L bullet. -->
+<html><head><meta charset="utf-8"><title>promo</title>
+<style>
+  html, body { margin: 0; background: #16171a; overflow: hidden; }
+  svg { display: block; }
+</style></head>
+<body>
+<script>
+const size = new URLSearchParams(location.search).get('size') || 'small';
+const W = size === 'marquee' ? 1400 : 440, H = size === 'marquee' ? 560 : 280;
+const C = { teal: '#0b7a75', cobalt: '#2f5bd8', magenta: '#c2255c', amber: '#f0a800', green: '#2f9e44', sky: '#1c8fd6', clay: '#9a5b36', violet: '#7048e8' };
+
+// Lines are octilinear (0 / 45 / 90 degrees), like a real network diagram.
+const small = {
+  stroke: 18, station: 8, bullet: [214, 140, 44],
+  lines: [
+    [C.teal, 'M -30 60 H 134 L 214 140 H 470'],
+    [C.cobalt, 'M 214 -30 V 310'],
+    [C.magenta, 'M -30 220 H 134 L 214 140 L 294 60 H 470'],
+    [C.amber, 'M 470 222 H 296 L 214 140'],
+  ],
+  stations: [[60, 60], [60, 220], [214, 34], [214, 246], [360, 140], [380, 60], [384, 222]],
+};
+const marquee = {
+  stroke: 26, station: 11, bullet: [520, 280, 64],
+  lines: [
+    [C.teal, 'M -40 120 H 400 L 520 240 V 280 H 1440'],
+    [C.cobalt, 'M 520 -40 V 600'],
+    [C.magenta, 'M -40 440 H 400 L 520 320 V 280 L 680 120 H 1440'],
+    [C.amber, 'M 1440 440 H 680 L 520 280'],
+    [C.sky, 'M 900 -40 V 120 M 900 440 V 600'],
+    [C.green, 'M 1180 -40 V 60 L 1240 120 V 600'],
+    [C.violet, 'M 1440 300 H 1300 L 1240 240'],
+  ],
+  stations: [[150, 120], [150, 440], [520, 70], [520, 500], [800, 120], [1000, 280], [1010, 440], [1080, 120], [900, 120], [900, 440], [1240, 380], [1360, 300], [1360, 440]],
+  interchanges: [[900, 120], [900, 440], [1240, 120]],
+};
+const P = size === 'marquee' ? marquee : small;
+const [bx, by, br] = P.bullet;
+const s = br / 44; // the L glyph scales with the bullet
+const glyph = `<g fill="#16171a" transform="translate(${bx} ${by}) scale(${s})"><rect x="-13" y="-22" width="11" height="44"/><rect x="-13" y="11" width="25" height="11"/></g>`;
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <rect width="${W}" height="${H}" fill="#16171a"/>
+  ${P.lines.map(([c, d]) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${P.stroke}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+  ${(P.interchanges || []).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${P.station * 1.9}" fill="#f4f3ef" stroke="#16171a" stroke-width="${P.station * 0.8}"/>`).join('')}
+  ${P.stations.filter(([x, y]) => !(P.interchanges || []).some(([a, b]) => a === x && b === y)).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${P.station}" fill="#f4f3ef" stroke="#16171a" stroke-width="${P.station * 0.6}"/>`).join('')}
+  <circle cx="${bx}" cy="${by}" r="${br + P.stroke * 0.45}" fill="#16171a"/>
+  <circle cx="${bx}" cy="${by}" r="${br}" fill="#ff5a1f"/>
+  ${glyph}
+</svg>`;
+document.body.innerHTML = svg;
+document.title = 'ready';
+</script>
+</body></html>
