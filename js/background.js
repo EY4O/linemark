@@ -34,6 +34,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
     openLibrary(msg.edit).then(() => reply({ ok: true }));
     return true;
   }
+  // Fetches of other sites asked for by the library and the popup run here (see viaWorker in model.js): fetched
+  // from a page, a site's Link: preload headers would load its stylesheets and scripts into that page.
+  if (msg?.type === 'probe' && /^https?:/i.test(msg.url || '')) {
+    M.probeHere(msg.url, { wantHtml: !!msg.wantHtml }).then(reply, () => reply(null));
+    return true;
+  }
+  if (msg?.type === 'image' && /^https?:/i.test(msg.url || '')) {
+    M.downloadImageHere(msg.url, msg.tabId ?? undefined)
+      .then(async (blob) => reply({ data: blob ? await M.blobToDataUrl(blob) : null }), () => reply({ data: null }));
+    return true;
+  }
 });
 
 async function flash(tabId, text) {

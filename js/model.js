@@ -356,6 +356,23 @@ export async function setCover(b, cover) {
 const IMAGE_CAP = 8 * 1024 * 1024;
 
 // Downscale any image blob to a light WebP (keeps transparency), max 960px wide.
+// Fetches of other sites made from a page (the library, the popup) go through the service worker instead. A
+// response's Link: preload headers make Chrome load that site's stylesheets and scripts into the page that fetched
+// it: the scripts are blocked by the extension's CSP and each logs an error. The worker has no page to load them into.
+const inPage = typeof document !== 'undefined';
+async function viaWorker(msg) {
+  if (!inPage || !hasChrome || !chrome.runtime?.sendMessage) return undefined;
+  try { return await chrome.runtime.sendMessage(msg); } catch { return undefined; }
+}
+
+// No FileReader here: service workers don't have one.
+export async function blobToDataUrl(blob) {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return `data:${blob.type || 'application/octet-stream'};base64,${btoa(s)}`;
+}
+
 export async function shrinkImage(blob, maxWidth = 960) {
   const bmp = await createImageBitmap(blob);
   const w = Math.min(maxWidth, bmp.width);
@@ -399,7 +416,14 @@ export async function inPageImage(url) {
 
 // Download a page image and shrink it. Returns a Blob, or null when it can't be read.
 // tabId lets the popup / context menu fall back to fetching from inside the page.
+// From a page this runs in the service worker (see viaWorker), which hands back the shrunk image as a data URL.
 export async function downloadImage(url, tabId) {
+  const r = await viaWorker({ type: 'image', url, tabId: tabId ?? null });
+  if (r && 'data' in r) return r.data ? (await fetch(r.data)).blob() : null;
+  return downloadImageHere(url, tabId);
+}
+
+export async function downloadImageHere(url, tabId) {
   let blob = await fetchImage(url);
   if (!blob && tabId != null && hasChrome && chrome.scripting) {
     try {
@@ -497,7 +521,13 @@ export function classify(res, url) {
 }
 
 // One request per bookmark: checks health and, when asked, returns the page HTML for text and previews.
-export async function probe(url, { wantHtml = false, timeoutMs = 15000 } = {}) {
+// From a page this runs in the service worker (see viaWorker).
+export async function probe(url, opts = {}) {
+  const r = await viaWorker({ type: 'probe', url, wantHtml: !!opts.wantHtml });
+  return r?.health ? r : probeHere(url, opts);
+}
+
+export async function probeHere(url, { wantHtml = false, timeoutMs = 15000 } = {}) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
