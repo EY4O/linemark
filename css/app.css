@@ -880,7 +880,7 @@ body { overflow: hidden; }
   .band-head .icon-btn { width: 44px; height: 44px; }
   .band-foot .theme-btn { width: 44px; }
   .stop .more { width: 44px; height: 44px; }
-  .tag { padding: 13px 2px; margin: -13px 0; }
+  .tag { padding: 13px 2px; margin: -13px 0; min-width: 44px; text-align: left; } /* short tags (#ui) still get a 44px-wide target */
   .tag-pill { height: 44px; }
   .tags-input input { min-height: 44px; }
   .field .picker, .title-input { min-height: 44px; }
