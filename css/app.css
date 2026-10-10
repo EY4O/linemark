@@ -1183,6 +1183,17 @@ body { overflow: hidden; }
 .meta .kind { display: inline-flex; flex: none; margin-left: auto; color: var(--ink-3); }
 .meta .kind + .fav-star { margin-left: 2px; }
 
+/* ---------- highlights: a count on the card, the passages in the drawer ---------- */
+.meta .hl-n { display: inline-flex; align-items: center; gap: 3px; flex: none; margin-left: auto; color: var(--ink-3); font-size: 0.75rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.meta .hl-n + .kind { margin-left: 6px; }
+.meta .hl-n ~ .fav-star { margin-left: 4px; }
+.highlights { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.highlights li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 6px; align-items: start; padding: 10px 6px 10px 12px; border: 1px solid var(--rule); border-radius: var(--r-2); background: var(--surface-2); }
+.highlights blockquote { margin: 0; color: var(--ink); font-size: 0.875rem; line-height: 1.5; overflow-wrap: anywhere; }
+.highlights .when { grid-column: 1; color: var(--ink-3); font-size: 0.75rem; }
+.highlights .icon-btn { grid-column: 2; grid-row: 1 / span 2; }
+.drawer-meta dd a { color: var(--brand-text); text-underline-offset: 3px; overflow-wrap: anywhere; }
+
 /* ---------- Unsorted as a crowded platform ---------- */
 .bullet.crowd { position: relative; }
 .bullet.crowd::after {

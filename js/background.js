@@ -7,7 +7,9 @@ const APP = chrome.runtime.getURL('app.html');
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({ id: 'linemark-save-page', title: 'Save page to Linemark', contexts: ['page', 'frame', 'selection'] });
+    chrome.contextMenus.create({ id: 'linemark-save-highlight', title: 'Save highlight to Linemark', contexts: ['selection'] });
     chrome.contextMenus.create({ id: 'linemark-save-link', title: 'Save link to Linemark', contexts: ['link'] });
+    chrome.contextMenus.create({ id: 'linemark-save-image', title: 'Save image to Linemark', contexts: ['image'] });
     chrome.contextMenus.create({ id: 'linemark-open', title: 'Open Linemark library', contexts: ['action'] });
   });
   chrome.action.setBadgeBackgroundColor({ color: '#ff5a1f' });
@@ -19,6 +21,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'linemark-open') return openLibrary();
   if (info.menuItemId === 'linemark-save-page' && tab) return savePage(tab);
   if (info.menuItemId === 'linemark-save-link' && info.linkUrl) return saveLink(info.linkUrl, info.selectionText, tab);
+  if (info.menuItemId === 'linemark-save-highlight' && tab) return savePage(tab, info.selectionText || '');
+  if (info.menuItemId === 'linemark-save-image' && info.srcUrl) return saveImage(info, tab);
 });
 
 chrome.commands.onCommand.addListener((cmd) => {
@@ -39,11 +43,17 @@ async function flash(tabId, text) {
   } catch {}
 }
 
-async function savePage(tab) {
+// Saves the page, or adds a highlight to it: a passage chosen with "Save highlight", or the text selected when
+// "Save page" was chosen. A page already saved just gains the highlight.
+async function savePage(tab, highlight = '') {
   if (!M.isSavable(tab.url)) return flash(tab.id, '×');
   const found = await M.findByUrl(tab.url);
-  if (found) return flash(tab.id, '✓');
+  if (found) {
+    if (highlight && M.addHighlight(found, highlight)) await M.saveBookmark(found);
+    return flash(tab.id, '✓');
+  }
   const b = M.newBookmark({ url: tab.url, title: tab.title });
+  if (highlight) M.addHighlight(b, highlight);
   await M.saveBookmark(b);
   flash(tab.id, '✓');
   const [meta, shot] = await Promise.all([
@@ -52,7 +62,7 @@ async function savePage(tab) {
   ]);
   if (meta.title) b.title = meta.title.trim();
   if (meta.excerpt) b.excerpt = meta.excerpt.trim().slice(0, 600);
-  if (meta.selection) b.note = '“' + meta.selection + '”';
+  if (!highlight && meta.selection) M.addHighlight(b, meta.selection);
   // Covers are stored locally: the page image if it can be downloaded, otherwise the screenshot.
   if (meta.image) { b.cover = await M.storeImage(meta.image, tab.id); if (b.cover) b.coverSource = 'page'; }
   if (!b.cover && shot) { b.cover = await M.saveCoverBlob(shot); b.coverSource = 'shot'; }
@@ -78,6 +88,11 @@ async function saveLink(url, text, tab) {
     b.metaFetched = true;
     await M.saveBookmark(b);
   }
+}
+
+async function saveImage(info, tab) {
+  const r = await M.saveImage({ src: info.srcUrl, pageUrl: info.pageUrl || tab?.url || '', pageTitle: tab?.title || '', tabId: tab?.id ?? null });
+  if (tab) flash(tab.id, r ? '✓' : '×');
 }
 
 async function openLibrary(editId) {

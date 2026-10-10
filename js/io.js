@@ -241,6 +241,11 @@ function cleanBookmark(b, mediaIds) {
     // interchange: further lines this link also shows on
     ...(Array.isArray(b.alsoOn) && b.alsoOn.some(isId) ? { alsoOn: [...new Set(b.alsoOn.filter(isId))].filter((id) => id !== b.collectionId).slice(0, 8) } : {}),
     ...(h ? { health: h } : {}),
+    // highlights kept from the page, and the page a saved image came from
+    ...(Array.isArray(b.highlights) && b.highlights.some((x) => typeof x?.text === 'string' && x.text.trim())
+      ? { highlights: b.highlights.filter((x) => typeof x?.text === 'string' && x.text.trim()).slice(0, 500).map((x) => ({ id: isId(x.id) ? x.id : M.uid(), text: str(x.text, 4000).trim(), at: num(x.at, Date.now()) })) }
+      : {}),
+    ...(typeof b.fromUrl === 'string' && /^https?:/i.test(b.fromUrl) ? { fromUrl: b.fromUrl.slice(0, 2000), ...(typeof b.fromTitle === 'string' && b.fromTitle.trim() ? { fromTitle: str(b.fromTitle, 300).trim() } : {}) } : {}),
   };
 }
 

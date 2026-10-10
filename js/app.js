@@ -178,26 +178,28 @@ function routeHash(r = S.route) {
 }
 
 function parseQuery(q) {
-  const out = { words: [], tags: [], sites: [], types: [], fav: false, note: false, broken: false };
+  const out = { words: [], tags: [], sites: [], types: [], fav: false, note: false, broken: false, hl: false };
   for (const tok of q.trim().toLowerCase().match(/"[^"]+"|\S+/g) || []) {
     if (tok.startsWith('#') && tok.length > 1) out.tags.push(tok.slice(1));
     else if (tok.startsWith('site:')) out.sites.push(tok.slice(5));
     else if (tok.startsWith('type:')) out.types.push(tok.slice(5));
     else if (tok === 'is:fav' || tok === 'is:favorite') out.fav = true;
     else if (tok === 'has:note') out.note = true;
+    else if (tok === 'has:highlight' || tok === 'has:highlights') out.hl = true;
     else if (tok === 'is:broken' || tok === 'is:dead') out.broken = true;
     else out.words.push(tok.replace(/^"|"$/g, ''));
   }
   return out;
 }
 
-// The non-text parts of a search: #tags, site:, type:, is:fav, has:note, is:broken.
+// The non-text parts of a search: #tags, site:, type:, is:fav, has:note, has:highlights, is:broken.
 function passesFilters(b, q) {
   return q.tags.every((t) => b.tags.some((x) => x.startsWith(t))) &&
     q.sites.every((s) => M.hostOf(b.url).includes(s)) &&
     (!q.types.length || q.types.includes(b.type)) &&
     (!q.fav || b.favorite) &&
     (!q.note || b.note) &&
+    (!q.hl || b.highlights?.length) &&
     (!q.broken || (b.health && b.health.state !== 'ok'));
 }
 // A smart line's saved search: filters plus words in titles, addresses, descriptions, notes and tags.
@@ -214,7 +216,7 @@ function smartCount(c) {
   smartCounts.set(c.id, { ver: S.dataVer, query: c.query, n });
   return n;
 }
-const hayOf = (b) => (b.title + ' ' + b.url + ' ' + b.excerpt + ' ' + b.note + ' ' + b.tags.join(' ')).toLowerCase();
+const hayOf = (b) => (b.title + ' ' + b.url + ' ' + b.excerpt + ' ' + b.note + ' ' + b.tags.join(' ') + ' ' + (b.highlights || []).map((h) => h.text).join(' ')).toLowerCase();
 
 function baseSet(r = S.route) {
   const B = S.bookmarks;
@@ -262,7 +264,14 @@ function applyQuery(list) {
       if (!h || !h.words.includes(w)) return false;
       inText = h;
     }
-    if (inText?.snip) S.snippets.set(b.id, snippetHTML(inText.snip));
+    if (inText?.snip) S.snippets.set(b.id, { label: 'In page', html: snippetHTML(inText.snip) });
+    else if (b.highlights?.length) {
+      // a word found only in a highlight shows that passage, labelled as one
+      const plain = (b.title + ' ' + b.excerpt).toLowerCase();
+      const w = q.words.find((x) => !plain.includes(x));
+      const h = w && b.highlights.find((x) => x.text.toLowerCase().includes(w));
+      if (h) S.snippets.set(b.id, { label: 'Highlight', html: snippetHTML(cutAround(h.text, w)) });
+    }
     return true;
   });
 }
@@ -290,6 +299,13 @@ function textsChanged() {
 }
 
 // The passage around a match, with the match marked (the worker sends the raw pieces).
+// A passage around the first place a word appears, in the shape the page-text search returns.
+function cutAround(text, word) {
+  const i = text.toLowerCase().indexOf(word);
+  const start = Math.max(0, i - 60), end = Math.min(text.length, i + word.length + 120);
+  return { before: text.slice(start, i), hit: text.slice(i, i + word.length), after: text.slice(i + word.length, end), cutStart: start > 0, cutEnd: end < text.length };
+}
+
 function snippetHTML(p) {
   return `${p.cutStart ? '…' : ''}${esc(p.before)}<mark>${esc(p.hit)}</mark>${esc(p.after)}${p.cutEnd ? '…' : ''}`.replace(/\n/g, ' ');
 }
@@ -594,10 +610,10 @@ function cardHTML(b) {
     <div class="card-body">
       ${col ? lineBullet(col, 16, 'hl-bullet', col.name) : unsortedBullet(16, 'var(--ink-3)', 'hl-bullet')}${also.map((x) => lineBullet(x, 16, 'hl-bullet hl-also', 'Also on ' + x.name)).join('')}
       <a class="card-title" id="t-${b.id}" dir="auto" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" title="${esc(b.title)}">${esc(b.title)}</a>
-      ${S.snippets.has(b.id) ? `<p class="card-snippet"><span class="snip-label">In page</span> ${S.snippets.get(b.id)}</p>` : b.excerpt ? `<p class="card-excerpt" dir="auto">${esc(b.excerpt)}</p>` : ''}
+      ${S.snippets.has(b.id) ? `<p class="card-snippet"><span class="snip-label">${S.snippets.get(b.id).label}</span> ${S.snippets.get(b.id).html}</p>` : b.excerpt ? `<p class="card-excerpt" dir="auto">${esc(b.excerpt)}</p>` : ''}
       ${b.note ? `<p class="card-note">${icon('note', 14)}<span dir="auto">${esc(b.note)}</span></p>` : ''}
       ${b.tags.length ? `<div class="tags">${b.tags.map((t) => `<button class="tag" data-tag="${esc(t)}" aria-label="Show links tagged ${esc(t)}"><span class="hash">#</span>${esc(t)}</button>`).join('')}</div>` : ''}
-      <div class="meta">${fav}<span class="host">${esc(host)}</span><span class="dot">·</span><span class="when" title="${esc(fullDate(trash ? b.trashedAt : b.createdAt))}">${when}</span>${b.type && b.type !== 'link' ? `<span class="kind" title="${TYPE_NAME[b.type]}">${shapeIcon(b.type, 11)}<span class="sr">${TYPE_NAME[b.type]}</span></span>` : ''}${b.favorite ? `<span class="fav-star" title="Favorite">${icon('starFilled', 14)}</span>` : ''}${!trash ? healthChip(b) : ''}${!trash && b.revisitAt ? `<span class="due${b.revisitAt <= M.endOfToday() ? ' now' : ''}" title="Revisit ${esc(fullDate(b.revisitAt))}">${icon('clock', 13)}${M.revisitLabel(b.revisitAt)}</span>` : ''}</div>
+      <div class="meta">${fav}<span class="host">${esc(host)}</span><span class="dot">·</span><span class="when" title="${esc(fullDate(trash ? b.trashedAt : b.createdAt))}">${when}</span>${b.highlights?.length ? `<span class="hl-n" title="${plural(b.highlights.length, 'highlight')}">${icon('highlighter', 13)}${b.highlights.length}<span class="sr"> ${b.highlights.length === 1 ? 'highlight' : 'highlights'}</span></span>` : ''}${b.type && b.type !== 'link' ? `<span class="kind" title="${TYPE_NAME[b.type]}">${shapeIcon(b.type, 11)}<span class="sr">${TYPE_NAME[b.type]}</span></span>` : ''}${b.favorite ? `<span class="fav-star" title="Favorite">${icon('starFilled', 14)}</span>` : ''}${!trash ? healthChip(b) : ''}${!trash && b.revisitAt ? `<span class="due${b.revisitAt <= M.endOfToday() ? ' now' : ''}" title="Revisit ${esc(fullDate(b.revisitAt))}">${icon('clock', 13)}${M.revisitLabel(b.revisitAt)}</span>` : ''}</div>
     </div>
     <button class="check" data-act="select" aria-label="Select “${name}”" aria-pressed="${sel}">${icon('check', 15)}</button>
     <div class="card-actions">
@@ -2008,8 +2024,9 @@ function renderDrawer() {
       <div class="ai-row" id="d-ai" hidden></div>
       <div class="field"><label for="d-excerpt">Description</label><textarea class="textarea" id="d-excerpt" rows="3">${esc(b.excerpt)}</textarea></div>
       <div class="field"><label for="d-note">Note</label><textarea class="textarea" id="d-note" rows="4" placeholder="Why you saved it, what to remember…">${esc(b.note)}</textarea></div>
+      ${b.highlights?.length ? `<div class="field"><span class="label" id="d-hl-label">Highlights</span><ul class="highlights" aria-labelledby="d-hl-label">${b.highlights.map((h) => `<li><blockquote dir="auto">${esc(h.text)}</blockquote><span class="when">${esc(fullDate(h.at))}</span><button class="icon-btn" data-act="rm-highlight" data-h="${h.id}" aria-label="Remove this highlight" title="Remove">${icon('x', 15)}</button></li>`).join('')}</ul></div>` : ''}
       <div class="toggle-row"><span style="font-weight:600;display:flex;gap:8px;align-items:center">${icon('star', 17)} Favorite</span><button class="switch" role="switch" aria-checked="${b.favorite}" data-act="d-fav" aria-label="Favorite"></button></div>
-      <dl class="drawer-meta"><dt>Saved</dt><dd>${esc(fullDate(b.createdAt))}</dd><dt>Edited</dt><dd>${esc(fullDate(b.updatedAt))}</dd><dt>Type</dt><dd>${esc(b.type)}</dd><dt>Link</dt><dd>${b.health ? `${esc({ ok: 'Working', dead: 'Dead', warn: 'Unverified', moved: 'Moved' }[b.health.state])}${b.health.code ? ` · ${b.health.code}` : ''}${b.health.note ? ` · ${esc(b.health.note)}` : ''} · checked ${esc(relTime(b.health.checkedAt))}` : 'Not checked yet'}</dd><dt>Page text</dt><dd>${b.textAt ? `Indexed ${esc(relTime(b.textAt))}` : 'Not indexed'}</dd></dl>
+      <dl class="drawer-meta"><dt>Saved</dt><dd>${esc(fullDate(b.createdAt))}</dd><dt>Edited</dt><dd>${esc(fullDate(b.updatedAt))}</dd><dt>Type</dt><dd>${esc(b.type)}</dd><dt>Link</dt><dd>${b.health ? `${esc({ ok: 'Working', dead: 'Dead', warn: 'Unverified', moved: 'Moved' }[b.health.state])}${b.health.code ? ` · ${b.health.code}` : ''}${b.health.note ? ` · ${esc(b.health.note)}` : ''} · checked ${esc(relTime(b.health.checkedAt))}` : 'Not checked yet'}</dd><dt>Page text</dt><dd>${b.textAt ? `Indexed ${esc(relTime(b.textAt))}` : 'Not indexed'}</dd>${b.fromUrl ? `<dt>Saved from</dt><dd><a href="${esc(b.fromUrl)}" target="_blank" rel="noopener noreferrer">${esc(b.fromTitle || M.hostOf(b.fromUrl))}</a></dd>` : ''}</dl>
     </div>
     <div class="drawer-foot">
       ${b.trashedAt
@@ -2569,6 +2586,15 @@ function bindEvents() {
       // drawer
       case 'close-drawer': closeDrawer(); break;
       case 'copy-url': navigator.clipboard.writeText($('#d-url').value).then(() => toast('Link copied')); break;
+      case 'rm-highlight': {
+        const b = S.bm.get(S.editing);
+        M.removeHighlight(b, actEl.dataset.h);
+        await putBookmarks([b]);
+        renderDrawer();
+        refreshCard(b.id);
+        ($('#drawer [data-act=rm-highlight]') || $('#d-note'))?.focus();
+        break;
+      }
       case 'rm-tag': {
         const b = S.bm.get(S.editing);
         b.tags = b.tags.filter((x) => x !== actEl.dataset.t);

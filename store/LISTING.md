@@ -26,6 +26,7 @@ A bookmark manager drawn like a transit map. Local by default, sync optional.
 
 Save in one gesture
 Save any page from the toolbar, the right-click menu or Alt+Shift+S, with its title, description and cover.
+Right-click selected text to keep it as a highlight, or an image to save it, stored with the page it came from.
 Save a whole window of tabs, or bring in your Chrome bookmarks in one click.
 
 Organise on lines
@@ -88,7 +89,7 @@ The screenshots are composed slides (`store/promo/slides.html`) over captures of
 | `unlimitedStorage` | The library includes cover images and page text for search; without this, Chrome could evict large libraries. |
 | `activeTab` | When the user clicks the toolbar button, shortcut or context menu, Linemark reads that tab's title, address and description and takes a screenshot to save it. |
 | `scripting` | Runs a one-off read of the page the user chose to save (title, description, cover image and readable text). It runs only on that tab, at the user's request. |
-| `contextMenus` | Adds "Save page to Linemark" and "Save link to Linemark" to the right-click menu. |
+| `contextMenus` | Adds "Save page to Linemark", "Save link to Linemark", "Save highlight to Linemark" (on selected text) and "Save image to Linemark" (on an image) to the right-click menu. |
 | `bookmarks` | Lets the user import their existing Chrome bookmarks into Linemark (read only). |
 | `favicon` | Shows site icons from Chrome's local favicon cache, so no third-party icon service is needed. |
 | `tabs` (optional) | Requested only when the user chooses "Save all open tabs" or "Save tab groups as lines", to read the addresses and titles of the window's tabs. |
@@ -122,11 +123,11 @@ It is published from the public repository [EY4O/linemark-site](https://github.c
 - **Visibility:** 1.0.0 was approved as *Unlisted*: anyone with the link can install it, and it doesn't appear in search. Switch to *Public* when you want people to find it.
 - **Regions:** all.
 
-## Uploading 1.2.4 (the update after 1.0.0)
+## Uploading 1.3.0 (the update after 1.0.0)
 
-1. **Package → Upload new package:** `dist/linemark-1.2.4.zip`.
-2. **Store listing → Description:** replace the 1.0.0 text with the description above (rewritten for 1.2.4: shorter sections, and the features added since 1.0.0).
-3. **Privacy:** the justifications above already cover the optional `tabs`, `tabGroups` and `identity` permissions and the archive.org lookup that 1.2.4 asks for.
+1. **Package → Upload new package:** `dist/linemark-1.3.0.zip`.
+2. **Store listing → Description:** replace the 1.0.0 text with the description above (rewritten for 1.3.0: shorter sections, and the features added since 1.0.0).
+3. **Privacy:** the justifications above already cover the optional `tabs`, `tabGroups` and `identity` permissions and the archive.org lookup that 1.3.0 asks for, and the right-click menu note covers Save highlight and Save image. Publish the updated privacy page (docs/privacy.html) and homepage copy to the site when 1.3.0 is approved.
 4. **Submit for review.** The only permission new since 1.0.0 is the optional `tabGroups`, which may make this review a little longer.
 
 ## Before you submit

@@ -282,6 +282,50 @@ export async function saveBookmark(b) {
   return b;
 }
 
+// ---------- highlights and saved images ----------
+// A highlight is a passage someone selected on a page and kept. It's filed with that page's bookmark, oldest first,
+// and the same passage is kept once.
+const HIGHLIGHT_MAX = 4000;
+export function addHighlight(b, text, now = Date.now()) {
+  const t = String(text || '').replace(/\s+/g, ' ').trim().slice(0, HIGHLIGHT_MAX);
+  if (!t) return null;
+  if (!Array.isArray(b.highlights)) b.highlights = [];
+  const same = b.highlights.find((h) => h.text === t);
+  if (same) return same;
+  const h = { id: uid(), text: t, at: now };
+  b.highlights.push(h);
+  return h;
+}
+export function removeHighlight(b, id) {
+  b.highlights = (b.highlights || []).filter((h) => h.id !== id);
+}
+
+// A picture saved on its own: downloaded once, stored on this computer (shrunk like a cover), and remembering the
+// page it came from. Its address is the image's own, so saving the same picture twice keeps one.
+export async function saveImage({ src, pageUrl = '', pageTitle = '', tabId = null }) {
+  if (!/^https?:/i.test(src || '')) return null; // data: and blob: pictures have no address to keep
+  const found = await findByUrl(src);
+  if (found) return { b: found, created: false };
+  const b = newBookmark({ url: src, title: imageTitle(src, pageUrl), type: 'image' });
+  if (/^https?:/i.test(pageUrl)) {
+    b.fromUrl = pageUrl;
+    if (pageTitle) b.fromTitle = String(pageTitle).trim().slice(0, 300);
+  }
+  const blob = await downloadImage(src, tabId);
+  if (blob) { b.cover = await saveCoverBlob(blob); b.coverSource = 'page'; }
+  b.metaFetched = true;
+  await saveBookmark(b);
+  return { b, created: true, stored: !!blob };
+}
+function imageTitle(src, pageUrl) {
+  let name = '';
+  try { name = decodeURIComponent(new URL(src).pathname.split('/').pop() || ''); } catch {}
+  name = name.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[-_+]+/g, ' ').replace(/\s+/g, ' ').trim();
+  // a readable file name is the best title; a hash or a string of numbers is not
+  if (name.length >= 3 && /[a-z]{3}/i.test(name) && !/^[0-9a-f ]{8,}$/i.test(name)) return name.slice(0, 120);
+  return `Image from ${hostOf(pageUrl) || hostOf(src)}`;
+}
+
 export async function saveCoverBlob(blob) {
   const id = uid();
   await db.put('media', { id, blob, type: blob.type, createdAt: Date.now() });

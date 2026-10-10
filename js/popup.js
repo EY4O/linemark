@@ -13,6 +13,7 @@ let shot = null;        // screenshot blob (kept in memory until chosen)
 let pageImage = '';     // the page's own cover image URL
 let pageBlob = null;    // that image, downloaded and shrunk (stored only if chosen)
 let coverMode = 'none'; // 'page' | 'shot' | 'none'
+let selection = '';     // text selected on the page when the popup opened
 
 const ring = (size, color) => `<span class="bullet ring" style="--bs:${size}px;--c:${color}"></span>`;
 function bullet(c, size) {
@@ -49,6 +50,7 @@ async function main() {
     M.captureTab(tab.windowId).catch(() => null),
   ]);
   shot = blob;
+  selection = (meta.selection || '').replace(/\s+/g, ' ').trim();
   // The page image is downloaded now and kept locally; the library never loads it from the web.
   if (!pageImage && meta.image) pageImage = meta.image;
   if (pageImage) pageBlob = await M.downloadImage(pageImage, tab.id);
@@ -59,7 +61,8 @@ async function main() {
   if (!existed) {
     if (meta.title && meta.title.length > 2) bm.title = meta.title.trim();
     if (meta.excerpt) bm.excerpt = meta.excerpt.trim().slice(0, 600);
-    if (meta.selection) bm.note = '“' + meta.selection + '”';
+    // text selected on the page is kept as a highlight of it
+    if (selection) M.addHighlight(bm, selection);
     bm.metaFetched = true;
     await chooseCover(pageBlob ? 'page' : shot ? 'shot' : 'none');
     render();
@@ -68,6 +71,7 @@ async function main() {
     if (bm.cover && !bm.cover.startsWith('media:')) await chooseCover(pageBlob ? 'page' : 'none');
     else await M.saveBookmark(bm);
     renderCover();
+    renderHighlight();
   }
 }
 
@@ -113,6 +117,7 @@ function render() {
         <div class="pop-host">${fav ? `<img src="${esc(fav)}" alt="">` : ''}<span>${esc(host)}</span></div>
       </div>
     </div>
+    <div class="pop-hl" id="pop-hl" hidden></div>
     <div class="tags-input" id="tags">${chips()}<input id="tag-input" placeholder="${bm.tags.length ? '' : 'Add tags…'}" aria-label="Tags" autocomplete="off"></div>
     <textarea class="textarea" id="note" rows="2" placeholder="Note to self" aria-label="Note">${esc(bm.note)}</textarea>
     <div class="pop-foot">
@@ -121,6 +126,7 @@ function render() {
       <button class="btn primary" id="done">Done</button>
     </div>`;
   renderCover();
+  renderHighlight();
   const title = $('#title');
   title.addEventListener('input', () => { bm.title = title.value.trim() || host; persist(); });
   $('#note').addEventListener('input', (e) => { bm.note = e.target.value; persist(); });
@@ -140,6 +146,37 @@ function render() {
   wireTags();
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('#done').click(); }
+  });
+}
+
+// Highlights: the passage selected on the page, saved (a new save keeps it at once) or offered to save, and how
+// many this page has.
+function renderHighlight() {
+  const box = $('#pop-hl');
+  if (!box) return;
+  const hs = bm.highlights || [];
+  const kept = selection && hs.find((h) => h.text === selection.slice(0, 4000));
+  const count = hs.length === 1 ? '1 highlight on this page' : `${hs.length} highlights on this page`;
+  if (!selection && !hs.length) { box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = selection
+    ? `<p class="pop-hl-label">${icon('highlighter', 14)} ${kept ? 'Saved as a highlight' : 'Selected on this page'}</p>
+       <blockquote dir="auto">${esc(selection)}</blockquote>
+       ${kept
+         ? `<div class="pop-hl-foot"><span class="pop-hl-n">${count}</span><button type="button" class="btn ghost sm" id="hl-remove">Remove highlight</button></div>`
+         : `<button type="button" class="btn sm" id="hl-save">${icon('highlighter', 15)} Save as a highlight</button>`}`
+    : `<p class="pop-hl-label">${icon('highlighter', 14)} ${count}</p>`;
+  $('#hl-save')?.addEventListener('click', async () => {
+    M.addHighlight(bm, selection);
+    await M.saveBookmark(bm);
+    renderHighlight();
+    $('#hl-remove')?.focus();
+  });
+  $('#hl-remove')?.addEventListener('click', async () => {
+    M.removeHighlight(bm, kept.id);
+    await M.saveBookmark(bm);
+    renderHighlight();
+    $('#hl-save')?.focus();
   });
 }
 

@@ -73,6 +73,18 @@ const server = http.createServer(async (req, res) => {
     html = html.replace(/(href|src)="(css|js|fonts|icons)\//g, '$1="/$2/').replace('<script type="module" src="/js/app.js">', '<script src="/__test/stub-chrome.js"></script><script type="module" src="/js/app.js">');
     return send(200, html, 'text/html');
   }
+  if (url.pathname === '/__test/popup.html') {
+    // the real popup.html for a pretend tab (?url=, ?title=); ?sel= is text selected on that page
+    let html = fs.readFileSync(path.join(ROOT, 'popup.html'), 'utf8');
+    html = html.replace(/(href|src)="(css|js|fonts|icons)\//g, '$1="/$2/');
+    const extra = `<script src="/__test/stub-chrome.js"></script><script>
+      const q = new URLSearchParams(location.search);
+      chrome.tabs.query = async () => [{ id: 1, windowId: 1, url: q.get('url'), title: q.get('title') || '' }];
+      chrome.tabs.captureVisibleTab = async () => { throw new Error('no capture in tests'); };
+      chrome.scripting = { executeScript: async ({ func }) => { if (func.name === 'pageMetaExtractor' && q.get('sel')) return [{ result: { selection: q.get('sel') } }]; throw new Error('no page access in tests'); } };
+    </script>`;
+    return send(200, html.replace('<script type="module"', extra + '<script type="module"'), 'text/html');
+  }
   const file = url.pathname.startsWith('/__test/') ? path.join(FIX, url.pathname.slice(8)) : path.join(ROOT, decodeURIComponent(url.pathname));
   if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return send(404, 'Not found');
   send(200, fs.readFileSync(file), MIME[path.extname(file)] || 'application/octet-stream');
@@ -532,6 +544,53 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     await p.ev(`document.querySelector('[data-view=map]').click();`);
     await p.until(`return document.querySelectorAll('svg.netmap .map-stop path.dot').length > 0 && document.querySelectorAll('svg.netmap .cap').length > 0`);
     await p.ev(`document.querySelector('[data-view=cards]').click();`);
+  });
+  await test('highlights file with their page: kept once, found by search, listed and removed in the drawer', async () => {
+    const h = await open(`${BASE}/__test/seed.html?view=cards&to=/all`);
+    await h.until(`return !!document.querySelector('#grid .card[data-id=b3]')`);
+    await h.ev(`const M = await import('/js/model.js'); const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b3');
+      M.addHighlight(b, 'Start with too much white space, then remove it.'); M.addHighlight(b, '  Start with too much   white space, then remove it. ');
+      await M.saveBookmark(b); location.reload();`);
+    await h.until(`return !!document.querySelector('#grid .card[data-id=b3] .hl-n')`);
+    assert(await h.ev(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).highlights.length === 1`), 'the same passage twice is kept once');
+    await h.ev(`const s = document.querySelector('#search'); s.value = 'white space'; s.dispatchEvent(new Event('input', { bubbles: true }));`);
+    await h.until(`const c = document.querySelector('#grid .card[data-id=b3]'); return c?.querySelector('.snip-label')?.textContent === 'Highlight' && /white/i.test(c.querySelector('.card-snippet mark')?.textContent || '')`);
+    await h.ev(`const s = document.querySelector('#search'); s.value = 'has:highlights'; s.dispatchEvent(new Event('input', { bubbles: true }));`);
+    await h.until(`return document.querySelectorAll('#grid .card').length === 1 && !!document.querySelector('#grid .card[data-id=b3]')`);
+    await h.ev(`document.querySelector('#grid .card[data-id=b3] [data-act=edit]').click();`);
+    await h.until(`return document.querySelectorAll('#drawer .highlights li').length === 1`);
+    await h.ev(`document.querySelector('#drawer [data-act=rm-highlight]').click();`);
+    await h.until(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).highlights.length === 0 && !document.querySelector('#drawer .highlights')`);
+    assert(!h.errors.length, h.errors.join('\n'));
+    await h.close();
+  });
+  await test('a saved image is stored on this computer, typed as an image, and remembers its page', async () => {
+    const h = await open(`${BASE}/__test/seed.html?view=cards&to=/all`);
+    await h.until(`return !!document.querySelector('#grid .card')`);
+    const r = await h.ev(`const M = await import('/js/model.js'); const src = location.origin + '/icons/icon128.png';
+      const a = await M.saveImage({ src, pageUrl: location.origin + '/__test/page1.html', pageTitle: 'Page one' });
+      const again = await M.saveImage({ src, pageUrl: location.origin + '/elsewhere' });
+      const none = await M.saveImage({ src: 'data:image/png;base64,AAAA', pageUrl: location.origin });
+      return [a.created, a.b.type, a.b.cover.startsWith('media:'), a.b.fromUrl.endsWith('/__test/page1.html'), a.b.fromTitle, again.created, none, a.b.id];`);
+    assert(r[0] === true && r[1] === 'image' && r[2] && r[3] && r[4] === 'Page one' && r[5] === false && r[6] === null, 'image: ' + JSON.stringify(r));
+    await h.ev(`location.reload();`);
+    await h.until(`return !!document.querySelector('#grid .card[data-id="${r[7]}"]')`);
+    await h.ev(`document.querySelector('#grid .card[data-id="${r[7]}"] [data-act=edit]').click();`);
+    await h.until(`return document.querySelector('#drawer .drawer-meta a')?.textContent === 'Page one'`);
+    assert(!h.errors.length, h.errors.join('\n'));
+    await h.close();
+  });
+  await test('the popup keeps text selected on the page as a highlight, and can take it back', async () => {
+    const pp = await open(`${BASE}/__test/popup.html?url=${encodeURIComponent('https://example.org/essay')}&title=An%20essay&sel=${encodeURIComponent('The quick brown fox jumps over the lazy dog.')}`);
+    await pp.until(`return document.querySelector('#pop-hl:not([hidden]) .pop-hl-label')?.textContent.includes('Saved as a highlight')`);
+    const saved = `const db = await import('/js/db.js'); const b = (await db.getAll('bookmarks')).find((x) => x.url === 'https://example.org/essay');`;
+    assert(await pp.ev(`${saved} return b.highlights.length === 1 && b.note === ''`), 'the selection is a highlight, not the note');
+    await pp.ev(`document.querySelector('#hl-remove').click();`);
+    await pp.until(`${saved} return b.highlights.length === 0 && !!document.querySelector('#hl-save')`);
+    await pp.ev(`document.querySelector('#hl-save').click();`);
+    await pp.until(`${saved} return b.highlights.length === 1 && !!document.querySelector('#hl-remove')`);
+    assert(!pp.errors.length, pp.errors.join('\n'));
+    await pp.close();
   });
   await test('the station chime switch is saved, and arriving at a station flips its name in', async () => {
     await p.ev(`location.hash = '#/settings';`);

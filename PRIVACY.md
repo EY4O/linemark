@@ -30,6 +30,8 @@ Linemark makes network requests only for the features below, and only when you u
 | Feature | What happens |
 |---|---|
 | **Saving a page** (toolbar button, right-click menu or shortcut) | Linemark reads the open tab's title, description, cover-image address and readable text, and takes a screenshot of the visible tab. All of this happens on your device. If the page names a cover image, Linemark downloads that image once from the site that hosts it and stores it locally. |
+| **Saving a highlight** (right-click on selected text, or the toolbar popup) | Linemark keeps the text you selected with that page's bookmark, on your device. |
+| **Saving an image** (right-click on an image) | Linemark downloads that one image once from the site that hosts it and stores it locally, with the address of the page it was on. |
 | **Link checks, previews, full-text indexing, Refresh** (optional; Chrome asks for site access first) | Linemark requests each saved page directly from its own website, much as your browser does when you visit it. Your cookies aren't sent. The website sees an ordinary request from your browser, including your IP address. |
 | **Optional sync** | See *Optional encrypted sync* below. |
 | **Site icons** | Linemark uses Chrome's own local cache of site icons. No icon service is contacted. |
@@ -68,7 +70,7 @@ Specifically, Linemark:
 |---|---|
 | `storage`, `unlimitedStorage` | Keep your library, covers and page text on your device |
 | `activeTab`, `scripting` | Read the page you choose to save (title, description, cover, text) and take its screenshot |
-| `contextMenus` | **Save page / Save link to Linemark** in the right-click menu |
+| `contextMenus` | **Save page / Save link / Save highlight / Save image to Linemark** in the right-click menu |
 | `bookmarks` | Import Chrome's bookmarks when you ask (read only) |
 | `favicon` | Show site icons from Chrome's own cache |
 | `tabs` (optional) | **Save all open tabs** and **Save tab groups as lines**, only when you use them |
