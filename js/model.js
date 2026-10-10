@@ -18,6 +18,32 @@ export const LINE_COLORS = [
   { name: 'Rose', value: '#e0607e' },
 ];
 
+// City palettes: the twelve line colours recast after a city's transit map. Slot by slot each keeps the same family
+// (red, magenta, violet, blue, sky, teal, green, olive, yellow, brown, grey, pink), so switching city recolours every
+// line in kind, and switching back restores it. Inspired by each city's lines, not copied from any operator's brand;
+// a few are nudged a shade so bullet lettering stays at 4.5:1.
+export const PALETTES = [
+  { id: 'linemark', name: 'Linemark', colors: LINE_COLORS.map((c) => c.value) },
+  { id: 'london', name: 'London', colors: ['#dc241f', '#9b0056', '#6950a1', '#003688', '#0098d4', '#00a4a7', '#00782a', '#84b817', '#ffd300', '#af6105', '#7b868c', '#f3a9bb'] },
+  { id: 'paris', name: 'Paris', colors: ['#e3051c', '#cf009e', '#62259d', '#003ca6', '#6ec4e8', '#00a88f', '#007852', '#807702', '#ffcd00', '#704b1c', '#8b8b8b', '#fa9aba'] },
+  { id: 'tokyo', name: 'Tokyo', colors: ['#f62e36', '#b6007a', '#8f76d6', '#0079c2', '#009bbf', '#00ac9b', '#00bb85', '#6cbb5a', '#c1a470', '#9c5e31', '#9a9a92', '#e85298'] },
+  { id: 'new-york', name: 'New York', colors: ['#ef3d36', '#b933ad', '#6e3fa3', '#0039a6', '#00a1de', '#008287', '#089642', '#6cbe45', '#fccc0a', '#996633', '#808183', '#e86fa5'] },
+  { id: 'berlin', name: 'Berlin', colors: ['#d3401d', '#c6007e', '#8568a2', '#224f86', '#528dba', '#00999a', '#16683d', '#7dad4c', '#f0d722', '#7e5330', '#888888', '#dd6ca7'] },
+  { id: 'seoul', name: 'Seoul', colors: ['#d4003b', '#a0167e', '#9d72af', '#0052a4', '#00a5de', '#77c4a3', '#00a84d', '#717b00', '#f5a200', '#cd7c2f', '#a9a9a9', '#f29bb9'] },
+];
+let palette = PALETTES[0];
+export function setPalette(id) { palette = PALETTES.find((p) => p.id === id) || PALETTES[0]; }
+export const currentPalette = () => palette;
+// The colours a new or recoloured line can take right now: the chosen city's, named by family.
+export const lineColors = () => palette.colors.map((value, i) => ({ name: LINE_COLORS[i].name, value }));
+// A line's colour carried from one city to another: the same slot in the other palette; a colour from neither stays.
+export function recolor(hex, fromId, toId) {
+  const from = PALETTES.find((p) => p.id === fromId) || PALETTES[0];
+  const to = PALETTES.find((p) => p.id === toId) || PALETTES[0];
+  const i = from.colors.findIndex((c) => c.toLowerCase() === String(hex).toLowerCase());
+  return i < 0 ? hex : to.colors[i];
+}
+
 export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
@@ -59,7 +85,7 @@ export function pickLineColor(usedColors) {
     if (!usedHues.length) return 360;
     return Math.min(...usedHues.map((u) => Math.min(Math.abs(h - u), 360 - Math.abs(h - u))));
   };
-  return [...LINE_COLORS]
+  return lineColors()
     .sort((a, b) => (count.get(a.value) || 0) - (count.get(b.value) || 0) || gap(b.value) - gap(a.value))[0].value;
 }
 
@@ -89,7 +115,8 @@ export function tabGroupColor(hex) {
   const dist = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
   return hues.sort((a, b) => dist(h, hueOf(a[1])) - dist(h, hueOf(b[1])))[0][0];
 }
-export const lineColorForGroup = (name) => TAB_GROUP_COLORS[name] || TAB_GROUP_COLORS.grey;
+// A tab group's colour as a line: its Linemark slot, in the chosen city's palette.
+export const lineColorForGroup = (name) => recolor(TAB_GROUP_COLORS[name] || TAB_GROUP_COLORS.grey, 'linemark', palette.id);
 
 // ---------- the Internet Archive ----------
 // Asked only when someone chooses "Find archived copy" on a link that no longer works.
@@ -173,7 +200,8 @@ export function codeFor(name = '') {
 export function colorFor(seed = '') {
   let h = 0;
   for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return LINE_COLORS[h % LINE_COLORS.length].value;
+  const colors = lineColors();
+  return colors[h % colors.length].value;
 }
 
 const TRACKING = /^(utm_|fbclid$|gclid$|mc_|ref$|ref_src$|igshid$|si$)/i;

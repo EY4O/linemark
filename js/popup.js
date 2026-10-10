@@ -25,6 +25,7 @@ const persist = debounce(async () => { if (bm) await M.saveBookmark(bm); }, 250)
 
 async function main() {
   collections = await db.getAll('collections');
+  M.setPalette((await db.getMeta('ui', {}))?.palette);
   if (usesIcons(collections)) await loadIcons();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !M.isSavable(tab.url)) return renderUnsavable();

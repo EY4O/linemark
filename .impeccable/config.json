@@ -47,6 +47,15 @@
         ],
         "createdAt": "2026-10-10T15:58:53.272Z",
         "reason": "User approved: bullet-glyph size in the 16px meta bullet; it scales with the bullet, which DESIGN.md exempts from the type ramp (letters)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "docs/index.html"
+        ],
+        "createdAt": "2026-10-10T18:26:29.861Z",
+        "reason": "User approved: the toy's map canvas fills its own paper area edge to edge on purpose; its hint, score and buttons are inset 14-16px"
       }
     ]
   }

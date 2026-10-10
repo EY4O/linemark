@@ -188,11 +188,11 @@ console.log('Model and import/export');
     const r = await p.ev(`const M = await import('/js/model.js'); return M.normalizeUrl('https://www.Example.com/a/?utm_source=x&id=2#top') === M.normalizeUrl('http://example.com/a?id=2');`);
     assert(r, 'tracking params, www, scheme, trailing slash and hash should not matter');
   });
-  await test('every line colour keeps bullet text at 4.5:1 or better', async () => {
+  await test('every line colour, in every city palette, keeps bullet text at 4.5:1 or better', async () => {
     const bad = await p.ev(`const M = await import('/js/model.js');
       const L = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0); };
       const cr = (a, b) => (Math.max(L(a), L(b)) + 0.05) / (Math.min(L(a), L(b)) + 0.05);
-      return M.LINE_COLORS.filter((c) => cr(c.value, M.bulletInk(c.value)) < 4.5).map((c) => c.name);`);
+      return M.PALETTES.flatMap((p) => p.colors.map((v) => ({ name: p.name + ' ' + v, value: v }))).filter((c) => cr(c.value, M.bulletInk(c.value)) < 4.5).map((c) => c.name);`);
     assert(!bad.length, 'low contrast: ' + bad.join(', '));
   });
   await test('new lines avoid colours next to ones in use, and never use Linemark orange', async () => {
@@ -512,6 +512,26 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     await p.until(`const db = await import('/js/db.js'); return (await db.getMeta('ui', {})).wrapView === 'journey'`);
     await p.ev(`document.querySelector('[data-act=wrap-view][data-v=summary]').click();`);
     await p.until(`return !!document.querySelector('.wrapped .year-line')`);
+  });
+  await test('a city palette recolours every line in kind, and Undo puts them back', async () => {
+    await p.ev(`location.hash = '#/settings';`);
+    await p.until(`return !!document.querySelector('[data-palette=tokyo]')`);
+    await p.ev(`document.querySelector('[data-palette=tokyo]').click();`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.get('collections', 'c_design'))?.color === '#9a9a92'`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.getMeta('ui', {})).palette === 'tokyo'`);
+    const r = await p.ev(`const db = await import('/js/db.js'); return [(await db.get('collections', 'c_eng')).color, (await db.getMeta('ui', {})).palette, document.querySelector('[data-palette=tokyo]').getAttribute('aria-pressed')];`);
+    assert(r[0] === '#0079c2' && r[1] === 'tokyo' && r[2] === 'true', 'tokyo: ' + JSON.stringify(r));
+    await p.ev(`[...document.querySelectorAll('#toasts .toast button')].find((b) => b.textContent === 'Undo').click();`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.get('collections', 'c_design'))?.color === '#5c6773' && (await db.get('collections', 'c_eng')).color === '#2f5bd8'`);
+  });
+  await test('link types are shapes, the map draws carriages, and Unsorted fills like a platform', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return !!document.querySelector('.type-filter .shape') && !!document.querySelector('#grid .meta .kind .shape')`);
+    const crowd = await p.ev(`const b = document.querySelector('#band a.stop[href="#/unsorted"] .bullet'); return [b.classList.contains('crowd'), +b.style.getPropertyValue('--crowd') > 0];`);
+    assert(crowd[0] && crowd[1], 'crowding ring: ' + JSON.stringify(crowd));
+    await p.ev(`document.querySelector('[data-view=map]').click();`);
+    await p.until(`return document.querySelectorAll('svg.netmap .map-stop path.dot').length > 0 && document.querySelectorAll('svg.netmap .cap').length > 0`);
+    await p.ev(`document.querySelector('[data-view=cards]').click();`);
   });
   await test('the station chime switch is saved, and arriving at a station flips its name in', async () => {
     await p.ev(`location.hash = '#/settings';`);

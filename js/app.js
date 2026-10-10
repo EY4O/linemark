@@ -5,6 +5,7 @@ import * as IO from './io.js';
 import * as Sync from './sync.js';
 import * as AI from './ai.js';
 import { chime } from './chime.js';
+import { shapeIcon, shapePath, shapeOf, TYPE_NAME } from './shapes.js';
 import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji, loadIcons, usesIcons } from './bullets.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
@@ -47,6 +48,7 @@ async function load() {
   if (usesIcons(collections)) await loadIcons();
   textsChanged();
   if (ui) Object.assign(S.ui, ui);
+  M.setPalette(S.ui.palette);
   index();
 }
 
@@ -325,8 +327,15 @@ function lineBullet(c, size = 20, cls = '', title = '') {
   if (!c) return unsortedBullet(size, 'currentColor', cls);
   return lineBulletHTML(c, size, cls, title);
 }
-const lineColor = (name) => M.LINE_COLORS.find((c) => c.name === name).value;
+const lineColor = (name) => M.lineColors().find((c) => c.name === name).value;
 const unsortedBullet = (size = 20, color = 'currentColor', cls = '') => `<span class="bullet ring ${cls}" style="${bs(size)}--c:${color}" title="Unsorted"></span>`;
+// Unsorted fills up like a crowded platform: a ring sweeps round its bullet as links wait to be filed, full at a dozen.
+const CROWD_AT = 12;
+const crowdBullet = (n) => {
+  if (!n) return unsortedBullet(20, 'var(--band-ink-2)');
+  const f = Math.min(1, n / CROWD_AT);
+  return `<span class="bullet ring crowd${f >= 1 ? ' full' : ''}" style="--bs:20px;--c:var(--band-ink-2);--crowd:${f.toFixed(3)}" title="${plural(n, 'link')} waiting to be filed"></span>`;
+};
 const allBullet = (size, bg = 'var(--band-ink)', fg = 'var(--band)') => `<span class="bullet" style="--bs:${size}px;--c:${bg};--bi:${fg}">${icon('cards', 12)}</span>`;
 const favBullet = (size) => `<span class="bullet" style="--bs:${size}px;--c:${FAV};--bi:#16171a">${icon('starFilled', 12)}</span>`;
 const trashBullet = (size, color = 'currentColor') => `<span class="bullet dashed" style="--bs:${size}px;--c:${color}"></span>`;
@@ -379,7 +388,7 @@ function renderBand() {
     </div>
     <div class="band-scroll">
       ${stop('all', 'All bookmarks', allBullet(20), S.counts.all)}
-      ${stop('unsorted', 'Unsorted', unsortedBullet(20, 'var(--band-ink-2)'), S.counts.unsorted)}
+      ${stop('unsorted', 'Unsorted', crowdBullet(S.counts.unsorted), S.counts.unsorted)}
       ${stop('favorites', 'Favorites', favBullet(20), S.counts.fav)}
       ${S.counts.due ? stop('departures', 'Departures', departuresBullet(20), S.counts.due) : ''}
       ${S.counts.broken ? stop('broken', 'Broken links', brokenBullet(20), S.counts.broken) : ''}
@@ -529,7 +538,7 @@ function renderSubbar() {
     </div>
     ${typeBtns.length > 1 ? `<div class="seg type-filter" role="group" aria-label="Type">
       <button data-type="all" aria-pressed="${S.type === 'all'}">All</button>
-      ${typeBtns.map((t) => `<button data-type="${t.id}" aria-pressed="${S.type === t.id}">${t.label} <span class="n">${S.counts.types.get(t.id)}</span></button>`).join('')}
+      ${typeBtns.map((t) => `<button data-type="${t.id}" aria-pressed="${S.type === t.id}">${shapeIcon(t.id, 12)}${t.label} <span class="n">${S.counts.types.get(t.id)}</span></button>`).join('')}
     </div>` : ''}
     <span class="spacer"></span>
     ${extra}
@@ -588,7 +597,7 @@ function cardHTML(b) {
       ${S.snippets.has(b.id) ? `<p class="card-snippet"><span class="snip-label">In page</span> ${S.snippets.get(b.id)}</p>` : b.excerpt ? `<p class="card-excerpt" dir="auto">${esc(b.excerpt)}</p>` : ''}
       ${b.note ? `<p class="card-note">${icon('note', 14)}<span dir="auto">${esc(b.note)}</span></p>` : ''}
       ${b.tags.length ? `<div class="tags">${b.tags.map((t) => `<button class="tag" data-tag="${esc(t)}" aria-label="Show links tagged ${esc(t)}"><span class="hash">#</span>${esc(t)}</button>`).join('')}</div>` : ''}
-      <div class="meta">${fav}<span class="host">${esc(host)}</span><span class="dot">·</span><span class="when" title="${esc(fullDate(trash ? b.trashedAt : b.createdAt))}">${when}</span>${b.favorite ? `<span class="fav-star" title="Favorite">${icon('starFilled', 14)}</span>` : ''}${!trash ? healthChip(b) : ''}${!trash && b.revisitAt ? `<span class="due${b.revisitAt <= M.endOfToday() ? ' now' : ''}" title="Revisit ${esc(fullDate(b.revisitAt))}">${icon('clock', 13)}${M.revisitLabel(b.revisitAt)}</span>` : ''}</div>
+      <div class="meta">${fav}<span class="host">${esc(host)}</span><span class="dot">·</span><span class="when" title="${esc(fullDate(trash ? b.trashedAt : b.createdAt))}">${when}</span><span class="kind" title="${TYPE_NAME[b.type] || 'Link'}">${shapeIcon(b.type, 11)}</span>${b.favorite ? `<span class="fav-star" title="Favorite">${icon('starFilled', 14)}</span>` : ''}${!trash ? healthChip(b) : ''}${!trash && b.revisitAt ? `<span class="due${b.revisitAt <= M.endOfToday() ? ' now' : ''}" title="Revisit ${esc(fullDate(b.revisitAt))}">${icon('clock', 13)}${M.revisitLabel(b.revisitAt)}</span>` : ''}</div>
     </div>
     <button class="check" data-act="select" aria-label="Select “${name}”" aria-pressed="${sel}">${icon('check', 15)}</button>
     <div class="card-actions">
@@ -782,6 +791,23 @@ function renderWrapped() {
     </div>
     ${actions}
   </div>`;
+}
+
+// ---- city palettes: every line recoloured in kind, and back again ----
+async function applyPalette(id, { quiet = false } = {}) {
+  const from = M.currentPalette().id;
+  if (from === id) return;
+  const changed = [];
+  for (const c of S.collections) {
+    const next = M.recolor(c.color, from, id);
+    if (next !== c.color) { c.color = next; changed.push(c); }
+  }
+  S.ui.palette = id;
+  M.setPalette(id);
+  saveUI();
+  if (changed.length) await putCollections(changed);
+  renderAll();
+  if (!quiet) toast(`Lines recoloured after ${M.currentPalette().name}`, { action: 'Undo', onAction: () => applyPalette(from, { quiet: true }) });
 }
 
 // ---- the Journey: the year as one ride ----
@@ -988,7 +1014,8 @@ function mapHTML(list) {
   const svg = rows.map((r) => {
     const c = r.c;
     const href = r.unsorted ? '#/unsorted' : '#/c/' + c.id;
-    const stem = r.parentRow ? `<path class="stem" d="M${r.parentRow.bx} ${r.parentRow.y + 12} V${r.y - 9} Q${r.parentRow.bx} ${r.y} ${r.parentRow.bx + 9} ${r.y} H${r.bx - 12}" style="--c:${r.parentRow.c.color}"/>` : '';
+    // a branch leaves its parent straight down, then takes a 45° turn into its own bullet, as a metro map draws it
+    const stem = r.parentRow ? `<path class="stem" d="M${r.parentRow.bx} ${r.parentRow.y + 12} V${r.y - 8} L${r.parentRow.bx + 8} ${r.y} H${r.bx - 12}" style="--c:${r.parentRow.c.color}"/>` : '';
     const shown = r.items.slice(0, MAP.max);
     const end = MAP.label + 30 + Math.max(0, shown.length - 1) * MAP.step + 34;
     const recent = Date.now() - 86400000;
@@ -997,7 +1024,7 @@ function mapHTML(list) {
       return `<a class="map-stop${inter ? ' inter' : ''}${b.createdAt > recent ? ' new' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
         <title>${esc(b.title)}</title>
         <circle class="hit" cx="${x}" cy="${r.y}" r="22"/>
-        <circle class="dot" cx="${x}" cy="${r.y}" r="${inter ? 9 : 8}"/>
+        <path class="dot" d="${shapePath(shapeOf(b.type), x, r.y, inter ? 10.5 : 9)}"/>
         <text x="${x + 2}" y="${r.y - 17}" transform="rotate(-30 ${x + 2} ${r.y - 17})">${esc(cut(b.title, 22))}</text>
       </a>`;
     }).join('');
@@ -1009,8 +1036,8 @@ function mapHTML(list) {
         <circle class="lb" cx="${r.bx}" cy="${r.y}" r="12"/>${r.unsorted ? '' : `<text class="lb-code" x="${r.bx}" y="${r.y + 4}">${esc(c.code || M.codeFor(c.name))}</text>`}
         <text class="lb-name" x="${r.bx + 20}" y="${r.y + 5}">${esc(cut(c.name, Math.max(8, 24 - r.depth * 2)))}</text>
       </a>
-      ${shown.length ? `<path class="track" d="M${MAP.label} ${r.y} H${end}"/>` : ''}
-      ${shown.length > 1 && !reducedMotion() ? `<circle class="train" r="5"><animateMotion dur="${Math.round((end - MAP.label) / 34)}s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;0" keyTimes="0;0.5;1" path="M${MAP.label + 30} ${r.y} H${end - 34}"/></circle>` : ''}
+      ${shown.length ? `<path class="track" d="M${MAP.label} ${r.y} H${end}"/><path class="cap" d="M${end} ${r.y - 9} V${r.y + 9}"/>` : ''}
+      ${shown.length > 1 && !reducedMotion() ? `<g class="train"><rect x="-12" y="-6.5" width="24" height="13" rx="2.5"/><rect class="pax" x="-7" y="-2.5" width="5" height="5" rx="1"/><rect class="pax" x="2" y="-2.5" width="5" height="5" rx="1"/><animateMotion dur="${Math.round((end - MAP.label) / 34)}s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;0" keyTimes="0;0.5;1" path="M${MAP.label + 30} ${r.y} H${end - 34}"/></g>` : ''}
       ${stations}${more}
     </g>`;
   }).join('');
@@ -1445,7 +1472,7 @@ function lineMenu(anchor, id) {
       ${M.hasChrome && chrome.tabs?.group ? menuItem({ label: 'Open as tab group', iconName: 'tabs', action: 'tab-group' }) : ''}
       <div class="menu-sep"></div>
       <div class="label" style="padding:4px 9px 0">Line colour</div>
-      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.LINE_COLORS.map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
+      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.lineColors().map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
       <div class="label" style="padding:2px 9px 0">Bullet</div>
       <div class="bullet-row">
         ${lineBullet(c, 30)}
@@ -1496,7 +1523,7 @@ function smartLineMenu(anchor, c) {
       <form class="smart-form"><input class="input menu-search" value="${esc(c.query)}" aria-label="Search for this smart line" spellcheck="false"></form>
       ${menuItem({ label: 'Rename', iconName: 'edit', action: 'rename' })}
       <div class="label" style="padding:4px 9px 0">Line colour</div>
-      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.LINE_COLORS.map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
+      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.lineColors().map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
       <div class="menu-sep"></div>
       ${menuItem({ label: 'Delete smart line', iconName: 'trash', action: 'delete', danger: true })}`;
     $('.smart-form', m).addEventListener('submit', async (e) => {
@@ -2381,6 +2408,8 @@ async function renderSettings() {
       <h2>${icon('sun', 20)} Appearance</h2>
       <div class="rows"><div class="row"><div class="what"><b>Theme</b><span>The signage band stays dark; the work area follows this setting.</span></div>
         <div class="act"><div class="seg" role="group" aria-label="Theme">${['system', 'light', 'dark'].map((t) => `<button data-theme-set="${t}" aria-pressed="${S.ui.theme === t}">${icon(t === 'dark' ? 'moon' : t === 'light' ? 'sun' : 'monitor', 15)} ${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div></div>
+        <div class="row stack"><div class="what"><b>Line colours</b><span>Twelve colours for your lines, after a city's transit map. Switching recolours every line in kind; switch back any time.</span></div>
+        <div class="act palettes" role="group" aria-label="Line colours">${M.PALETTES.map((p) => `<button data-act="palette" data-palette="${p.id}" aria-pressed="${M.currentPalette().id === p.id}"><span class="pal-dots" aria-hidden="true">${[3, 0, 6, 8, 1, 5].map((i) => `<i style="background:${p.colors[i]}"></i>`).join('')}</span>${p.name}</button>`).join('')}</div></div>
         <div class="row"><div class="what"><b>Station chime</b><span>Two soft notes when you save from the toolbar or here in Linemark (right-click saves stay quiet). Made on your computer; off unless you turn it on.</span></div>
         <div class="act"><button class="switch" role="switch" aria-checked="${!!S.ui.chime}" data-act="chime" aria-label="Station chime"></button></div></div></div>
     </section>
@@ -2505,6 +2534,7 @@ function bindEvents() {
       case 'visited': setRevisit(selectionOr(id), null); break;
       case 'save-smart': saveSmartLine(); break;
       case 'save-tab-groups': saveTabGroups(); break;
+      case 'palette': applyPalette(actEl.dataset.palette); break;
       case 'chime': S.ui.chime = !S.ui.chime; saveUI(); if (S.ui.chime) chime(); actEl.setAttribute('aria-checked', S.ui.chime); break;
       case 'wrap-year': S.wrapYear = +actEl.dataset.year; renderWrapped(); break;
       case 'wrap-view': S.ui.wrapView = actEl.dataset.v; saveUI(); between(renderWrapped); break;
