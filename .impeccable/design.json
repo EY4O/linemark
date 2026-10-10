@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-10T06:53:46.000Z",
+  "generatedAt": "2026-10-10T12:00:00.000Z",
   "title": "Design System: Linemark",
   "extensions": {
     "colorMeta": {
@@ -656,6 +656,48 @@
           "#ffe8eb"
         ],
         "purpose": "User-assignable line colour: bullet fill, station stripe, sidebar stem, placeholder cover, popup stripe. Bullet ink is white or #16171a by contrast."
+      },
+      "ink-dark": {
+        "role": "neutral",
+        "displayName": "Signage Black Ink (dark)",
+        "canonical": "#ecebe7",
+        "darkOf": "ink",
+        "purpose": "Primary text in the dark theme and the public site's dark scheme."
+      },
+      "ink-2-dark": {
+        "role": "neutral",
+        "displayName": "Ink 2 (dark)",
+        "canonical": "#c0c2c7",
+        "darkOf": "ink-2",
+        "purpose": "Secondary text in dark: excerpts, snippets, tags, the public site's ledes and body copy."
+      },
+      "ink-3-dark": {
+        "role": "neutral",
+        "displayName": "Ink 3 (dark)",
+        "canonical": "#9a9da5",
+        "darkOf": "ink-3",
+        "purpose": "Tertiary text in dark: meta, placeholders, field labels, icons, captions."
+      },
+      "brand-text-dark": {
+        "role": "primary",
+        "displayName": "Brand Text (dark)",
+        "canonical": "#ff7d4a",
+        "darkOf": "brand-text",
+        "purpose": "Orange as text on dark surfaces: menu checks, the public site's inline links."
+      },
+      "danger-dark": {
+        "role": "tertiary",
+        "displayName": "Signal Red (dark)",
+        "canonical": "#ff6b6b",
+        "darkOf": "danger",
+        "purpose": "Destructive actions, Dead chip and invalid fields in dark."
+      },
+      "warn-ink-dark": {
+        "role": "tertiary",
+        "displayName": "Warn Gold (dark)",
+        "canonical": "#f5c34d",
+        "darkOf": "warn-ink",
+        "purpose": "Unverified health chip text and icon in dark."
       }
     },
     "typographyMeta": {
@@ -726,6 +768,38 @@
       "fallback-letter": {
         "displayName": "Fallback Letter",
         "purpose": "Letter in the 16px favicon fallback square."
+      },
+      "site-hero": {
+        "displayName": "Site Hero",
+        "purpose": "Public site only (docs/): the homepage hero h1 in the station sign."
+      },
+      "site-terminus": {
+        "displayName": "Site Terminus",
+        "purpose": "Public site only: the terminus h2 on the band-black closing block."
+      },
+      "site-stop": {
+        "displayName": "Site Stop Heading",
+        "purpose": "Public site only: each stop's h2 beside its line-colour ring."
+      },
+      "site-wordmark": {
+        "displayName": "Site Wordmark",
+        "purpose": "Public site only: Linemark beside the brand bullet in the band; 1.25rem under 880px."
+      },
+      "site-lede": {
+        "displayName": "Site Lede",
+        "purpose": "Public site only: the hero lede in ink-2, 48ch; 1.0625rem under 880px."
+      },
+      "site-lede-stop": {
+        "displayName": "Site Stop Lede",
+        "purpose": "Public site only: each stop's lede in ink-2, 58ch."
+      },
+      "site-body": {
+        "displayName": "Site Body",
+        "purpose": "Public site only: base reading text and button labels."
+      },
+      "site-card-title": {
+        "displayName": "Site Card Title",
+        "purpose": "Public site only: titles on the sample library's cards."
       }
     },
     "bulletCode": {
@@ -903,6 +977,21 @@
         "name": "month",
         "value": "clamp(5rem, 13cqw, 10.5rem)",
         "purpose": "Wrapped only: Journey month name (ghost and fore)."
+      },
+      {
+        "name": "site-hero",
+        "value": "clamp(3rem, 6.2vw, 5.75rem)",
+        "purpose": "Public site only: homepage hero h1."
+      },
+      {
+        "name": "site-terminus",
+        "value": "clamp(2.5rem, 5vw, 4.25rem)",
+        "purpose": "Public site only: terminus h2."
+      },
+      {
+        "name": "site-stop",
+        "value": "clamp(2rem, 3.6vw, 3rem)",
+        "purpose": "Public site only: stop h2."
       }
     ],
     "radiusScale": {
@@ -945,8 +1034,11 @@
         "stop": "clamp(2rem, 3.6vw, 3rem) / 770 / 82% width / 1.02 / -0.025em",
         "terminus": "clamp(2.5rem, 5vw, 4.25rem) / 780 / 80% width / 0.98",
         "lede": "1.25rem hero, 1.1875rem stops, ink-2",
-        "body": "1rem / 1.55"
+        "body": "1rem / 1.55",
+        "steps": "Recorded as frontmatter typography site-hero, site-terminus, site-stop, site-wordmark, site-lede, site-lede-stop, site-body, site-card-title; docs/ only, the app never uses them.",
+        "bulletGlyphs": "Bullet letters and emoji scale with the bullet (0.5rem letters, 0.5625rem emoji in the 16px meta bullet) and are exempt from the ramp, as in the app."
       },
+      "darkScheme": "prefers-color-scheme: dark uses the app's dark theme values exactly; dark text tones are the frontmatter *-dark colours, other dark values are colorMeta darkTheme.",
       "route": "5px orange line in the band; 24px band dots with 5px orange border; current stop is a solid orange disc (0 0 0 3px band, 0 0 0 5px band-ink) that rides the line on scroll.",
       "stopRing": "30px circle, 6px orange border, ground fill, leading each stop h2; 27px / 5px under 880px.",
       "phoneStem": "Under 880px: 5px orange stem, 2px radius, down the left edge joining the stop rings.",
@@ -1102,7 +1194,7 @@
       },
       {
         "name": "The On-Ramp Rule",
-        "body": "Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider, and Wrapped's Poster and Month steps.",
+        "body": "Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider, Wrapped's Poster and Month steps, and the public site's site-hero, site-stop and site-terminus. The `site-` steps belong to docs/ only; the app never takes a `site-` step, and the public site never invents a size between them.",
         "section": "typography"
       },
       {

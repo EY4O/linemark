@@ -43,6 +43,12 @@ colors:
   line-clay: "#9a5b36"
   line-slate: "#5c6773"
   line-rose: "#e0607e"
+  ink-dark: "#ecebe7"
+  ink-2-dark: "#c0c2c7"
+  ink-3-dark: "#9a9da5"
+  brand-text-dark: "#ff7d4a"
+  danger-dark: "#ff6b6b"
+  warn-ink-dark: "#f5c34d"
 typography:
   month:
     fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
@@ -148,6 +154,53 @@ typography:
     fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
     fontSize: "10px"
     fontWeight: 800
+  site-hero:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(3rem, 6.2vw, 5.75rem)"
+    fontWeight: 780
+    lineHeight: 0.96
+    letterSpacing: "-0.03em"
+    fontVariation: "'wdth' 80"
+  site-terminus:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(2.5rem, 5vw, 4.25rem)"
+    fontWeight: 780
+    lineHeight: 0.98
+    letterSpacing: "-0.03em"
+    fontVariation: "'wdth' 80"
+  site-stop:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(2rem, 3.6vw, 3rem)"
+    fontWeight: 770
+    lineHeight: 1.02
+    letterSpacing: "-0.025em"
+    fontVariation: "'wdth' 82"
+  site-wordmark:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "1.5rem"
+    fontWeight: 760
+    letterSpacing: "-0.02em"
+    fontVariation: "'wdth' 87.5"
+  site-lede:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "1.25rem"
+    fontWeight: 400
+    lineHeight: 1.5
+  site-lede-stop:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "1.1875rem"
+    fontWeight: 400
+    lineHeight: 1.55
+  site-body:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.55
+  site-card-title:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "0.96875rem"
+    fontWeight: 650
+    lineHeight: 1.32
 rounded:
   stem: "2px"
   xs: "4px"
@@ -353,7 +406,7 @@ Twelve line colours, the only user-assignable hues: Signal (line-signal), Magent
 - **Hairline / Strong Hairline** (rule, rule-strong): dividers and card borders; field, button and chip outlines.
 - **Overlays** (band-selection, brand-ink-soft, tile, cover-veil, cover-edge, knob, scrim, match-underline, shimmer): the alpha layers that sit over covers, photos or the page: text selection on the band, the selected tag pill's count, the white favicon tile, the checkbox veil and edge on covers, the switch knob, the drawer and sidebar scrim (deeper in dark theme), the search-match underline and the popup's loading shimmer. They are tokens like every other colour.
 
-Dark theme keeps the same roles with re-tuned values (see the sidecar); the band stays black and Linemark Orange stays unchanged.
+Dark theme keeps the same roles with re-tuned values (see the sidecar); the band stays black and Linemark Orange stays unchanged. **Dark variants** follow one naming convention: a dark value is recorded as its light token's name plus `-dark` (ink-dark, ink-2-dark, ink-3-dark, brand-text-dark, danger-dark, warn-ink-dark). These are the dark text tones, shared exactly by the app's dark theme and the public site's dark scheme. They are the same role as their light token, never a separate colour to reach for, and they are selected by the theme, not chosen per element. Dark surfaces, rules and washes stay on the sidecar's `darkTheme` field.
 
 ### Named Rules
 **The System Line Rule.** Linemark Orange is the system's line and is never offered in the user palette. If a user could pick it, it would stop meaning "this is Linemark acting".
@@ -399,7 +452,7 @@ Dark theme keeps the same roles with re-tuned values (see the sidecar); the band
 
 **The Tabular Count Rule.** Every count, date and number uses tabular figures so columns of counts align, including the status codes in health chips.
 
-**The On-Ramp Rule.** Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider, and Wrapped's Poster and Month steps.
+**The On-Ramp Rule.** Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider, Wrapped's Poster and Month steps, and the public site's site-hero, site-stop and site-terminus. The `site-` steps belong to docs/ only; the app never takes a `site-` step, and the public site never invents a size between them.
 
 ## Layout
 
@@ -550,7 +603,7 @@ All motion has a fade for reduced motion.
 
 ### Public site (docs/)
 The homepage and privacy page are a Persuade surface in the same world, not a second system: same tokens, Archivo, bullets, hairlines and shadows, with a larger type scale for reading at a distance. These sizes apply to docs/ only; the app keeps the ramp above.
-- **Type:** hero h1 `clamp(3rem, 6.2vw, 5.75rem)` at 780, 80% width, 0.96 leading, -0.03em; stop h2 `clamp(2rem, 3.6vw, 3rem)` at 770, 82% width; terminus h2 `clamp(2.5rem, 5vw, 4.25rem)` at 780, 80% width; ledes 1.25rem (hero) and 1.1875rem (stops) in ink-2, 48–58ch; body 1rem at 1.55.
+- **Type:** the `site-` steps in the frontmatter, for docs/ only. Hero h1 in site-hero (`clamp(3rem, 6.2vw, 5.75rem)` at 780, 80% width, 0.96 leading, -0.03em); stop h2 in site-stop (`clamp(2rem, 3.6vw, 3rem)` at 770, 82% width); terminus h2 in site-terminus (`clamp(2.5rem, 5vw, 4.25rem)` at 780, 80% width); ledes in site-lede (1.25rem, hero) and site-lede-stop (1.1875rem, stops) in ink-2, 48–58ch; body in site-body (1rem at 1.55); the band wordmark in site-wordmark (1.5rem, 1.25rem under 880px); sample-card titles in site-card-title (0.96875rem at 650). Smaller text on the site (paths, chips, meta, captions) takes app ramp steps. Bullet letters and emoji (0.5rem and 0.5625rem in the 16px meta bullet) scale with the bullet, as in the app, and are exempt from the ramp.
 - **Route:** the band carries the page's stops on a 5px orange trunk. Each stop is an interchange: a 24px band-black dot with a 5px border in that section's line colour (Save teal, Find cobalt, Private green; Try it and Install orange). Branch stops (Keep links healthy off Find, Your Google account off Private) sit 22px in, joined by a rounded L stem in the parent's colour, as sub-lines are in the app; their row fill starts right of the trunk so it never covers it. The current stop is marked by a solid disc in its line colour, ringed band-ink, that rides to it as you scroll.
 - **The route draws itself:** the trunk is laid in band-rule grey and fills orange behind the current-stop disc as you read; stops ahead keep their rings dimmed (38% of their colour) and branch stems dim until reached. Stop rules draw across as each stop scrolls in, and on phones the trunk and stems draw down (CSS scroll timelines; fully drawn where unsupported or under reduced motion).
 - **The scene:** on screens 1180px and wider, the station sign's right half carries a small 3D network in raw WebGL (hero.js, no libraries): the six line colours as raised tracks, white stations with a signage-black rim, two branches, trains easing between termini, a faint dot grid, and a slow drifting camera that leans toward the pointer. It fades in from the left, pauses off screen and in background tabs, and is a still picture under reduced motion.
