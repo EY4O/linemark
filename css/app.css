@@ -1003,7 +1003,7 @@ body { overflow: hidden; }
 @keyframes board-flip { 0% { transform: rotateX(88deg); opacity: 0.2; } 60% { transform: rotateX(-12deg); opacity: 1; } 100% { transform: none; } }
 /* the checker found a dead link: the Broken links bullet sounds once */
 .bullet.alarm { animation: alarm 0.9s var(--ease); }
-@keyframes alarm { 0% { box-shadow: 0 0 0 0 rgba(196, 40, 47, 0.7); } 100% { box-shadow: 0 0 0 10px rgba(196, 40, 47, 0); } }
+@keyframes alarm { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 70%, transparent); } 100% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--danger) 0%, transparent); } }
 /* a new line or branch draws its spur and slides onto the band */
 .line-node.fresh > .stop { animation: stop-in 0.45s var(--ease) both; }
 .line-children > .line-node.fresh > .stop::after { animation: spur 0.4s var(--ease) both; transform-origin: left center; }
@@ -1038,16 +1038,18 @@ body { overflow: hidden; }
 .netmap .lb { fill: var(--c); }
 .netmap .lb-code { fill: var(--bi); font-size: 10.5px; font-weight: 800; font-stretch: 87.5%; text-anchor: middle; }
 .netmap .lb-name { fill: var(--ink); font-size: 15px; font-weight: 720; font-stretch: 87.5%; }
-.netmap .map-stop circle { fill: var(--surface); stroke: var(--c); stroke-width: 4; transition: r 0.15s var(--ease); }
-.netmap .map-stop.inter circle { stroke: var(--ink); stroke-width: 3.5; }
+.netmap .hit { fill: transparent; stroke: none; pointer-events: all; } /* a 44px tap area around each station and label; nothing drawn */
+.netmap .map-stop .dot { fill: var(--surface); stroke: var(--c); stroke-width: 4; transition: r 0.15s var(--ease); }
+.netmap .map-stop.inter .dot { stroke: var(--ink); stroke-width: 3.5; }
 .netmap .map-stop text { fill: var(--ink-2); font-size: 12.5px; font-weight: 560; }
-.netmap .map-stop:hover circle, .netmap .map-stop:focus-visible circle { r: 11; }
+.netmap .map-stop:hover .dot, .netmap .map-stop:focus-visible .dot { r: 11; }
 .netmap .map-stop:hover text, .netmap .map-stop:focus-visible text { fill: var(--ink); text-decoration: underline; }
 .netmap a:focus { outline: none; }
-.netmap a:focus-visible circle { stroke: var(--brand); stroke-width: 4; }
+.netmap .map-stop:focus-visible .dot { stroke: var(--brand); stroke-width: 4; }
+.netmap .line-label:focus-visible .lb { stroke: var(--brand); stroke-width: 3; paint-order: stroke; r: 14; }
 .netmap .line-label:hover .lb-name, .netmap .line-label:focus-visible .lb-name { text-decoration: underline; }
 .netmap .more-stops text { fill: var(--ink-3); font-size: 12.5px; font-weight: 650; }
-@media (prefers-reduced-motion: reduce) { .netmap .map-stop circle { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .netmap .map-stop .dot { transition: none; } }
 
 /* ---------- on-device suggestions ---------- */
 .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: -4px 0 4px; }

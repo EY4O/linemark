@@ -73,8 +73,7 @@ function index() {
     for (const t of b.tags) c.tags.set(t, (c.tags.get(t) || 0) + 1);
   }
   S.counts = c;
-  const live = S.bookmarks.filter((b) => !b.trashedAt);
-  for (const col of S.collections) if (col.smart) c.byCol.set(col.id, matchQuery(live, col.query).length);
+  S.dataVer = (S.dataVer || 0) + 1; // smart-line counts are remembered until the library changes
 }
 
 const saveUI = debounce(() => db.setMeta('ui', S.ui), 300);
@@ -195,6 +194,15 @@ function passesFilters(b, q) {
 function matchQuery(list, qstr) {
   const q = parseQuery(qstr || '');
   return list.filter((b) => passesFilters(b, q) && q.words.every((w) => (b._hay ??= hayOf(b)).includes(w)));
+}
+// A smart line's count, worked out once per library change and only for the band that shows it.
+const smartCounts = new Map();
+function smartCount(c) {
+  const hit = smartCounts.get(c.id);
+  if (hit && hit.ver === S.dataVer && hit.query === c.query) return hit.n;
+  const n = matchQuery(S.bookmarks.filter((b) => !b.trashedAt), c.query).length;
+  smartCounts.set(c.id, { ver: S.dataVer, query: c.query, n });
+  return n;
 }
 const hayOf = (b) => (b.title + ' ' + b.url + ' ' + b.excerpt + ' ' + b.note + ' ' + b.tags.join(' ')).toLowerCase();
 
@@ -330,7 +338,7 @@ function renderBand() {
   const lineNode = (c, depth) => {
     const kids = kidsOf(c.id);
     const open = c.expanded && kids.length;
-    const n = S.counts.byCol.get(c.id) || 0;
+    const n = c.smart ? smartCount(c) : S.counts.byCol.get(c.id) || 0;
     const renaming = S.renaming === c.id;
     const here = r.kind === 'c' && r.id === c.id;
     return `<div class="line-node${S.fresh?.includes(c.id) ? ' fresh' : ''}" data-line="${c.id}">
@@ -719,7 +727,8 @@ function mapHTML(list) {
       const x = MAP.label + 30 + i * MAP.step;
       return `<a class="map-stop${inter ? ' inter' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
         <title>${esc(b.title)}</title>
-        <circle cx="${x}" cy="${r.y}" r="${inter ? 9 : 8}"/>
+        <circle class="hit" cx="${x}" cy="${r.y}" r="22"/>
+        <circle class="dot" cx="${x}" cy="${r.y}" r="${inter ? 9 : 8}"/>
         <text x="${x + 2}" y="${r.y - 17}" transform="rotate(-30 ${x + 2} ${r.y - 17})">${esc(cut(b.title, 22))}</text>
       </a>`;
     }).join('');
@@ -727,6 +736,7 @@ function mapHTML(list) {
     return `<g class="line-row" style="--c:${c.color};--bi:${r.unsorted ? 'var(--surface)' : M.bulletInk(c.color)}">
       ${stem}
       <a class="line-label" href="${href}" aria-label="Line ${esc(c.name)}">
+        <rect class="hit" x="${r.bx - 18}" y="${r.y - 22}" width="${MAP.label - r.bx - 4}" height="44" rx="8"/>
         <circle class="lb" cx="${r.bx}" cy="${r.y}" r="12"/>${r.unsorted ? '' : `<text class="lb-code" x="${r.bx}" y="${r.y + 4}">${esc(c.code || M.codeFor(c.name))}</text>`}
         <text class="lb-name" x="${r.bx + 20}" y="${r.y + 5}">${esc(cut(c.name, Math.max(8, 24 - r.depth * 2)))}</text>
       </a>
