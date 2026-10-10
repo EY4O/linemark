@@ -395,7 +395,7 @@ function renderBand() {
 
   $('#band').innerHTML = `
     <div class="brand">
-      <span class="bullet" style="--c:var(--brand);--bi:var(--brand-ink)">L</span>
+      <span class="brand-logo" aria-hidden="true"></span>
       <span class="brand-name">Linemark</span>
       <span class="brand-tools">
         ${S.sync.enabled ? `<a class="icon-btn sync-btn ${syncState()}" href="#/settings" title="${esc(syncLabel())}" aria-label="${esc(syncLabel())}">${icon('cloud', 18)}</a>` : ''}
@@ -2885,6 +2885,9 @@ function setTheme(theme) {
 function applyTheme() {
   const dark = S.ui.theme === 'dark' || (S.ui.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  // the tab's icon follows the theme too: the white tile in light mode, the dark tile in dark mode
+  const fav = document.querySelector('link[rel=icon]');
+  if (fav) fav.href = `icons/logo-${dark ? 'dark' : 'light'}.svg`;
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 

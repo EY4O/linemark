@@ -1,19 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Linemark on a dark tile, 128px: the tile fills the 96x96 safe area. -->
-  <rect x="16" y="16" width="96" height="96" rx="22" fill="#16171a"/>
-  <g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-    <path stroke="#2f5bd8" d="M64.0 34H55a11 11 0 0 0-11 11V96L64.0 76.0"/>
-    <path stroke="#c2255c" d="M64.0 34H73a11 11 0 0 1 11 11V96L64.0 76.0"/>
-    <path stroke="#0b7a75" d="M64 52l20 20"/>
-    <path stroke="#ff5a1f" d="M64.0 34V76.0"/>
+  <!-- Linemark on the dark tile (the signage band), for dark surfaces: the app's brand mark in dark mode.
+       Same drawing as tile-white.svg; stations are reversed (band fill, line-colour ring), interchanges white-ringed. -->
+  <rect x="16.5" y="16.5" width="95" height="95" rx="21.5" fill="#16171a" stroke="rgba(255,255,255,0.14)"/>
+  <g fill="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="#2f5bd8" d="M64 31H54a12 12 0 0 0-12 12V99L64 77"/>
+    <path stroke="#c2255c" d="M64 31H74a12 12 0 0 1 12 12V99L64 77"/>
+    <path stroke="#0b7a75" d="M64 51l22 22"/>
+    <path stroke="#ff5a1f" d="M64 31V77"/>
   </g>
-  <g stroke-width="3">
-    <circle cx="44" cy="62" r="4.5" fill="#16171a" stroke="#2f5bd8"/>
-    <circle cx="64" cy="52" r="4.5" fill="#16171a" stroke="#ff5a1f"/>
-    <circle cx="84" cy="72" r="4.5" fill="#16171a" stroke="#c2255c"/>
+  <g fill="#16171a" stroke-width="3">
+    <circle cx="42" cy="61" r="4.5" stroke="#2f5bd8"/>
+    <circle cx="64" cy="51" r="4.5" stroke="#ff5a1f"/>
+    <circle cx="86" cy="73" r="4.5" stroke="#c2255c"/>
   </g>
-  <g fill="#16171a" stroke="#ffffff" stroke-width="3">
-    <circle cx="64" cy="34" r="5.5"/>
-    <circle cx="64" cy="76" r="5.5"/>
+  <g fill="#16171a" stroke="#fff" stroke-width="3.25">
+    <circle cx="64" cy="31" r="5.75"/>
+    <circle cx="64" cy="77" r="5.75"/>
   </g>
 </svg>
