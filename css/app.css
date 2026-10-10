@@ -1030,6 +1030,142 @@ body { overflow: hidden; }
   .line-children > .line-node.fresh > .stop::after, .bullet.alarm, .bullet.arrived { animation: none; }
 }
 
+/* ---------- tactile controls: buttons press into the surface ---------- */
+.btn:not(:disabled):active, .icon-btn:not(:disabled):active, .seg button:active, .ai-chip:active, .tag-pill:active, .menu-item:active, .tries button:active { transform: translateY(1px); box-shadow: var(--press); }
+.btn.primary:not(:disabled):active { box-shadow: var(--press); filter: brightness(0.96); }
+.switch:active::after { width: 20px; }
+.switch[aria-checked='true']:active::after { transform: translateX(12px); }
+
+/* ---------- station transitions (View Transitions): the sign morphs, the band stays put ---------- */
+#band { view-transition-name: band; }
+#station-id { view-transition-name: station; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.22s; }
+::view-transition-group(station) { animation-duration: 0.38s; animation-timing-function: var(--ease); }
+::view-transition-old(band), ::view-transition-new(band) { animation: none; }
+::view-transition-old(band) { display: none; }
+
+/* ---------- split-flap station name on arrival ---------- */
+.station-name.flap span { display: inline-block; white-space: pre; animation: flap 0.5s var(--ease) both; animation-delay: calc(var(--i) * 16ms); transform-origin: 50% 62%; }
+@keyframes flap { 0% { transform: rotateX(92deg); opacity: 0; } 65% { transform: rotateX(-10deg); opacity: 1; } 100% { transform: none; } }
+
+/* ---------- Linemark Wrapped ---------- */
+.wrapped { max-width: 960px; padding-bottom: 40px; }
+.wrap-years { display: flex; gap: 6px; margin-bottom: 18px; }
+.wrap-hero { padding: 6px 0 10px; }
+.wrap-big { margin: 0; font-size: clamp(4rem, 9vw, 7rem); line-height: 0.92; font-weight: 800; font-stretch: 78%; letter-spacing: -0.035em; color: var(--ink); }
+.wrap-lede { margin: 8px 0 0; font-size: 1.25rem; color: var(--ink-2); }
+.wrap-note { margin: 4px 0 0; color: var(--ink-2); }
+.year-line { display: block; width: 100%; max-width: 880px; margin: 18px 0 6px; overflow: visible; }
+.year-line .track { stroke: var(--brand); stroke-width: 8; stroke-linecap: round; fill: none; }
+.year-line .month circle { fill: var(--surface); stroke: var(--brand); stroke-width: 5; }
+.year-line .month.none circle { stroke: var(--rule-strong); }
+.year-line .month.busiest circle { fill: var(--brand); stroke: var(--ink); }
+.year-line text { text-anchor: middle; font-family: var(--font); }
+.year-line .m { fill: var(--ink-3); font-size: 13px; font-weight: 650; }
+.year-line .n { fill: var(--ink); font-size: 14px; font-weight: 720; font-variant-numeric: tabular-nums; }
+/* on a phone the year line scales to about 40%, so its labels are set larger in the drawing to stay readable */
+@media (max-width: 600px) { .year-line .m { font-size: 26px; } .year-line .n { font-size: 30px; } .year-line .track { stroke-width: 12; } }
+.wrap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 22px; }
+.wrap-card { position: relative; overflow: hidden; padding: 22px 20px 20px; border: 1px solid var(--rule); border-radius: var(--r-2); background: var(--surface); }
+.wrap-card::before { content: ''; position: absolute; inset: 0 0 auto; height: 4px; background: var(--brand); }
+.wrap-card h2 { margin: 0 0 12px; font-size: 1.125rem; font-weight: 740; font-stretch: 85%; }
+.wrap-lines, .wrap-sites { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.wrap-lines li, .wrap-sites li { display: flex; align-items: center; gap: 10px; }
+.wrap-lines li > span:not(.bullet), .wrap-sites li > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 620; }
+.wrap-lines b, .wrap-sites b { color: var(--ink-2); }
+.wrap-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.wrap-facts { margin: 0; display: grid; gap: 10px; }
+.wrap-facts div { display: grid; grid-template-columns: 48px 1fr; align-items: baseline; gap: 10px; }
+.wrap-facts dt { font-size: 1.75rem; font-weight: 800; font-stretch: 80%; color: var(--ink); }
+.wrap-facts dd { margin: 0; color: var(--ink-2); }
+.wrap-first { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.wrap-first span { color: var(--ink-3); font-size: 0.875rem; }
+.wrap-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; }
+.wrap-actions .hint { color: var(--ink-3); font-size: 0.8125rem; }
+/* the year draws itself: months pop in along the line, cards rise as they scroll into view */
+.year-line .month { animation: month-in 0.5s var(--ease) both; animation-delay: calc(var(--i) * 45ms + 120ms); transform-box: fill-box; transform-origin: center; }
+@keyframes month-in { from { opacity: 0; transform: scale(0.4); } }
+@supports (animation-timeline: view()) {
+  .wrap-card { animation: wrap-rise linear both; animation-timeline: view(); animation-range: entry 0% cover 28%; }
+  @keyframes wrap-rise { from { opacity: 0; transform: translateY(24px); } }
+}
+
+/* ---------- the map in operation: trains run the tracks, new links pulse ---------- */
+.netmap .train { fill: var(--ink); stroke: var(--surface); stroke-width: 2.5; pointer-events: none; }
+.netmap .map-stop.new .dot { animation: station-new 1.8s ease-in-out infinite; }
+@keyframes station-new { 50% { stroke-width: 7; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .station-name.flap span, .year-line .month { animation: fade-in 0.3s ease-out both; animation-delay: 0s; }
+  .wrap-card { animation: none; }
+  .netmap .map-stop.new .dot { animation: none; stroke-width: 6; }
+  .btn:active, .icon-btn:active, .seg button:active { transform: none; }
+}
+
+/* ---------- Wrapped: the Journey ---------- */
+.wrap-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 18px; }
+.wrap-bar .wrap-years { margin: 0; }
+.wrapped.journey-mode { max-width: none; }
+.jr-wrap { position: relative; border-block: 1px solid var(--rule); }
+.jr-hud { position: absolute; z-index: 2; left: 0; top: 16px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0; pointer-events: none; color: var(--ink-2); font-size: 0.8125rem; font-weight: 560; }
+.jr-hud b { color: var(--ink); font-size: 1rem; font-weight: 740; font-stretch: 87.5%; }
+.journey { container-type: inline-size; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+.journey:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+/* the dot rides at 36% across; the padding lets the first and last stops reach it */
+.jr-track { --top: 72px; --ln: 336px; --tile: 300px; position: relative; display: flex; align-items: flex-start; width: max-content; height: 620px; padding: 0 64cqw 0 36cqw; }
+.jr-svg { position: absolute; left: 0; top: 0; z-index: 1; overflow: visible; pointer-events: none; }
+.jr-node { position: absolute; left: 0; top: var(--ln); width: 0; height: 0; }
+.jr-stop .jr-node { position: static; display: block; margin-top: 30px; }
+.jr-start, .jr-end { position: relative; flex: none; width: 300px; height: 100%; }
+.jr-start p, .jr-end p { position: absolute; left: 0; top: 110px; margin: 0; font-size: 4.5rem; font-weight: 800; font-stretch: 75%; line-height: 0.95; letter-spacing: -0.03em; color: var(--ink); }
+.jr-end p { font-size: 3rem; }
+.jr-start p span, .jr-end p span { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 1rem; font-weight: 620; font-stretch: 100%; letter-spacing: 0; color: var(--brand-text); }
+.jr-end p span { color: var(--ink-2); }
+.jr-month { position: relative; flex: none; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; padding: 0 64px 40px 0; }
+.jr-meta { margin: 0 0 6px 6px; color: var(--ink-2); font-size: 0.875rem; font-weight: 620; }
+/* the month, said twice: black condensed behind, light and wide over it */
+.jr-name { position: relative; margin: 0; font-size: clamp(5rem, 13cqw, 10.5rem); line-height: 0.82; letter-spacing: -0.04em; white-space: nowrap; }
+.jr-ghost { display: block; color: var(--rule-strong); font-weight: 900; font-stretch: 62%; }
+.jr-fore { position: absolute; left: 0.12em; bottom: -0.02em; color: var(--ink); font-weight: 220; font-stretch: 125%; font-size: 0.62em; letter-spacing: -0.02em; }
+.jr-stop { position: relative; flex: none; display: flex; flex-direction: column; gap: 8px; width: var(--tile); margin: calc(var(--top) + var(--y)) 56px 0 0; color: var(--ink); text-decoration: none; }
+.jr-img { position: relative; display: block; aspect-ratio: 3 / 2; overflow: hidden; border-radius: var(--r-2); background: var(--surface-2); box-shadow: var(--shadow-2); filter: grayscale(1); opacity: 0.55; transition: filter 0.5s var(--ease), opacity 0.5s var(--ease), transform 0.3s var(--ease); }
+.jr-img > img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.jr-stop.passed .jr-img, .jr-stop:hover .jr-img, .jr-stop:focus-visible .jr-img { filter: none; opacity: 1; }
+.jr-stop:hover .jr-img { transform: translateY(-4px); }
+.jr-stop:focus-visible { outline: none; }
+.jr-stop:focus-visible .jr-img { outline: 2px solid var(--brand); outline-offset: 3px; }
+.jr-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em; font-size: 1rem; line-height: 1.3; font-weight: 680; }
+.jr-stop:hover .jr-title { text-decoration: underline; text-underline-offset: 3px; }
+.jr-sub { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--ink-2); font-size: 0.8125rem; }
+.jr-sub > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jr-more { flex: none; align-self: center; margin: 0 56px 0 0; color: var(--ink-2); font-weight: 620; }
+.jr-dots { fill: none; stroke: var(--ink-3); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.1 9; }
+.jr-fill { fill: none; stroke: var(--c); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.jr-st { fill: var(--ground); stroke: var(--rule-strong); stroke-width: 3; transition: stroke 0.3s, fill 0.3s; }
+.jr-st.on { stroke: var(--c); stroke-width: 4; }
+.jr-st.month.on { fill: var(--c); }
+.jr-dot .core { fill: #fff; stroke: var(--c); stroke-width: 4; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)); }
+.jr-dot .halo { fill: var(--c); animation: jr-pulse 1.6s ease-out infinite; }
+@keyframes jr-pulse { from { r: 12px; opacity: 0.45; } to { r: 26px; opacity: 0; } }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* stops slide in as they come up on the right; the black month name drifts behind the light one */
+    .jr-stop, .jr-month .jr-meta { animation: jr-in linear both; animation-timeline: view(inline); animation-range: entry 0% entry 70%; }
+    @keyframes jr-in { from { opacity: 0; transform: translateX(80px); } }
+    .jr-ghost { animation: jr-drift linear both; animation-timeline: view(inline); animation-range: cover 0% cover 100%; }
+    @keyframes jr-drift { from { transform: translateX(12%); } to { transform: translateX(-12%); } }
+  }
+}
+@media (max-width: 600px) {
+  .jr-track { --top: 84px; --ln: 300px; --tile: 220px; height: 560px; padding: 0 84cqw 0 16cqw; }
+  .jr-start p, .jr-end p { font-size: 3.25rem; }
+  .jr-name { font-size: 5.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jr-dot .halo { animation: none; opacity: 0.25; }
+  .jr-img, .jr-st { transition: none; }
+}
+
 /* ---------- network map ---------- */
 .map-wrap { overflow: auto; margin: 0 -4px; padding: 0 4px 12px; }
 .netmap { display: block; font-family: var(--font); }

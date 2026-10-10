@@ -490,6 +490,47 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     await p.ev(`document.querySelector('a.stop[href="#/all"]').click();`);
     await p.until(`return document.querySelector('#grid')?.classList.contains('enter-up')`);
   });
+  await test('Wrapped shows the year on the lines and saves it as an image', async () => {
+    await p.ev(`location.hash = '#/settings';`);
+    await p.until(`return !!document.querySelector('a[href="#/wrapped"]')`);
+    await p.ev(`document.querySelector('a[href="#/wrapped"]').click();`);
+    await p.until(`return !!document.querySelector('.wrapped .year-line')`);
+    const r = await p.ev(`return [document.querySelector('.wrap-big').textContent.trim(), document.querySelectorAll('.year-line .month').length, document.querySelector('.station-name').getAttribute('aria-label') || document.querySelector('.station-name').textContent, !!document.querySelector('.wrap-lines li')];`);
+    assert(+r[0] >= 6 && r[1] === 12 && r[2] === 'Your year on the lines' && r[3], 'wrapped: ' + JSON.stringify(r));
+    await p.ev(`window.__downloads = []; const orig = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function () { if (this.download) window.__downloads.push(this.download); else orig.call(this); }; document.querySelector('[data-act=wrap-export]').click();`);
+    await p.until(`return window.__downloads.some((d) => /^linemark-wrapped-[0-9]{4}[.]png$/.test(d))`);
+  });
+  await test('the Journey rides the year: a stop per saved page, and the dot fills the line as it scrolls', async () => {
+    await p.ev(`document.querySelector('[data-act=wrap-view][data-v=journey]').click();`);
+    await p.until(`return document.querySelectorAll('.jr-fill').length > 0`);
+    const n = await p.ev(`return [document.querySelectorAll('.jr-stop').length, document.querySelectorAll('.jr-stop.passed').length];`);
+    assert(n[0] >= 6 && n[1] === 0, 'stops before riding: ' + JSON.stringify(n));
+    await p.ev(`const j = document.querySelector('.journey'); j.scrollLeft = j.scrollWidth;`);
+    await p.until(`return document.querySelectorAll('.jr-stop.passed').length === document.querySelectorAll('.jr-stop').length`);
+    const end = await p.ev(`return [Math.round(parseFloat(document.querySelector('.jr-fill:last-of-type').style.strokeDashoffset)), document.querySelector('.jr-hud-n').textContent];`);
+    assert(end[0] === 0 && end[1] === `${n[0]} of ${n[0]}`, 'line filled at the end: ' + JSON.stringify(end));
+    await p.until(`const db = await import('/js/db.js'); return (await db.getMeta('ui', {})).wrapView === 'journey'`);
+    await p.ev(`document.querySelector('[data-act=wrap-view][data-v=summary]').click();`);
+    await p.until(`return !!document.querySelector('.wrapped .year-line')`);
+  });
+  await test('the station chime switch is saved, and arriving at a station flips its name in', async () => {
+    await p.ev(`location.hash = '#/settings';`);
+    await p.until(`return !!document.querySelector('[data-act=chime]')`);
+    await p.ev(`document.querySelector('[data-act=chime]').click();`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.getMeta('ui', {})).chime === true`);
+    assert(await p.ev(`return document.querySelector('[data-act=chime]').getAttribute('aria-checked') === 'true'`), 'switch state');
+    await p.ev(`document.querySelector('[data-act=chime]').click();`);
+    await p.ev(`location.hash = '#/favorites';`);
+    await p.until(`const h = document.querySelector('.station-name'); return h?.classList.contains('flap') && h.getAttribute('aria-label') === 'Favorites' && h.textContent === 'Favorites'`);
+  });
+  await test('trains run the network map', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return document.querySelector('.station-name')?.textContent === 'All bookmarks' && !!document.querySelector('[data-view=map]')`);
+    await p.ev(`document.querySelector('[data-view=map]').click();`);
+    await p.until(`return document.querySelectorAll('svg.netmap .train animateMotion').length >= 1`);
+    await p.ev(`document.querySelector('[data-view=cards]').click();`);
+    await p.until(`return !!document.querySelector('#grid .card')`);
+  });
   await test("a sub-line's current row leaves its parent's stem unbroken", async () => {
     await p.ev(`document.querySelector('.line-stop[data-id=c_rust] .stop-link').click();`);
     await p.until(`return !!document.querySelector('.line-stop[data-id=c_rust][data-current]')`);

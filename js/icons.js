@@ -19,6 +19,7 @@ const P = {
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
   chevronDown: '<path d="m6 9 6 6 6-6"/>',
   chevronRight: '<path d="m9 6 6 6-6 6"/>',
+  arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   external: '<path d="M14 4h6v6M20 4l-9 9M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
   restore: '<path d="M4 4v5h5"/><path d="M5.3 14.5A7.5 7.5 0 1 0 6 8l-2 1"/>',

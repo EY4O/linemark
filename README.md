@@ -25,10 +25,11 @@ Linemark is a Chrome extension for people who save a lot of links and want to fi
 - 🗺️ **Five views**: Cards, List, Headlines, Moodboard, and a **network map** that draws your library as a transit map.
 - 📥 **Chrome import and tab groups**: bring in your whole Chrome bookmark tree in one click, or an HTML export from any browser, Raindrop or Pocket. Open a line as a tab group in its colour, or keep your tab groups as lines.
 - 🕰️ **Departures board**: give a link a day to revisit, and it shows up on the board that day.
+- 🎉 **Linemark Wrapped**: your year on the lines, from **Settings → Library**. **Summary** shows your busiest month, lines, tags and sites, and saves as a shareable image. **Journey** rides the year sideways: each month in big type, each saved page as a stop with its picture, and a dot that fills the line in each stop's colour as you scroll.
 - 🧹 **Tidy-up tools**: a duplicate finder that merges tags and notes, bulk move and tag, a restorable Trash, and Undo on every change.
 - 💾 **Your data, portable**: export Chrome-compatible HTML, or a full JSON backup that includes screenshots.
 - 🔐 **Optional encrypted sync**: local by default. Turn on sync to keep Chrome, Edge, Brave and Vivaldi in step through your own Google Drive. Everything is encrypted on your device with your passphrase first, so Google only stores scrambled data.
-- 🌗 **Light and dark**: follows your system setting, or set it yourself.
+- 🌗 **Light and dark**: follows your system setting, or set it yourself. An optional station chime (off by default) plays when you save a page.
 
 ## 📸 Screenshots
 

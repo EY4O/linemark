@@ -4,6 +4,7 @@ import * as M from './model.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, menuItem, armConfirm, relTime } from './ui.js';
 import { lineBulletHTML, loadIcons, usesIcons } from './bullets.js';
+import { chime } from './chime.js';
 
 let bm = null;          // the bookmark being saved/edited
 let existed = false;    // true when the page was already in the library
@@ -39,6 +40,7 @@ async function main() {
     await M.saveBookmark(bm);
   }
   render();
+  if (!existed && (await db.getMeta('ui', {}))?.chime) chime(); // the station chime, if it's switched on
 
   // Read the page and grab a screenshot in parallel; both are optional.
   const [meta, blob] = await Promise.all([

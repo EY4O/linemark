@@ -4,6 +4,7 @@ import * as M from './model.js';
 import * as IO from './io.js';
 import * as Sync from './sync.js';
 import * as AI from './ai.js';
+import { chime } from './chime.js';
 import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji, loadIcons, usesIcons } from './bullets.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
@@ -20,7 +21,7 @@ const S = {
   route: { kind: 'all' },
   query: '',
   type: 'all',
-  ui: { view: 'cards', sort: 'newest', size: 260, theme: 'system' },
+  ui: { view: 'cards', sort: 'newest', size: 260, theme: 'system', chime: false, wrapView: 'summary' },
   selected: new Set(),
   anchorId: null,
   limit: PAGE,
@@ -137,7 +138,7 @@ function parseHash() {
   const arg = rest.join('/');
   if (kind === 'c' && arg) return { kind: 'c', id: arg };
   if (kind === 'tag' && arg) return { kind: 'tag', tag: arg };
-  if (['unsorted', 'favorites', 'trash', 'settings', 'duplicates', 'broken', 'departures'].includes(kind)) return { kind };
+  if (['unsorted', 'favorites', 'trash', 'settings', 'duplicates', 'broken', 'departures', 'wrapped'].includes(kind)) return { kind };
   return { kind: 'all' };
 }
 
@@ -157,8 +158,15 @@ function onRoute() {
   closeDrawer();
   closeMenu();
   closeBandOnMobile();
-  renderAll();
-  $('#content').scrollTop = 0;
+  // The station sign morphs into the next station (View Transitions); the band stays put. Skipped under reduced motion.
+  between(() => { renderAll(); $('#content').scrollTop = 0; });
+}
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function between(fn) {
+  if (!document.startViewTransition || reducedMotion() || document.hidden) return fn();
+  // a quick second move skips the first transition; that's expected, not an error
+  const t = document.startViewTransition(fn);
+  for (const p of [t.ready, t.finished, t.updateCallbackDone]) p.catch(() => {});
 }
 
 function routeHash(r = S.route) {
@@ -415,6 +423,7 @@ function stationInfo() {
     case 'tag': return { name: '#' + r.tag, bullet: tagBullet(46), color: 'var(--ink)', path: [] };
     case 'departures': return { name: 'Departures', bullet: departuresBullet(46, false), color: 'var(--ink)', path: [], noun: 'link' };
     case 'broken': return { name: 'Broken links', bullet: brokenBullet(46, 20), color: 'var(--danger)', path: [{ label: 'Settings', hash: '#/settings', bullet: '' }] };
+    case 'wrapped': return { name: 'Your year on the lines', bullet: `<span class="bullet" style="--bs:46px;--c:var(--brand);--bi:var(--brand-ink)">${icon('map', 22)}</span>`, color: 'var(--brand)', path: [{ label: 'Settings', hash: '#/settings', bullet: '' }], noCount: true };
     case 'settings': return { name: 'Settings & data', bullet: `<span class="bullet" style="--bs:46px;--c:var(--ink);--bi:var(--surface)">${icon('settings', 20)}</span>`, color: 'var(--ink)', path: [], noCount: true };
     case 'duplicates': return { name: 'Duplicates', bullet: `<span class="bullet" style="--bs:46px;--c:var(--ink);--bi:var(--surface)">${icon('duplicate', 20)}</span>`, color: 'var(--ink)', path: [{ label: 'Settings', hash: '#/settings', bullet: '' }] };
     case 'c': {
@@ -437,6 +446,7 @@ function renderStation() {
   const st = $('#station');
   st.style.setProperty('--c', info.color);
   const key = routeHash();
+  const arriving = st.dataset.at !== key;
   if (st.dataset.at !== key) {
     st.dataset.at = key;
     st.classList.remove('arrive');
@@ -463,7 +473,9 @@ function renderStation() {
     ${info.bullet}
     <div class="station-text">
       ${info.path.length ? `<nav class="station-path" aria-label="Parent lines">${info.path.map((p) => `<button data-href="${p.hash}">${p.bullet}${esc(p.label)}</button>`).join(icon('chevronRight', 12))}</nav>` : ''}
-      <h1 class="station-name">${esc(info.name)}</h1>
+      ${arriving && !reducedMotion()
+        ? `<h1 class="station-name flap" aria-label="${esc(info.name)}">${[...info.name].map((ch, i) => `<span aria-hidden="true" style="--i:${Math.min(i, 24)}">${esc(ch)}</span>`).join('')}</h1>`
+        : `<h1 class="station-name">${esc(info.name)}</h1>`}
     </div>
     <span class="station-count">${count}${info.query ? `<span class="smart-q" title="This smart line shows every link matching this search">${icon('filter', 13)}${esc(info.query)}</span>` : ''}</span>`;
   if (searchVal === undefined) $('#search').value = S.query;
@@ -497,7 +509,7 @@ const TYPES = [
 
 function renderSubbar() {
   const sb = $('#subbar');
-  if (S.route.kind === 'settings') { sb.hidden = true; return; }
+  if (S.route.kind === 'settings' || S.route.kind === 'wrapped') { sb.hidden = true; return; }
   sb.hidden = false;
   const typeBtns = TYPES.filter((t) => S.counts.types.get(t.id));
   const sizeable = S.ui.view === 'cards' || S.ui.view === 'moodboard';
@@ -609,6 +621,7 @@ function renderContent() {
   queueMicrotask(restoreFocus);
   const content = $('#content');
   if (S.route.kind === 'settings') { renderSettings(); return; }
+  if (S.route.kind === 'wrapped') { renderWrapped(); return; }
   const list = S.list;
   if (!list.length) { content.innerHTML = emptyHTML(); return; }
 
@@ -684,6 +697,265 @@ function fileAnimation(fromX, fromY, zone, color) {
   anim.onfinish = () => { dot.remove(); target.classList.remove('arrived'); void target.offsetWidth; target.classList.add('arrived'); };
 }
 
+// ======================= Linemark Wrapped =======================
+// A year on the lines, worked out from the library on this computer: saves by month, the busiest line,
+// lines and branches built, top tags and sites. Exportable as an image; nothing is sent anywhere.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function wrappedData() {
+  const years = [...new Set(S.bookmarks.map((b) => new Date(b.createdAt).getFullYear()))].sort((a, b) => b - a);
+  const now = new Date().getFullYear();
+  const year = years.includes(S.wrapYear) ? S.wrapYear : years.includes(now) ? now : years[0] || now;
+  const inYear = (t) => new Date(t).getFullYear() === year;
+  const saved = S.bookmarks.filter((b) => inYear(b.createdAt));
+  const live = saved.filter((b) => !b.trashedAt);
+  const months = MONTHS.map((_, m) => saved.filter((b) => new Date(b.createdAt).getMonth() === m).length);
+  const busiestMonth = months.indexOf(Math.max(...months));
+  const byLine = new Map();
+  for (const b of live) if (fileable(S.col.get(b.collectionId))) byLine.set(b.collectionId, (byLine.get(b.collectionId) || 0) + 1);
+  const topLines = [...byLine].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id, n]) => ({ c: S.col.get(id), n }));
+  const tagCount = new Map();
+  for (const b of live) for (const t of b.tags) tagCount.set(t, (tagCount.get(t) || 0) + 1);
+  const topTags = [...tagCount].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const hostCount = new Map();
+  for (const b of live) { const h = M.hostOf(b.url); hostCount.set(h, (hostCount.get(h) || 0) + 1); }
+  const topSites = [...hostCount].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const built = S.collections.filter((c) => !c.smart && inYear(c.createdAt || 0));
+  const branches = built.filter((c) => c.parentId);
+  const deepest = S.collections.filter(fileable).map((c) => pathOf(c.id)).sort((a, b) => b.length - a.length)[0] || [];
+  const first = [...saved].sort((a, b) => a.createdAt - b.createdAt)[0];
+  return {
+    year, years, saved: saved.length, months, busiestMonth, topLines, topTags, topSites,
+    lines: built.length - branches.length, branches: branches.length, deepest,
+    favorites: live.filter((b) => b.favorite).length, interchanges: live.filter((b) => b.alsoOn?.length).length,
+    smart: S.collections.filter((c) => c.smart).length, onBoard: live.filter((b) => b.revisitAt).length, first,
+  };
+}
+
+function renderWrapped() {
+  const d = wrappedData();
+  const content = $('#content');
+  jrStop?.();
+  if (!d.saved) { content.innerHTML = `<div class="empty"><h2>Nothing saved in ${d.year} yet</h2><p>Your year on the lines fills in as you save pages.</p></div>`; return; }
+  const journey = S.ui.wrapView === 'journey';
+  const bar = `<div class="wrap-bar">
+      ${d.years.length > 1 ? `<div class="wrap-years" role="group" aria-label="Year">${d.years.map((y) => `<button class="btn sm${y === d.year ? ' primary' : ''}" data-act="wrap-year" data-year="${y}" aria-pressed="${y === d.year}">${y}</button>`).join('')}</div>` : '<span></span>'}
+      <div class="seg" role="group" aria-label="Show Wrapped as">
+        <button data-act="wrap-view" data-v="summary" aria-pressed="${!journey}">Summary</button>
+        <button data-act="wrap-view" data-v="journey" aria-pressed="${journey}">Journey</button>
+      </div>
+    </div>`;
+  const actions = `<div class="wrap-actions"><button class="btn primary" data-act="wrap-export">${icon('download', 16)} Save as image</button><span class="hint">A picture of your year, made on your computer. Share it, or keep it.</span></div>`;
+  if (journey) {
+    content.innerHTML = `<div class="wrapped journey-mode">${bar}${journeyHTML(d)}${actions}</div>`;
+    hydrate(content);
+    wireJourney();
+    return;
+  }
+  const max = Math.max(...d.months, 1);
+  const W = 880, x0 = 40, step = (W - 80) / 11;
+  const yearLine = `<svg class="year-line" viewBox="0 0 ${W} 150" role="img" aria-label="Links saved each month of ${d.year}: ${d.months.map((n, m) => `${MONTHS[m]} ${n}`).join(', ')}">
+      <path class="track" d="M${x0 - 20} 82 H${W - x0 + 20}"/>
+      ${d.months.map((n, m) => {
+        const x = x0 + m * step, r = n ? 7 + 15 * Math.sqrt(n / max) : 5;
+        return `<g class="month${m === d.busiestMonth ? ' busiest' : ''}${n ? '' : ' none'}" style="--i:${m}"><circle cx="${x}" cy="82" r="${r}"/><text class="m" x="${x}" y="136">${MONTHS[m]}</text>${n ? `<text class="n" x="${x}" y="${82 - r - 10}">${n}</text>` : ''}</g>`;
+      }).join('')}
+    </svg>`;
+  const lineRow = ({ c, n }) => `<li>${lineBullet(c, 22)}<span>${esc(M.linePathOf(S.collections, c.id).join(' › '))}</span><b class="tnum">${n}</b></li>`;
+  content.innerHTML = `<div class="wrapped">
+    ${bar}
+    <section class="wrap-hero">
+      <p class="wrap-big tnum">${d.saved.toLocaleString()}</p>
+      <p class="wrap-lede">links saved in ${d.year}${d.lines + d.branches ? `, on ${plural(d.lines, 'new line')} and ${plural(d.branches, 'branch', 'branches')}` : ''}.</p>
+      ${yearLine}
+      <p class="wrap-note">Your busiest month was <b>${new Date(d.year, d.busiestMonth).toLocaleString(undefined, { month: 'long' })}</b>, with ${plural(d.months[d.busiestMonth], 'save')}.</p>
+    </section>
+    <div class="wrap-grid">
+      ${d.topLines.length ? `<section class="wrap-card"><h2>Busiest lines</h2><ol class="wrap-lines">${d.topLines.map(lineRow).join('')}</ol></section>` : ''}
+      ${d.topTags.length ? `<section class="wrap-card"><h2>Your tags</h2><p class="wrap-tags">${d.topTags.map(([t, n]) => `<span class="chip">#${esc(t)} <b class="tnum">${n}</b></span>`).join('')}</p></section>` : ''}
+      ${d.topSites.length ? `<section class="wrap-card"><h2>Sites you kept coming back to</h2><ol class="wrap-sites">${d.topSites.map(([h, n]) => `<li><span>${esc(h)}</span><b class="tnum">${n}</b></li>`).join('')}</ol></section>` : ''}
+      <section class="wrap-card"><h2>The network</h2><dl class="wrap-facts">
+        <div><dt class="tnum">${d.deepest.length}</dt><dd>stops on your deepest branch${d.deepest.length > 1 ? `: ${esc(d.deepest.map((c) => c.name).join(' › '))}` : ''}</dd></div>
+        <div><dt class="tnum">${d.interchanges}</dt><dd>${d.interchanges === 1 ? 'interchange' : 'interchanges'}, links on more than one line</dd></div>
+        <div><dt class="tnum">${d.smart}</dt><dd>smart ${d.smart === 1 ? 'line' : 'lines'} filling themselves</dd></div>
+        <div><dt class="tnum">${d.favorites}</dt><dd>${d.favorites === 1 ? 'favorite' : 'favorites'} starred</dd></div>
+      </dl></section>
+      ${d.first ? `<section class="wrap-card"><h2>First stop of the year</h2><p class="wrap-first"><b>${esc(d.first.title)}</b><span>${esc(M.hostOf(d.first.url))} · ${esc(new Date(d.first.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric' }))}</span></p></section>` : ''}
+    </div>
+    ${actions}
+  </div>`;
+}
+
+// ---- the Journey: the year as one ride ----
+// Big month names, every page saved that year as a stop with its picture, and a white dot that runs the dotted line
+// as you scroll sideways, filling it in behind with the colour of each stop's line.
+const JR = { perMonth: 24, anchor: (w) => (w < 600 ? 0.16 : 0.36) }; // where the dot rides, as in .jr-track's padding
+let jrStop = null; // tears down the last journey's observers
+function journeyHTML(d) {
+  const list = S.bookmarks.filter((b) => !b.trashedAt && new Date(b.createdAt).getFullYear() === d.year).sort((a, b) => a.createdAt - b.createdAt);
+  const byMonth = MONTHS.map(() => []);
+  for (const b of list) byMonth[new Date(b.createdAt).getMonth()].push(b);
+  const long = (m) => new Date(d.year, m).toLocaleString(undefined, { month: 'long' });
+  let k = 0;
+  const blocks = byMonth.map((bs, m) => {
+    if (!bs.length) return '';
+    const shown = bs.slice(0, JR.perMonth);
+    const lead = S.col.get(shown[0].collectionId);
+    const head = `<section class="jr-month" aria-label="${esc(long(m))}: ${plural(bs.length, 'save')}">
+        <i class="jr-node" data-c="${fileable(lead) ? lead.color : ''}" data-month="${esc(long(m))}"></i>
+        <p class="jr-meta tnum">${String(m + 1).padStart(2, '0')} · ${d.year} — ${plural(bs.length, 'save')}${m === d.busiestMonth && bs.length > 1 ? ', the busiest month' : ''}</p>
+        <h3 class="jr-name" aria-hidden="true"><span class="jr-ghost">${esc(long(m))}</span><span class="jr-fore">${esc(long(m))}</span></h3>
+      </section>`;
+    const stops = shown.map((b) => {
+      const c = S.col.get(b.collectionId);
+      const line = fileable(c) ? c : null;
+      const path = line ? M.linePathOf(S.collections, line.id).join(' › ') : 'Unsorted';
+      return `<a class="jr-stop" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" style="--y:${[0, 64, 22, 88, 40][k++ % 5]}px">
+          <span class="jr-img">${coverHTML(b, line)}</span>
+          <span class="jr-title">${esc(b.title)}</span>
+          <span class="jr-sub">${line ? lineBullet(line, 16) : ''}<span>${esc(path)} · ${esc(new Date(b.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))}</span></span>
+          <i class="jr-node" data-c="${line ? line.color : ''}" data-month="${esc(long(m))}" data-line="${esc(path)}"></i>
+        </a>`;
+    }).join('');
+    const more = bs.length > shown.length ? `<p class="jr-more">+${bs.length - shown.length} more in ${esc(long(m))}</p>` : '';
+    return head + stops + more;
+  }).join('');
+  return `<div class="jr-wrap">
+      <p class="jr-hud" aria-hidden="true"><b class="jr-hud-month">${d.year}</b><span class="jr-hud-line"></span><span class="jr-hud-n tnum"></span></p>
+      <div class="journey" tabindex="0" role="region" aria-label="Your ${d.year}, month by month. Scroll sideways to ride it.">
+        <div class="jr-track">
+          <svg class="jr-svg" aria-hidden="true"></svg>
+          <div class="jr-start"><i class="jr-node" data-c="var(--brand)"></i><p class="tnum">${d.year}<span>Scroll to ride the year ${icon('arrowRight', 16)}</span></p></div>
+          ${blocks}
+          <div class="jr-end"><i class="jr-node" data-c="var(--brand)"></i><p class="tnum">${plural(list.length, 'stop')}<span>End of the line, for now.</span></p></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function wireJourney() {
+  const sc = $('.journey');
+  if (!sc) return;
+  const track = sc.querySelector('.jr-track');
+  const svg = sc.querySelector('.jr-svg');
+  const hud = { month: $('.jr-hud-month'), line: $('.jr-hud-line'), n: $('.jr-hud-n') };
+  const total = sc.querySelectorAll('.jr-stop').length;
+  let nodes = [], segs = [], fills = [], sts = [], dot = null, raf = 0;
+  function build() {
+    if (!sc.isConnected) return jrStop?.();
+    // layout positions, not on-screen ones: stops slide in as they enter, and the line must not slide with them
+    nodes = [...sc.querySelectorAll('.jr-node')].map((el) => {
+      let x = 0, y = 0;
+      for (let e = el; e && e !== track; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; }
+      return { el, x, y, c: el.dataset.c || 'var(--ink-3)', stop: el.closest('.jr-stop') };
+    });
+    svg.setAttribute('width', track.scrollWidth);
+    svg.setAttribute('height', track.offsetHeight);
+    // metro geometry: run level, then take the change in height on a 45° diagonal into the next stop
+    segs = nodes.slice(1).map((b, i) => {
+      const a = nodes[i], dy = b.y - a.y, xb = Math.max(a.x, b.x - Math.abs(dy));
+      const h = xb - a.x, diag = Math.hypot(b.x - xb, dy);
+      return { a, b, dy, xb, h, diag, len: h + diag, d: `M${a.x} ${a.y} H${xb} L${b.x} ${b.y}` };
+    });
+    svg.innerHTML = `<path class="jr-dots" d="${segs.map((s) => s.d).join('')}"/>
+      ${segs.map((s) => `<path class="jr-fill" d="${s.d}" style="--c:${s.b.c};stroke-dasharray:${s.len} ${s.len + 1};stroke-dashoffset:${s.len}"/>`).join('')}
+      ${nodes.map((n) => `<circle class="jr-st${n.stop ? '' : ' month'}" cx="${n.x}" cy="${n.y}" r="${n.stop ? 7 : 6}" style="--c:${n.c}"/>`).join('')}
+      <g class="jr-dot"><circle class="halo" r="12"/><circle class="core" r="10"/></g>`;
+    fills = [...svg.querySelectorAll('.jr-fill')];
+    sts = [...svg.querySelectorAll('.jr-st')];
+    dot = svg.querySelector('.jr-dot');
+    update();
+  }
+  function update() {
+    raf = 0;
+    if (!segs.length) return;
+    const x = Math.min(nodes.at(-1).x, Math.max(nodes[0].x, sc.scrollLeft + sc.clientWidth * JR.anchor(sc.clientWidth)));
+    let pos = { x: nodes[0].x, y: nodes[0].y }, next = nodes[1];
+    segs.forEach((s, i) => {
+      const t = x <= s.xb ? 0 : Math.min(1, (x - s.xb) / (s.b.x - s.xb));
+      const done = x >= s.b.x ? s.len : x <= s.a.x ? 0 : x <= s.xb ? x - s.a.x : s.h + t * s.diag;
+      fills[i].style.strokeDashoffset = s.len - done;
+      if (x > s.a.x && x <= s.b.x) { pos = { x, y: s.a.y + t * s.dy }; next = s.b; }
+    });
+    let last = 0, passed = 0, here = null;
+    nodes.forEach((n, i) => {
+      const on = n.x <= x + 0.5;
+      sts[i].classList.toggle('on', on);
+      n.stop?.classList.toggle('passed', on);
+      if (on) { last = i; if (n.stop) { passed++; here = n; } }
+    });
+    dot.setAttribute('transform', `translate(${pos.x} ${pos.y})`);
+    dot.style.setProperty('--c', (x >= nodes.at(-1).x ? nodes.at(-1) : next).c);
+    const atMonth = nodes.slice(0, last + 1).findLast((n) => n.el.dataset.month);
+    hud.month.textContent = atMonth?.el.dataset.month || hud.month.textContent;
+    hud.line.textContent = here?.el.dataset.line || '';
+    hud.n.textContent = `${passed} of ${total}`;
+  }
+  const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+  // a vertical wheel rides the line while there is line left; at either end the page scrolls on as usual
+  const onWheel = (e) => {
+    if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    const max = sc.scrollWidth - sc.clientWidth;
+    if ((e.deltaY > 0 && sc.scrollLeft >= max - 1) || (e.deltaY < 0 && sc.scrollLeft <= 0)) return;
+    e.preventDefault();
+    sc.scrollLeft += e.deltaY * (e.deltaMode === 1 ? 32 : 1);
+  };
+  sc.addEventListener('scroll', onScroll, { passive: true });
+  sc.addEventListener('wheel', onWheel, { passive: false });
+  const ro = new ResizeObserver(() => build());
+  ro.observe(sc);
+  document.fonts.ready.then(() => sc.isConnected && build());
+  jrStop = () => { ro.disconnect(); cancelAnimationFrame(raf); jrStop = null; };
+}
+
+// The image: a signage-black card with the year line in Linemark orange, drawn on a canvas.
+async function exportWrapped() {
+  const d = wrappedData();
+  const W = 1080, H = 1350;
+  const cv = new OffscreenCanvas(W, H);
+  const g = cv.getContext('2d');
+  await document.fonts.ready;
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const font = (w, size) => `${w} ${size}px Archivo, "Segoe UI", system-ui, sans-serif`;
+  // the image is always the dark band, whichever theme the app is in, so it reads the same wherever it's shared
+  const BG = '#16171a', INK = '#f4f3ef', INK2 = '#c9cad0', INK3 = '#a8aab0', RULE = '#4a4c52', BRAND = css('--brand') || '#ff5a1f';
+  g.fillStyle = BG; g.fillRect(0, 0, W, H);
+  g.fillStyle = BRAND; g.beginPath(); g.arc(112, 128, 34, 0, Math.PI * 2); g.fill();
+  g.fillStyle = BG; g.font = font(800, 36); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('L', 112, 130);
+  g.textAlign = 'left'; g.fillStyle = INK; g.font = font(760, 40); g.fillText('Linemark', 166, 130);
+  g.fillStyle = INK3; g.font = font(600, 34); g.fillText(`Your year on the lines · ${d.year}`, 78, 236);
+  g.fillStyle = INK; g.font = font(800, 220); g.textBaseline = 'alphabetic'; g.fillText(d.saved.toLocaleString(), 70, 470);
+  g.font = font(600, 40); g.fillStyle = INK2; g.fillText('links saved', 78, 530);
+  g.font = font(560, 30); g.fillStyle = INK3; g.fillText(`on ${plural(d.lines, 'new line')} and ${plural(d.branches, 'branch', 'branches')}`, 78, 580);
+  const max = Math.max(...d.months, 1), y = 730, x0 = 110, step = (W - 220) / 11;
+  g.strokeStyle = BRAND; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(70, y); g.lineTo(W - 70, y); g.stroke();
+  d.months.forEach((n, m) => {
+    const x = x0 + m * step, r = n ? 12 + 26 * Math.sqrt(n / max) : 8;
+    // as on the page: quiet months in grey, the busiest filled in brand with its count above
+    const busiest = n && m === d.busiestMonth;
+    g.fillStyle = busiest ? BRAND : BG; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    g.lineWidth = 8; g.strokeStyle = busiest ? INK : n ? BRAND : RULE; g.stroke();
+    g.textAlign = 'center';
+    if (busiest) { g.fillStyle = INK; g.font = font(760, 32); g.fillText(n.toLocaleString(), x, y - r - 18); }
+    g.fillStyle = m === d.busiestMonth && n ? INK : INK3; g.font = font(650, 26); g.fillText(MONTHS[m][0], x, y + 82);
+  });
+  g.textAlign = 'left';
+  let ty = 940;
+  if (d.topLines[0]) {
+    const c = d.topLines[0].c;
+    g.fillStyle = c.color; g.beginPath(); g.arc(100, ty - 12, 26, 0, Math.PI * 2); g.fill();
+    g.fillStyle = M.bulletInk(c.color); g.font = font(800, 24); g.textAlign = 'center'; g.fillText(c.code || M.codeFor(c.name), 100, ty - 4);
+    g.textAlign = 'left'; g.fillStyle = INK; g.font = font(720, 44); g.fillText(c.name.slice(0, 28), 146, ty);
+    g.fillStyle = INK3; g.font = font(560, 30); g.fillText(`Busiest line · ${plural(d.topLines[0].n, 'link')}`, 146, ty + 46);
+    ty += 140;
+  }
+  if (d.topTags.length) { g.fillStyle = INK2; g.font = font(650, 34); g.fillText(d.topTags.slice(0, 4).map(([t]) => '#' + t).join('   '), 78, ty); ty += 90; }
+  g.strokeStyle = RULE; g.lineWidth = 2; g.beginPath(); g.moveTo(78, 1216); g.lineTo(W - 78, 1216); g.stroke();
+  g.fillStyle = INK3; g.font = font(560, 28); g.fillText(`Deepest branch: ${plural(d.deepest.length, 'stop')} · ${plural(d.interchanges, 'interchange')} · ${plural(d.favorites, 'favorite')}`, 78, 1272);
+  const blob = await cv.convertToBlob({ type: 'image/png' });
+  download(`linemark-wrapped-${d.year}.png`, blob);
+  toast('Wrapped image saved');
+}
+
 // ======================= network map =======================
 // The listed links drawn as a transit map: each line is a coloured track with its links as stations, branches hang
 // off their parent on a stem in its colour (as in the sidebar), and a link on more than one line is an interchange.
@@ -723,9 +995,10 @@ function mapHTML(list) {
     const stem = r.parentRow ? `<path class="stem" d="M${r.parentRow.bx} ${r.parentRow.y + 12} V${r.y - 9} Q${r.parentRow.bx} ${r.y} ${r.parentRow.bx + 9} ${r.y} H${r.bx - 12}" style="--c:${r.parentRow.c.color}"/>` : '';
     const shown = r.items.slice(0, MAP.max);
     const end = MAP.label + 30 + Math.max(0, shown.length - 1) * MAP.step + 34;
+    const recent = Date.now() - 86400000;
     const stations = shown.map(({ b, inter }, i) => {
       const x = MAP.label + 30 + i * MAP.step;
-      return `<a class="map-stop${inter ? ' inter' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
+      return `<a class="map-stop${inter ? ' inter' : ''}${b.createdAt > recent ? ' new' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
         <title>${esc(b.title)}</title>
         <circle class="hit" cx="${x}" cy="${r.y}" r="22"/>
         <circle class="dot" cx="${x}" cy="${r.y}" r="${inter ? 9 : 8}"/>
@@ -741,6 +1014,7 @@ function mapHTML(list) {
         <text class="lb-name" x="${r.bx + 20}" y="${r.y + 5}">${esc(cut(c.name, Math.max(8, 24 - r.depth * 2)))}</text>
       </a>
       ${shown.length ? `<path class="track" d="M${MAP.label} ${r.y} H${end}"/>` : ''}
+      ${shown.length > 1 && !reducedMotion() ? `<circle class="train" r="5"><animateMotion dur="${Math.round((end - MAP.label) / 34)}s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;0" keyTimes="0;0.5;1" path="M${MAP.label + 30} ${r.y} H${end - 34}"/></circle>` : ''}
       ${stations}${more}
     </g>`;
   }).join('');
@@ -1454,6 +1728,7 @@ function addPopover(anchor, state = {}) {
 }
 
 async function addUrls(urls, defaults) {
+  if (S.ui.chime && urls.length) chime();
   const existing = new Set(S.bookmarks.filter((b) => !b.trashedAt).map((b) => M.normalizeUrl(b.url)));
   const fresh = [];
   let dupes = 0;
@@ -2109,7 +2384,9 @@ async function renderSettings() {
     <section>
       <h2>${icon('sun', 20)} Appearance</h2>
       <div class="rows"><div class="row"><div class="what"><b>Theme</b><span>The signage band stays dark; the work area follows this setting.</span></div>
-        <div class="act"><div class="seg" role="group" aria-label="Theme">${['system', 'light', 'dark'].map((t) => `<button data-theme-set="${t}" aria-pressed="${S.ui.theme === t}">${icon(t === 'dark' ? 'moon' : t === 'light' ? 'sun' : 'monitor', 15)} ${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div></div></div>
+        <div class="act"><div class="seg" role="group" aria-label="Theme">${['system', 'light', 'dark'].map((t) => `<button data-theme-set="${t}" aria-pressed="${S.ui.theme === t}">${icon(t === 'dark' ? 'moon' : t === 'light' ? 'sun' : 'monitor', 15)} ${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div></div>
+        <div class="row"><div class="what"><b>Station chime</b><span>Two soft notes when a page is saved. Made on your computer; off unless you turn it on.</span></div>
+        <div class="act"><button class="switch" role="switch" aria-checked="${!!S.ui.chime}" data-act="chime" aria-label="Station chime"></button></div></div></div>
     </section>
     <section>
       <h2>${icon('keyboard', 20)} Shortcuts</h2>
@@ -2130,7 +2407,8 @@ async function renderSettings() {
     </section>
     <section>
       <h2>${icon('cards', 20)} Library</h2>
-      <div class="rows"><div class="row"><div class="what"><b class="tnum">${plural(S.counts.all, 'link')} on ${plural(S.collections.length, 'line')}, ${plural(S.counts.tags.size, 'tag')}</b><span>Using ${mb} of local storage in this Chrome profile.</span></div></div></div>
+      <div class="rows"><div class="row"><div class="what"><b class="tnum">${plural(S.counts.all, 'link')} on ${plural(S.collections.length, 'line')}, ${plural(S.counts.tags.size, 'tag')}</b><span>Using ${mb} of local storage in this Chrome profile.</span></div></div>
+        <div class="row"><div class="what"><b>Linemark Wrapped</b><span>Your year on the lines: what you saved, where it went, and when. Worked out on this computer.</span></div><div class="act"><a class="btn" href="#/wrapped">${icon('map', 16)} Open</a></div></div></div>
     </section>
   </div>`;
   wireSyncForms();
@@ -2235,6 +2513,10 @@ function bindEvents() {
       case 'visited': setRevisit(selectionOr(id), null); break;
       case 'save-smart': saveSmartLine(); break;
       case 'save-tab-groups': saveTabGroups(); break;
+      case 'chime': S.ui.chime = !S.ui.chime; saveUI(); if (S.ui.chime) chime(); actEl.setAttribute('aria-checked', S.ui.chime); break;
+      case 'wrap-year': S.wrapYear = +actEl.dataset.year; renderWrapped(); break;
+      case 'wrap-view': S.ui.wrapView = actEl.dataset.v; saveUI(); between(renderWrapped); break;
+      case 'wrap-export': exportWrapped(); break;
       case 'card-menu': cardMenu(actEl, id); break;
       case 'restore': restore(selectionOr(id)); break;
       case 'destroy': if (armConfirm(actEl, '')) destroy(selectionOr(id)); else toast('Click the trash icon again to delete forever'); break;
