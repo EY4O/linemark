@@ -6,6 +6,6 @@
 //
 // While these are placeholders, sync still works: users choose "Use your own Google project" in Settings.
 
-export const GOOGLE_WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+export const GOOGLE_WEB_CLIENT_ID = '1037985269779-654f8q63gufp18llmbminisa7fs2mnmd.apps.googleusercontent.com';
 
 export const isConfigured = (id) => typeof id === 'string' && /\.apps\.googleusercontent\.com$/.test(id) && !id.startsWith('YOUR_');

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Builds the Chrome Web Store upload: dist/linemark-<version>.zip
 // containing only what the extension runs: manifest, pages, css, js, fonts and icons.
+// A "key" in manifest.json (used to give the unpacked copy the store's ID) is left out:
+// the store sets the ID itself and rejects uploads that carry one.
 //
 //   node tools/package.mjs
 //
@@ -31,7 +33,8 @@ const central = [];
 let offset = 0;
 const dosTime = 0, dosDate = (2026 - 1980) << 9 | 10 << 5 | 9; // fixed timestamp keeps the ZIP reproducible
 for (const name of files) {
-  const data = fs.readFileSync(path.join(ROOT, name));
+  let data = fs.readFileSync(path.join(ROOT, name));
+  if (name === 'manifest.json' && 'key' in manifest) { const { key, ...rest } = manifest; data = Buffer.from(JSON.stringify(rest, null, 2) + '\n'); }
   const packed = zlib.deflateRawSync(data, { level: 9 });
   const useDeflate = packed.length < data.length;
   const body = useDeflate ? packed : data;

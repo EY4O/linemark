@@ -43,6 +43,21 @@ On every other device, use the same Google account and the same passphrase.
 
 Built-in sign-in needs one Google Cloud project for Linemark, owned by whoever publishes it. Until the placeholders below are filled in, Settings automatically offers **Use your own Google project** instead.
 
+Linemark's own values:
+
+| Setting | Value |
+|---|---|
+| Chrome Web Store item ID | `laapaiiaipeoilipnbhpjmjbdkomhjln` |
+| Web client redirect URI | `https://laapaiiaipeoilipnbhpjmjbdkomhjln.chromiumapp.org/google` |
+| Homepage | `https://ey4o.github.io/linemark-site/` |
+| Privacy policy | `https://ey4o.github.io/linemark-site/privacy.html` |
+| Consent-screen logo (120×120) | `store/images/oauth-logo-120.png` |
+| Google Cloud project | `angelic-howl-511200-t5` ("Linemark", owned by iamlooneth@gmail.com) |
+| Chrome Extension client | `1037985269779-s7bdmv2c3t320ng3kv0cbtmjoorfr7hl.apps.googleusercontent.com` |
+| Web application client | `1037985269779-654f8q63gufp18llmbminisa7fs2mnmd.apps.googleusercontent.com` |
+
+**Testing sign-in before you upload.** An unpacked copy gets its own ID, so Google sign-in fails there. Copy the public key from the dashboard (**Package → View public key**) into `manifest.json` as `"key"` to give your unpacked copy the store ID. `node tools/package.mjs` leaves the key out of the upload.
+
 1. **Give Linemark a fixed extension ID.** Either publish to the Chrome Web Store, or add a `"key"` to `manifest.json` (see Chrome's docs on keeping a consistent extension ID).
    > ⚠ **Back up first.** Changing the extension ID moves Linemark to a new storage area, so the existing library seems to disappear. Use **Settings → Full backup (JSON)** before you change it, and **Restore** afterwards.
 2. **Create a project** in the [Google Cloud console](https://console.cloud.google.com/) and enable the **Google Drive API**.

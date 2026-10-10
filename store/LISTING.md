@@ -1,5 +1,7 @@
 # Chrome Web Store listing: Linemark
 
+**Item ID:** `laapaiiaipeoilipnbhpjmjbdkomhjln` ([store page](https://chromewebstore.google.com/detail/laapaiiaipeoilipnbhpjmjbdkomhjln), live once published)
+
 Paste each section into the matching field of the [Developer Dashboard](https://chrome.google.com/webstore/devconsole). The images are in `store/images/`; rebuild them with `node tools/store-assets.mjs`. Build the upload ZIP with `node tools/package.mjs`.
 
 ---

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Linemark — Bookmark Manager",
   "short_name": "Linemark",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bookmarks on colour-coded lines, with tags, notes, full-text search and a broken-link checker. Local by default; sync optional.",
   "icons": {
     "16": "icons/icon16.png",
@@ -34,7 +34,7 @@
   "optional_permissions": ["tabs", "identity"],
   "optional_host_permissions": ["<all_urls>"],
   "oauth2": {
-    "client_id": "YOUR_CHROME_EXTENSION_CLIENT_ID.apps.googleusercontent.com",
+    "client_id": "1037985269779-s7bdmv2c3t320ng3kv0cbtmjoorfr7hl.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/drive.appdata"]
   },
   "omnibox": { "keyword": "lm" },
