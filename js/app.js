@@ -300,11 +300,11 @@ function renderBand() {
           : '<span class="twisty none" aria-hidden="true"></span>'}
         ${renaming
           ? `${lineBullet(c, 20)}<input class="rename" value="${esc(c.name)}" aria-label="Line name" maxlength="80">`
-          : `<a class="stop-link" href="#/c/${c.id}" ${here ? 'aria-current="page"' : ''} draggable="false">${lineBullet(c, 20)}<span class="stop-name" dir="auto">${esc(c.name)}</span></a>`}
+          : `<a class="stop-link" href="#/c/${c.id}" ${here ? 'aria-current="page"' : ''} draggable="false"${depth ? ` data-depth="${depth}" data-path="${esc(M.linePathOf(S.collections, c.id).join(' › '))}"` : ''}>${lineBullet(c, 20)}<span class="stop-name" dir="auto">${esc(c.name)}</span></a>`}
         <span class="count">${n ? n.toLocaleString() : ''}</span>
         <button class="more" data-act="line-menu" aria-haspopup="menu" aria-label="Options for ${esc(c.name)}" title="Options (F2 renames)">${icon('more', 16)}</button>
       </div>
-      ${open ? `<div class="line-children" style="--stem:${c.color}">${kids.map((k) => lineNode(k, depth + 1)).join('')}</div>` : ''}
+      ${open ? `<div class="line-children${depth + 1 > 8 ? ' flat' : depth + 1 > 2 ? ' deep' : ''}" style="--stem:${c.color}">${kids.map((k) => lineNode(k, depth + 1)).join('')}</div>` : ''}
     </div>`;
   };
 
@@ -1510,7 +1510,7 @@ function syncSection() {
     const builtIn = Sync.builtInSignIn();
     const own = `<div class="field"><label for="sync-client">Google OAuth client ID</label>
         <input class="input" id="sync-client" autocomplete="off" spellcheck="false" placeholder="1234567890-abc.apps.googleusercontent.com" value="${esc(sy.clientId)}">
-        <span class="hint">Create one in Google Cloud in about five minutes (steps in <b>docs/SYNC.md</b>). Use this as its authorised redirect URI:</span>
+        <span class="hint">In the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud console</a>: turn on the Google Drive API, add the <b>drive.appdata</b> scope to the consent screen, then create a <b>Web application</b> client with this authorised redirect URI:</span>
         <span class="copy-row"><code id="sync-redirect">${esc(redirect || 'Available when Linemark runs as an extension')}</code>${redirect ? `<button type="button" class="btn sm" data-act="copy-redirect">${icon('copy', 14)} Copy</button>` : ''}</span>
       </div>`;
     rows = `<form class="sync-form" id="sync-form" novalidate>
@@ -1536,6 +1536,35 @@ function syncSection() {
       <div class="row"><div class="what"><b>Turn off sync</b><span>Stops syncing on this device. The encrypted cloud copy stays, so your other devices keep working. Deleting the cloud copy turns sync off everywhere.</span></div><div class="act"><button class="btn" data-act="sync-off">Turn off</button><button class="btn danger" data-act="sync-off-delete">${icon('trash', 16)} Delete cloud copy</button></div></div>`;
   }
   return `<section id="sync-section"><h2>${icon('cloud', 20)} Sync <span class="tag-optional">Optional</span></h2>${intro}<div class="rows">${rows}</div></section>`;
+}
+
+// Deep lines bundle their stems, so names can run out of room: hovering or focusing one shows its full path.
+function wireLineTips() {
+  let tip = null;
+  let owner = null;
+  const hide = () => { if (tip) tip.hidden = true; owner?.removeAttribute('aria-describedby'); owner = null; };
+  const show = (a) => {
+    const name = $('.stop-name', a);
+    const cut = name && name.scrollWidth > name.clientWidth + 1;
+    if (!a.dataset.path || !(cut || +a.dataset.depth >= 3)) return;
+    if (!tip) { tip = document.createElement('div'); tip.className = 'line-tip'; tip.id = 'line-tip'; tip.setAttribute('role', 'tooltip'); document.body.append(tip); }
+    const parts = a.dataset.path.split(' › ');
+    tip.innerHTML = parts.map((p, i) => (i === parts.length - 1 ? `<b>${esc(p)}</b>` : esc(p))).join(' <i>›</i> ');
+    tip.hidden = false;
+    const row = a.closest('.stop').getBoundingClientRect();
+    const band = $('#band').getBoundingClientRect();
+    tip.style.left = `${Math.max(8, Math.min(band.right + 8, innerWidth - tip.offsetWidth - 8))}px`;
+    tip.style.top = `${row.top + row.height / 2}px`;
+    owner = a;
+    a.setAttribute('aria-describedby', 'line-tip');
+  };
+  const band = $('#band');
+  band.addEventListener('mouseover', (e) => { const a = e.target.closest('.stop-link'); if (a !== owner) { hide(); if (a) show(a); } });
+  band.addEventListener('mouseleave', hide);
+  band.addEventListener('focusin', (e) => { const a = e.target.closest('.stop-link'); hide(); if (a) show(a); });
+  band.addEventListener('focusout', hide);
+  band.addEventListener('scroll', hide, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
 }
 
 function wireSyncForms() {
@@ -1659,7 +1688,7 @@ async function renderSettings() {
         ${remote ? scanRow('covers', 'Covers not stored yet',
           `${plural(remote, 'cover')} still point${remote === 1 ? 's' : ''} at another website, so ${remote === 1 ? 'it shows' : 'they show'} a placeholder. Store them once and they load from this computer.`,
           remote, `Store ${remote.toLocaleString()}`) : ''}
-        ${host ? `<div class="row"><div class="what"><b>Site access</b><span>Granted. Linemark uses it only for the actions above and the Refresh button.</span></div><div class="act"><button class="btn ghost" data-act="revoke-host">Revoke</button></div></div>` : ''}
+        ${host ? `<div class="row"><div class="what"><b>Site access</b><span>Granted. Linemark uses it only for the actions above and the Refresh button.</span></div><div class="act"><button class="btn" data-act="revoke-host">${icon('x', 16)} Revoke</button></div></div>` : ''}
       </div>
     </section>
     <section>
@@ -1680,7 +1709,7 @@ async function renderSettings() {
       <div class="rows"><div class="keys">
         <div>Save current page <span><kbd>Alt</kbd><kbd>Shift</kbd><kbd>S</kbd></span></div>
         <div>Open Linemark <span><kbd>Alt</kbd><kbd>Shift</kbd><kbd>L</kbd></span></div>
-        <div>Search from address bar <span><kbd>lm</kbd><kbd>Space</kbd></span></div>
+        <div>Search from address bar <span title="Type lm (lower-case L, M), then Space"><kbd>L</kbd><kbd>M</kbd><kbd>Space</kbd></span></div>
         <div>Search <span><kbd>/</kbd></span></div>
         <div>Add link <span><kbd>N</kbd></span></div>
         <div>Switch view <span><kbd>1</kbd>–<kbd>4</kbd></span></div>
@@ -1938,6 +1967,7 @@ function bindEvents() {
     if (e.target.matches('input.rename') && S.renaming) renameLine(S.renaming, e.target.value);
   });
   $('#band').addEventListener('click', (e) => { if (e.target.matches('input.rename')) e.preventDefault(); }, true);
+  wireLineTips();
   $('#band').addEventListener('dblclick', (e) => {
     const stop = e.target.closest('.stop[data-id]');
     if (stop) { S.renaming = stop.dataset.id; renderBand(); }

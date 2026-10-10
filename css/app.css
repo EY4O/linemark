@@ -120,6 +120,28 @@ body { overflow: hidden; }
   background: var(--stem);
   opacity: 0.85;
 }
+/* Deep branches bundle: past the second level each step is 6px, so the stems run side by side as a ribbon of their
+   colours (the path, read left to right) and names keep their room; past the eighth level indenting stops. */
+.line-children.deep { margin-left: 6px; }
+.line-children.flat { margin-left: 0; }
+.line-tip {
+  position: fixed;
+  z-index: 80;
+  transform: translateY(-50%);
+  max-width: min(420px, calc(100vw - 16px));
+  padding: 6px 10px;
+  border: 1px solid var(--band-rule);
+  border-radius: var(--r-1);
+  background: var(--band);
+  color: var(--band-ink-2);
+  box-shadow: var(--shadow-2);
+  font-size: 0.8125rem;
+  font-weight: 560;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.line-tip b { color: var(--band-ink); font-weight: 700; }
+.line-tip i { font-style: normal; color: var(--band-ink-2); }
 .line-children > .line-node > .stop.drop-before::after,
 .line-children > .line-node > .stop.drop-after::after { left: 8px; width: auto; height: 2px; opacity: 1; background: var(--brand); }
 .line-children > .line-node > .stop.drop-before::after { top: -1px; }

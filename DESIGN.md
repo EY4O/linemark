@@ -417,7 +417,7 @@ Dark theme deepens all three (see the sidecar).
 
 One radius scale, nothing off it: 2px for track (sidebar stems, drop bars), 4px for small marks (favicons, kbd keys, the snippet label, highlight marks, the line twisty and options buttons, the rename field, the popup cover switch), 6px for controls (buttons, fields, menu items, stops, view segments, the list-view favicon tile, popup thumbnail), 8px for the segmented control's outer shell, and 10px for cards, tiles, menus, containers and the scan-status panel. Covers inside a 1px-bordered card use `--r-inner` (10px minus the border) so the image corner sits exactly inside the card corner. Full pills for things that travel, filter or report (search, station-level Add link, toasts, bulk bar, tag pills, chips, health chips, switches, progress bars), and perfect circles reserved for line bullets and colour swatches. Hairline borders (1px) define edges; the only heavier strokes are the 4px line stripes, the 3px sidebar stems, and bullet rings.
 
-The line tree draws real track: child lines hang off a 3px stem in the parent's colour, with a 3px spur into each child stop.
+The line tree draws real track: child lines hang off a 3px stem in the parent's colour, with a 3px spur into each child stop. The first two levels indent 20px each; deeper levels step only 6px, so their stems run side by side as a bundle of colours (the path, read left to right), and past the eighth level indenting stops, so a name always keeps its room. A nested stop whose name is cut off, or that sits three or more levels deep, shows its full path ("This › Is › A › B") in a band-black tooltip beside the band on hover and on keyboard focus.
 
 ## Components
 
