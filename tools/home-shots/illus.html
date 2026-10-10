@@ -1,0 +1,96 @@
+<!doctype html>
+<!-- Drawings for the homepage's hover pictures, where there is nothing in Linemark itself to screenshot:
+     ?n=keyboard   380x390, light: the two shortcuts as stops on the Save line
+     ?n=rightclick 380x390, light: a page with Chrome's right-click menu open on Save page to Linemark
+     ?n=omnibox    665x500, dark:  the address bar after "lm" + Space, with Linemark's own suggestions
+     The menu titles and the suggestion format are the extension's own (js/background.js). Rendered by tools/home-shots.mjs. -->
+<html><head><meta charset="utf-8"><title>illus</title>
+<style>
+  @font-face { font-family: 'Archivo'; src: url('/fonts/archivo-wdth.woff2') format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; overflow: hidden; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Archivo', 'Segoe UI', sans-serif; }
+  .light { --ink: #16171a; --ink-2: #474a51; --ink-3: #686b73; --ground: #f2f2ef; --surface: #ffffff; --hover: #efefeb; --rule: #e3e3df; --rule-strong: #cdcdc7; }
+  .dark { --ink: #ecebe7; --ink-2: #c0c2c7; --ink-3: #9a9da5; --ground: #0f1012; --surface: #18191c; --hover: #24262b; --rule: #2a2c31; --rule-strong: #3b3e45; }
+  .frame { position: relative; overflow: hidden; background: var(--surface); color: var(--ink); }
+
+  /* keyboard: a vertical Save line (teal) with a stop per shortcut */
+  .kb { width: 380px; height: 390px; padding: 82px 34px 0 36px; }
+  .kb::before { content: ''; position: absolute; left: 49px; top: 102px; height: 196px; width: 6px; border-radius: 3px; background: #0b7a75; }
+  .kb-stop { position: relative; display: grid; grid-template-columns: 32px 1fr; column-gap: 18px; align-items: start; margin-bottom: 52px; }
+  .kb-ring { width: 32px; height: 32px; margin-top: 6px; border-radius: 50%; border: 7px solid #0b7a75; background: var(--surface); position: relative; z-index: 1; }
+  .kb-keys { display: flex; align-items: center; gap: 7px; flex-wrap: nowrap; }
+  .kb-keys kbd { font: inherit; font-size: 1.125rem; font-weight: 700; min-width: 44px; height: 44px; padding: 0 12px; display: inline-grid; place-items: center; border-radius: 8px; border: 1px solid var(--rule-strong); border-bottom-width: 4px; background: var(--surface); color: var(--ink); box-shadow: 0 2px 4px rgba(22, 23, 26, 0.06); }
+  .kb-keys .plus { color: var(--ink-3); font-weight: 600; font-size: 1rem; }
+  .kb-keys kbd.k { background: #0b7a75; color: #fff; border-color: #075a56; }
+  .kb-what { margin: 12px 0 0; font-size: 1.0625rem; font-weight: 700; font-stretch: 87.5%; }
+  .kb-what span { display: block; margin-top: 3px; font-size: 0.875rem; font-weight: 450; font-stretch: 100%; color: var(--ink-3); }
+
+  /* right-click: a page sketch with Chrome's menu, the Linemark item hovered */
+  .rc { width: 380px; height: 390px; background: var(--ground); }
+  .rc .page { position: absolute; left: 22px; top: 22px; right: -40px; bottom: -40px; background: var(--surface); border-radius: 10px; box-shadow: 0 1px 2px rgba(22, 23, 26, 0.08); padding: 26px 26px; }
+  .rc .bar { height: 10px; border-radius: 5px; background: #d9dad6; margin-bottom: 12px; }
+  .rc .bar.h { height: 18px; width: 70%; background: #16171a; margin-bottom: 18px; }
+  .rc .img { height: 84px; width: 46%; border-radius: 6px; background: #c2255c; margin: 6px 0 16px; opacity: 0.85; }
+  .menu { position: absolute; left: 116px; top: 92px; width: 236px; padding: 6px 0; border-radius: 10px; background: #fff; box-shadow: 0 12px 28px -6px rgba(22, 23, 26, 0.32), 0 2px 6px rgba(22, 23, 26, 0.12); border: 1px solid rgba(22, 23, 26, 0.08); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; color: #1f1f1f; }
+  .menu .it { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 16px; }
+  .menu .it .ico { width: 16px; height: 16px; flex: none; }
+  .menu .it.dim { color: #1f1f1f; }
+  .menu .it.on { background: #e8eaed; }
+  .menu .it .kbd { margin-left: auto; color: #6b6b6b; }
+  .menu hr { border: 0; border-top: 1px solid #e3e3e3; margin: 5px 0; }
+  .cursor { position: absolute; left: 318px; top: 300px; width: 16px; height: 22px; }
+
+  /* omnibox: the address bar in keyword mode, and Linemark's suggestions under it */
+  .ob { width: 665px; height: 500px; background: var(--ground); padding: 44px 34px; }
+  .ob .drop { border-radius: 18px; background: #282a2d; box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.7); overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #e3e3e3; }
+  .ob .field { display: flex; align-items: center; gap: 14px; height: 76px; padding: 0 24px; font-size: 24px; border-bottom: 1px solid #3c3e42; }
+  .ob .chip { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px 0 10px; border-radius: 10px; background: #3a4a63; color: #d6e3ff; font-size: 20px; font-weight: 600; }
+  .ob .chip img { width: 24px; height: 24px; }
+  .ob .caret { display: inline-block; width: 2px; height: 30px; background: #a8c7fa; margin-left: 2px; vertical-align: -6px; }
+  .ob .row { display: flex; align-items: center; gap: 16px; height: 66px; padding: 0 24px; font-size: 20px; white-space: nowrap; overflow: hidden; }
+  .ob .row.on { background: #37393d; }
+  .ob .row img, .ob .row .srch { width: 26px; height: 26px; flex: none; }
+  .ob .row b { font-weight: 700; color: #fff; }
+  .ob .row .d { color: #9aa0a6; }
+  .ob .note { margin: 26px 4px 0; color: var(--ink-2); font-family: 'Archivo', sans-serif; font-size: 19px; line-height: 1.5; }
+  .ob .note kbd { font: inherit; font-weight: 650; font-size: 16px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--rule-strong); border-bottom-width: 2px; background: var(--surface); color: var(--ink); }
+</style></head>
+<body>
+<script>
+const n = new URLSearchParams(location.search).get('n');
+const LOGO = '/icons/logo-light.svg';
+const ui = {
+  keyboard: () => `<div class="frame light kb">
+    <div class="kb-stop"><span class="kb-ring"></span><div>
+      <div class="kb-keys"><kbd>Alt</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd class="k">S</kbd></div>
+      <p class="kb-what">Save this page<span>Opens the popup with the page saved</span></p></div></div>
+    <div class="kb-stop"><span class="kb-ring"></span><div>
+      <div class="kb-keys"><kbd>Alt</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd class="k">L</kbd></div>
+      <p class="kb-what">Open your library<span>In a tab of its own</span></p></div></div>
+  </div>`,
+  rightclick: () => `<div class="frame light rc">
+    <div class="page"><div class="bar h"></div><div class="bar" style="width:88%"></div><div class="bar" style="width:80%"></div><div class="img"></div>
+      <div class="bar" style="width:84%"></div><div class="bar" style="width:76%"></div><div class="bar" style="width:82%"></div><div class="bar" style="width:60%"></div></div>
+    <div class="menu">
+      <div class="it">Back</div><div class="it">Forward</div><div class="it">Reload</div><hr>
+      <div class="it">Save as…</div><div class="it">Print…</div><hr>
+      <div class="it on"><img class="ico" src="${LOGO}" alt="">Save page to Linemark</div><hr>
+      <div class="it">View page source</div><div class="it">Inspect</div>
+    </div>
+    <svg class="cursor" viewBox="0 0 16 22"><path d="M1 1v17l4.5-4.2 3 6.7 2.6-1.2-3-6.6H14z" fill="#fff" stroke="#16171a" stroke-width="1.4" stroke-linejoin="round"/></svg>
+  </div>`,
+  omnibox: () => `<div class="frame dark ob">
+    <div class="drop">
+      <div class="field"><span class="chip"><img src="${LOGO}" alt="">Linemark</span><span>japan<span class="caret"></span></span></div>
+      <div class="row on"><svg class="srch" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Search Linemark for <b>japan</b></span></div>
+      <div class="row"><img src="${LOGO}" alt=""><span>Japan travel guide <span class="d">· japan-guide.com · #japan #travel</span></span></div>
+      <div class="row"><img src="${LOGO}" alt=""><span>Shinkansen <span class="d">· en.wikipedia.org · #rail #japan</span></span></div>
+    </div>
+    <p class="note">Type <kbd>lm</kbd> then <kbd>Space</kbd> in the address bar. Enter opens the link, or the search in Linemark.</p>
+  </div>`,
+};
+document.body.innerHTML = ui[n]();
+(async () => { await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); document.title = 'ready'; })();
+</script>
+</body></html>
