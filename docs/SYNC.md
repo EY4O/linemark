@@ -56,7 +56,7 @@ Linemark's own values:
 | Chrome Extension client | `1037985269779-s7bdmv2c3t320ng3kv0cbtmjoorfr7hl.apps.googleusercontent.com` |
 | Web application client | `1037985269779-654f8q63gufp18llmbminisa7fs2mnmd.apps.googleusercontent.com` |
 
-**Testing sign-in before you upload.** An unpacked copy gets its own ID, so Google sign-in fails there. Copy the public key from the dashboard (**Package → View public key**) into `manifest.json` as `"key"` to give your unpacked copy the store ID. `node tools/package.mjs` leaves the key out of the upload.
+**Same ID when unpacked.** `manifest.json` carries the store item's public key as `"key"`, so an unpacked copy gets the store ID (`laapaiiaipeoilipnbhpjmjbdkomhjln`) and Google sign-in works there too. `node tools/package.mjs` leaves the key out of the upload. Adding the key moved unpacked installs to a new ID, so a library made before it needs **Full backup (JSON)** and **Restore**.
 
 1. **Give Linemark a fixed extension ID.** Either publish to the Chrome Web Store, or add a `"key"` to `manifest.json` (see Chrome's docs on keeping a consistent extension ID).
    > ⚠ **Back up first.** Changing the extension ID moves Linemark to a new storage area, so the existing library seems to disappear. Use **Settings → Full backup (JSON)** before you change it, and **Restore** afterwards.
