@@ -876,6 +876,8 @@ body { overflow: hidden; }
   .stop, .band-foot .stop { min-height: 44px; }
   .stop .more { width: 40px; height: 40px; }
   .stop .twisty { width: 32px; height: 32px; margin-left: -10px; }
+  /* the chevron and the selection box keep their 32px look; a ring round each makes the tap area 44px */
+  .stop .twisty::before, .check::before { content: ''; position: absolute; left: calc(50% - 22px); top: calc(50% - 22px); width: 44px; height: 44px; }
   .seg button { height: 44px; min-width: 44px; }
   .station-tools .btn.primary { min-width: 44px; height: 44px; }
   .search input { height: 44px; }

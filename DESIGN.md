@@ -510,7 +510,7 @@ The header of the work area: a 46px bullet, the station name in Display, a count
 
 ### Signage Band / Stops
 - **Stop:** 36px row, 20px bullet, band-ink label, tabular count in band-ink-2; hover lifts to band-hover.
-- **Line row:** a row holding real controls side by side: a twisty button (aria-expanded) for lines with children, the stop link whose hit area fills the whole row, the count, and a "more" options button that replaces the count on hover or focus. Keyboard focus on the link rings the whole row. F2 on a line row renames it in place (a 26px ember-bordered field on band black).
+- **Line row:** a row holding real controls side by side: a twisty button (aria-expanded) for lines with children, the stop link whose hit area fills the whole row, the count, and a "more" options button that replaces the count on hover or focus. Keyboard focus on the link rings the whole row. On touch screens the twisty is 32px with an invisible 44px tap ring, as is the card selection box. F2 on a line row renames it in place (a 26px ember-bordered field on band black).
 - **Current stop:** band-active fill, 650 weight, and a ring around the bullet (2px band-active gap, 2px line-colour ring). Marked for assistive tech with aria-current. There is no side tab or edge bar.
 - **Broken links stop:** a solid danger-red bullet with a white alert mark, directly under Favorites. It exists only while at least one link is dead, moved or unverified.
 - **Drag targets:** a 1px inset ring in the line colour for drop-into; a 2px orange bar for drop-before/after.
