@@ -29,7 +29,7 @@ Linemark is a Chrome extension for people who save a lot of links and want to fi
 - 🧹 **Tidy-up tools**: a duplicate finder that merges tags and notes, bulk move and tag, a restorable Trash, and Undo on every change.
 - 💾 **Your data, portable**: export Chrome-compatible HTML, or a full JSON backup that includes screenshots.
 - 🔐 **Optional encrypted sync**: local by default. Turn on sync to keep Chrome, Edge, Brave and Vivaldi in step through your own Google Drive. Everything is encrypted on your device with your passphrase first, so Google only stores scrambled data.
-- 🌗 **Light and dark**: follows your system setting, or set it yourself. An optional station chime (off by default) plays when you save a page.
+- 🌗 **Light and dark**: follows your system setting, or set it yourself. An optional station chime (off by default) plays when you save from the toolbar or in the library.
 
 ## 📸 Screenshots
 

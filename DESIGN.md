@@ -545,7 +545,7 @@ All motion has a fade for reduced motion.
 - **Moving between stations:** a View Transition crossfades the content (0.22s) while the band stays put; arriving at a station flips its name in letter by letter, split-flap style.
 - **Tactile controls:** buttons press in under the pointer with the `--press` inset shadow.
 - **Map trains:** on the network map a dot runs each line with more than one station; stations saved in the last day pulse.
-- **Station chime:** an optional two-note Web Audio tone on save (Settings → Appearance), off by default; no sound files.
+- **Station chime:** an optional two-note Web Audio tone on saves from the popup or the library (Settings → Appearance), off by default; no sound files. Right-click saves run in the service worker, which has no audio, so they stay quiet.
 - `--band-brand` (#ff8a5c) is Linemark orange lifted for text on the band (toast actions): 4.7:1 or better on every band tone.
 
 ### Public site (docs/)

@@ -2381,7 +2381,7 @@ async function renderSettings() {
       <h2>${icon('sun', 20)} Appearance</h2>
       <div class="rows"><div class="row"><div class="what"><b>Theme</b><span>The signage band stays dark; the work area follows this setting.</span></div>
         <div class="act"><div class="seg" role="group" aria-label="Theme">${['system', 'light', 'dark'].map((t) => `<button data-theme-set="${t}" aria-pressed="${S.ui.theme === t}">${icon(t === 'dark' ? 'moon' : t === 'light' ? 'sun' : 'monitor', 15)} ${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div></div>
-        <div class="row"><div class="what"><b>Station chime</b><span>Two soft notes when a page is saved. Made on your computer; off unless you turn it on.</span></div>
+        <div class="row"><div class="what"><b>Station chime</b><span>Two soft notes when you save from the toolbar or here in Linemark (right-click saves stay quiet). Made on your computer; off unless you turn it on.</span></div>
         <div class="act"><button class="switch" role="switch" aria-checked="${!!S.ui.chime}" data-act="chime" aria-label="Station chime"></button></div></div></div>
     </section>
     <section>
