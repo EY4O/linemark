@@ -68,15 +68,15 @@ Light and dark themes, full keyboard support, and 44px touch targets on touchscr
 | Field | File | Size |
 |---|---|---|
 | Store icon | `icon-128.png` | 128×128 |
-| Screenshot 1: the library, with lines and icons | `screenshot-1.png` | 1280×800 |
-| Screenshot 2: the network map, each link a station in the shape of its kind | `screenshot-2.png` | 1280×800 |
-| Screenshot 3: full-text search (dark theme) | `screenshot-3.png` | 1280×800 |
-| Screenshot 4: Linemark Wrapped, the Journey through the year | `screenshot-4.png` | 1280×800 |
-| Screenshot 5: broken-link checker | `screenshot-5.png` | 1280×800 |
+| Screenshot 1: "Bookmarks on lines." The library, with a lens on a line and its branches | `screenshot-1.png` | 1280×800 |
+| Screenshot 2: "Find anything again." Full-text search (dark), with a lens on the matched passage | `screenshot-2.png` | 1280×800 |
+| Screenshot 3: "Keep links healthy." The broken-link checker, with a lens on a Dead label | `screenshot-3.png` | 1280×800 |
+| Screenshot 4: "Your library as a transit map." The network map's shaped stations and the city palettes | `screenshot-4.png` | 1280×800 |
+| Screenshot 5: "Private by default." Local storage, encrypted sync, your own Drive, export | `screenshot-5.png` | 1280×800 |
 | Small promo tile | `promo-small.png` | 440×280 |
 | Marquee promo tile (optional) | `promo-marquee.png` | 1400×560 |
 
-The screenshots use a demo library (`store/demo-seed.html`). The bookmarks point at real public sites, and the cover images are abstract drawings standing in for page screenshots.
+The screenshots are composed slides (`store/promo/slides.html`) over captures of the real app in `store/images/raw/`, taken with a demo library (`store/demo-seed.html`). The bookmarks point at real public sites, and the cover images are abstract drawings standing in for page screenshots.
 
 **Homepage URL:** `https://ey4o.github.io/linemark-site/`
 **Support URL:** `https://github.com/EY4O/linemark-site/issues`
