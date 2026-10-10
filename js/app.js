@@ -967,15 +967,18 @@ function linePicker(anchor, currentId, onPick, { allowNone = true, title } = {})
     const walk = (list, depth) => { for (const c of list) { flat.push([c, depth]); walk(kidsOf(c.id), depth + 1); } };
     walk(roots(), 0);
     const draw = (q = '') => {
-      const ql = q.toLowerCase();
-      const items = flat.filter(([c]) => !ql || c.name.toLowerCase().includes(ql));
+      // "Videos/Markiplier" finds or creates a line and a branch inside it
+      const ql = M.splitLinePath(q).join('/').toLowerCase();
+      const path = (c) => M.linePathOf(S.collections, c.id);
+      const items = flat.filter(([c]) => !ql || path(c).join('/').toLowerCase().includes(ql));
+      const create = M.createLineLabel(S.collections, q);
       $('.picker-list', m).innerHTML =
         (allowNone && !ql ? menuItem({ label: 'Unsorted', lead: unsortedBullet(18, 'var(--ink-3)'), action: '', checked: !currentId, attrs: 'data-pick=""' }) : '') +
-        items.map(([c, d]) => menuItem({ label: c.name, lead: `<span style="width:${d * 14}px;flex:none"></span>${lineBullet(c, 18)}`, checked: c.id === currentId, attrs: `data-pick="${c.id}"` })).join('') +
-        (q ? menuItem({ label: `Create line “${q}”`, iconName: 'plus', attrs: `data-create="${esc(q)}"` }) : '') +
+        items.map(([c, d]) => menuItem({ label: ql && d ? path(c).join(' › ') : c.name, lead: `<span style="width:${ql ? 0 : d * 14}px;flex:none"></span>${lineBullet(c, 18)}`, checked: c.id === currentId, attrs: `data-pick="${c.id}"` })).join('') +
+        (create ? menuItem({ label: create, iconName: 'plus', attrs: `data-create="${esc(q)}"` }) : '') +
         (!items.length && !q ? '<div class="menu-empty">No lines yet.</div>' : '');
     };
-    m.innerHTML = `${title ? `<div class="label" style="padding:4px 9px 6px">${esc(title)}</div>` : ''}<input class="input menu-search" placeholder="Find or create a line" aria-label="Find a line"><div class="picker-list"></div>`;
+    m.innerHTML = `${title ? `<div class="label" style="padding:4px 9px 6px">${esc(title)}</div>` : ''}<input class="input menu-search" placeholder="Find a line, or type Line/Branch" aria-label="Find a line, or type Line/Branch to create a branch"><div class="picker-list"></div>`;
     draw();
     const input = $('.menu-search', m);
     input.addEventListener('input', () => draw(input.value.trim()));
@@ -986,11 +989,11 @@ function linePicker(anchor, currentId, onPick, { allowNone = true, title } = {})
       const it = e.target.closest('.menu-item');
       if (!it) return;
       if (it.dataset.create) {
-        const siblings = roots();
-        const c = { id: M.uid(), name: it.dataset.create, code: M.codeFor(it.dataset.create), color: nextColor(), parentId: null, order: siblings.length, expanded: false, createdAt: Date.now() };
-        await putCollections([c]);
+        const plan = M.planLinePath(S.collections, it.dataset.create);
+        for (const o of plan.opened) S.col.get(o.id).expanded = true;
+        await putCollections([...plan.created, ...plan.opened.map((o) => S.col.get(o.id))]);
         close();
-        onPick(c.id);
+        onPick(plan.target?.id || null);
         return;
       }
       close();

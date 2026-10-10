@@ -195,6 +195,24 @@ console.log('Model and import/export');
     assert(!['#2f5bd8', '#1c8fd6', '#7048e8'].includes(r[0]), 'picked a neighbour of cobalt: ' + r[0]);
     assert(!r[1], 'Linemark orange is in the user palette');
   });
+  await test('a Line/Branch path creates the line and the branch inside it', async () => {
+    const r = await p.ev(`const M = await import('/js/model.js');
+      const none = M.planLinePath([], ' Videos / Markiplier/ ');
+      const videos = { id: 'v', name: 'Videos', parentId: null, color: '#2f5bd8', expanded: false };
+      const have = M.planLinePath([videos], 'videos/Markiplier');
+      const both = M.planLinePath([videos, { id: 'm', name: 'Markiplier', parentId: 'v', color: '#c2255c' }], 'VIDEOS/markiplier');
+      return {
+        none: none.created.map((c) => [c.name, c.parentId === null ? 'top' : none.created.find((x) => x.id === c.parentId)?.name, c.expanded]),
+        noneTarget: none.target.name,
+        have: have.created.map((c) => [c.name, c.parentId]), opened: have.opened.map((c) => [c.id, c.expanded]),
+        both: [both.created.length, both.target.id],
+        labels: [M.createLineLabel([], 'Videos/Markiplier'), M.createLineLabel([videos], 'videos/Markiplier'), M.createLineLabel([videos], 'Videos'), M.createLineLabel([], 'Music')],
+      };`);
+    assert(JSON.stringify(r.none) === JSON.stringify([['Videos', 'top', true], ['Markiplier', 'Videos', false]]) && r.noneTarget === 'Markiplier', 'new path: ' + JSON.stringify(r.none));
+    assert(JSON.stringify(r.have) === JSON.stringify([['Markiplier', 'v']]) && JSON.stringify(r.opened) === JSON.stringify([['v', true]]), 'existing line: ' + JSON.stringify(r));
+    assert(r.both[0] === 0 && r.both[1] === 'm', 'whole path exists: ' + JSON.stringify(r.both));
+    assert(JSON.stringify(r.labels) === JSON.stringify(['Create line “Videos” › “Markiplier”', 'Create branch “Markiplier” in Videos', '', 'Create line “Music”']), 'labels: ' + JSON.stringify(r.labels));
+  });
   await test('page metadata is read from HTML', async () => {
     const m = await p.ev(`const M = await import('/js/model.js'); return M.parseMeta(document.documentElement.outerHTML, location.href);`);
     assert(m.title === 'Wayfinding Notes — test page', 'title: ' + m.title);
@@ -316,6 +334,27 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     await p.until(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).tags.includes('reading')`);
     const tags = await p.ev(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).tags`);
     assert(JSON.stringify(tags) === '["ui","reading"]', 'tags: ' + JSON.stringify(tags));
+    await p.key('Escape');
+  });
+  await test('the line picker creates a branch from Line/Branch', async () => {
+    await p.ev(`document.querySelector('#grid .card[data-id=b3] .card-title').focus();`);
+    await p.key('e', 'e');
+    await p.until(`return !!document.querySelector('#d-line')`);
+    await p.ev(`document.querySelector('#d-line').click();`);
+    await p.until(`return !!document.querySelector('.menu .menu-search')`);
+    await p.ev(`const i = document.querySelector('.menu .menu-search'); i.value = 'Videos/Markiplier'; i.dispatchEvent(new Event('input'));`);
+    assert(await p.ev(`return document.querySelector('.menu .picker-list .menu-item')?.textContent.includes('Create line “Videos” › “Markiplier”')`), 'create row missing');
+    await p.key('Enter');
+    await p.until(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b3'); const c = await db.get('collections', b.collectionId); return c?.name === 'Markiplier';`);
+    const r = await p.ev(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b3'); const c = await db.get('collections', b.collectionId); const v = await db.get('collections', c.parentId); return [v?.name, v?.parentId, v?.expanded, !!document.querySelector('.line-stop[data-id="' + c.id + '"]')];`);
+    assert(JSON.stringify(r) === JSON.stringify(['Videos', null, true, true]), 'branch: ' + JSON.stringify(r));
+    // typing the same path again finds it instead of offering to create it
+    await p.ev(`document.querySelector('#d-line').click();`);
+    await p.until(`return !!document.querySelector('.menu .menu-search')`);
+    await p.ev(`const i = document.querySelector('.menu .menu-search'); i.value = 'videos/markiplier'; i.dispatchEvent(new Event('input'));`);
+    const rows = await p.ev(`return [...document.querySelectorAll('.menu .picker-list .menu-item')].map((x) => x.textContent.trim());`);
+    assert(rows.length === 1 && rows[0].includes('Videos › Markiplier'), 'rows: ' + JSON.stringify(rows));
+    await p.key('Escape');
     await p.key('Escape');
   });
   await test("a sub-line's current row leaves its parent's stem unbroken", async () => {

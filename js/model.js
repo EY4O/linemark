@@ -63,6 +63,65 @@ export function pickLineColor(usedColors) {
     .sort((a, b) => (count.get(a.value) || 0) - (count.get(b.value) || 0) || gap(b.value) - gap(a.value))[0].value;
 }
 
+// ---------- line paths ----------
+// "Videos/Markiplier" names a line and a branch inside it. Names match case-insensitively.
+
+export const splitLinePath = (q = '') => String(q).split('/').map((s) => s.trim()).filter(Boolean);
+
+// The names from the top line down to this one.
+export function linePathOf(collections, id) {
+  const byId = new Map(collections.map((c) => [c.id, c]));
+  const names = [];
+  for (let c = byId.get(id), guard = 0; c && guard < 32; c = byId.get(c.parentId), guard++) names.unshift(c.name);
+  return names;
+}
+
+// Walks a typed path through the existing lines: the lines it found, and the names still missing.
+export function resolveLinePath(collections, names) {
+  const found = [];
+  let parentId = null;
+  for (let i = 0; i < names.length; i++) {
+    const want = names[i].toLowerCase();
+    const hit = collections.find((c) => (c.parentId || null) === parentId && c.name.trim().toLowerCase() === want);
+    if (!hit) return { found, missing: names.slice(i) };
+    found.push(hit);
+    parentId = hit.id;
+  }
+  return { found, missing: [] };
+}
+
+// What it takes for the whole path to exist: the new lines (each branch inside the one before),
+// the existing parent opened so the new branch shows, and the line a link should go to.
+export function planLinePath(collections, path) {
+  const names = splitLinePath(path);
+  const { found, missing } = resolveLinePath(collections, names);
+  const all = [...collections];
+  const created = [];
+  let parentId = found.at(-1)?.id ?? null;
+  for (const name of missing) {
+    const c = { id: uid(), name, code: codeFor(name), color: pickLineColor(all.map((x) => x.color)), parentId, order: all.filter((x) => (x.parentId || null) === parentId).length, expanded: false, createdAt: Date.now() };
+    const parent = all.find((x) => x.id === parentId);
+    if (parent && created.includes(parent)) parent.expanded = true;
+    all.push(c);
+    created.push(c);
+    parentId = c.id;
+  }
+  const host = found.at(-1);
+  const opened = host && missing.length && !host.expanded ? [{ ...host, expanded: true }] : [];
+  return { names, found, missing, created, opened, target: created.at(-1) || host || null };
+}
+
+// The label for the picker's create row, or '' when the whole path already exists.
+export function createLineLabel(collections, path) {
+  const names = splitLinePath(path);
+  if (!names.length) return '';
+  const { found, missing } = resolveLinePath(collections, names);
+  if (!missing.length) return '';
+  const what = missing.join(' › ');
+  if (found.length) return `Create ${missing.length > 1 ? `“${what}”` : `branch “${what}”`} in ${found.at(-1).name}`;
+  return missing.length > 1 ? `Create line “${missing[0]}” › “${missing.slice(1).join(' › ')}”` : `Create line “${what}”`;
+}
+
 export function codeFor(name = '') {
   const words = name.replace(/[^\p{L}\p{N}\s]/gu, ' ').trim().split(/\s+/).filter(Boolean);
   if (!words.length) return '•';

@@ -79,12 +79,13 @@ async function chooseCover(mode) {
 
 function renderBand() {
   const c = lineOf();
+  const parents = c ? M.linePathOf(collections, c.id).slice(0, -1) : []; // a branch names the line it's on
   const band = $('#band');
   band.style.setProperty('--c', c ? c.color : 'var(--band-ink-2)');
   band.innerHTML = `
     ${bullet(c, 34)}
     <div class="pop-status">
-      <span class="pop-note">${existed ? `Already saved · ${esc(relTime(bm.createdAt))}` : `${icon('check', 14)} Saved to`}</span>
+      <span class="pop-note">${existed ? `Already saved · ${esc(relTime(bm.createdAt))}` : `${icon('check', 14)} Saved to`}${parents.length ? ` <span class="pop-path">${esc(parents.join(' › '))} ›</span>` : ''}</span>
       <button class="pop-line" id="line-btn" title="Change line"><span>${esc(c ? c.name : 'Unsorted')}</span>${icon('chevronDown', 16)}</button>
     </div>
     <button class="icon-btn${bm.favorite ? ' on' : ''}" id="fav-btn" title="${bm.favorite ? 'Unfavorite' : 'Favorite'}" aria-pressed="${bm.favorite}">${icon(bm.favorite ? 'starFilled' : 'star', 19)}</button>
@@ -214,14 +215,17 @@ function pickLine(anchor) {
   walk(collections.filter((c) => !c.parentId || !ids.has(c.parentId)).sort((a, b) => a.order - b.order), 0);
   openMenu(anchor, (m, close) => {
     const draw = (q = '') => {
-      const ql = q.toLowerCase();
-      const items = flat.filter(([c]) => !ql || c.name.toLowerCase().includes(ql));
+      // "Videos/Markiplier" finds or creates a line and a branch inside it
+      const ql = M.splitLinePath(q).join('/').toLowerCase();
+      const path = (c) => M.linePathOf(collections, c.id);
+      const items = flat.filter(([c]) => !ql || path(c).join('/').toLowerCase().includes(ql));
+      const create = M.createLineLabel(collections, q);
       $('.list', m).innerHTML =
         (!ql ? menuItem({ label: 'Unsorted', lead: ring(18, 'var(--ink-3)'), checked: !bm.collectionId, attrs: 'data-pick=""' }) : '') +
-        items.map(([c, d]) => menuItem({ label: c.name, lead: `<span style="width:${d * 14}px;flex:none"></span>${bullet(c, 18)}`, checked: c.id === bm.collectionId, attrs: `data-pick="${c.id}"` })).join('') +
-        (q ? menuItem({ label: `Create line “${q}”`, iconName: 'plus', attrs: `data-create="${esc(q)}"` }) : '');
+        items.map(([c, d]) => menuItem({ label: ql && d ? path(c).join(' › ') : c.name, lead: `<span style="width:${ql ? 0 : d * 14}px;flex:none"></span>${bullet(c, 18)}`, checked: c.id === bm.collectionId, attrs: `data-pick="${c.id}"` })).join('') +
+        (create ? menuItem({ label: create, iconName: 'plus', attrs: `data-create="${esc(q)}"` }) : '');
     };
-    m.innerHTML = `<input class="input menu-search" placeholder="Find or create a line" aria-label="Find a line"><div class="list"></div>`;
+    m.innerHTML = `<input class="input menu-search" placeholder="Find a line, or type Line/Branch" aria-label="Find a line, or type Line/Branch to create a branch"><div class="list"></div>`;
     draw();
     const input = $('input', m);
     input.addEventListener('input', () => draw(input.value.trim()));
@@ -230,11 +234,11 @@ function pickLine(anchor) {
       const it = e.target.closest('.menu-item');
       if (!it) return;
       if (it.dataset.create) {
-        const color = M.pickLineColor(collections.map((c) => c.color));
-        const c = { id: M.uid(), name: it.dataset.create, code: M.codeFor(it.dataset.create), color, parentId: null, order: collections.filter((x) => !x.parentId).length, expanded: false, createdAt: Date.now(), updatedAt: Date.now() };
-        await db.put('collections', c);
-        collections.push(c);
-        bm.collectionId = c.id;
+        const plan = M.planLinePath(collections, it.dataset.create);
+        const changed = [...plan.created, ...plan.opened].map((c) => ({ ...c, updatedAt: Date.now() }));
+        await db.putMany('collections', changed);
+        for (const c of changed) { const i = collections.findIndex((x) => x.id === c.id); if (i >= 0) collections[i] = c; else collections.push(c); }
+        bm.collectionId = plan.target?.id || null;
       } else {
         bm.collectionId = it.dataset.pick || null;
       }
