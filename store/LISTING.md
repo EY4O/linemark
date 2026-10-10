@@ -123,12 +123,12 @@ It is published from the public repository [EY4O/linemark-site](https://github.c
 - **Visibility:** 1.0.0 was approved as *Unlisted*: anyone with the link can install it, and it doesn't appear in search. Switch to *Public* when you want people to find it.
 - **Regions:** all.
 
-## Uploading 1.3.1 (the update after 1.0.0)
+## Uploading 1.3.2 (the update after 1.0.0)
 
-1. **Package → Upload new package:** `dist/linemark-1.3.1.zip`.
+1. **Package → Upload new package:** `dist/linemark-1.3.2.zip`.
 2. **Store listing → Description:** replace the 1.0.0 text with the description above (rewritten for 1.3: shorter sections, and the features added since 1.0.0).
 3. **Store listing → Store icon:** upload `store/images/icon-128.png`, the new white-tile logo (the package's own icons already use it).
-4. **Privacy:** the justifications above already cover the optional `tabs`, `tabGroups` and `identity` permissions and the archive.org lookup that 1.3.1 asks for, and the right-click menu note covers Save highlight and Save image. Publish the updated privacy page (docs/privacy.html), homepage copy and favicon to the site when 1.3.1 is approved.
+4. **Privacy:** the justifications above already cover the optional `tabs`, `tabGroups` and `identity` permissions and the archive.org lookup that 1.3.2 asks for, and the right-click menu note covers Save highlight and Save image. Publish the updated privacy page (docs/privacy.html), homepage copy and favicon to the site when 1.3.2 is approved.
 5. **Submit for review.** The only permission new since 1.0.0 is the optional `tabGroups`, which may make this review a little longer.
 
 ## Before you submit
