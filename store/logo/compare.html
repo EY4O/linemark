@@ -32,9 +32,9 @@
 const SETS = [
   ['Bare', 'Ribbon in line colours', { 128: 'linemark-logo.svg', 48: 'linemark-logo-32.svg', 32: 'linemark-logo-32.svg', 16: 'linemark-logo-16.svg' }],
   ['Dark tile', 'The signage band', { 128: 'tile-dark.svg', 48: 'tile-dark-32.svg', 32: 'tile-dark-32.svg', 16: 'tile-dark-16.svg' }],
+  ['White tile', 'Line colours on white', { 128: 'tile-white.svg', 48: 'tile-white-32.svg', 32: 'tile-white-32.svg', 16: 'tile-white-16.svg' }],
   ['Orange tile', 'The current icon’s ground', { 128: 'tile-orange.svg', 48: 'tile-orange-32.svg', 32: 'tile-orange-32.svg', 16: 'tile-orange-16.svg' }],
-  ['Current', 'The L roundel', { 128: '../../icons/icon128.png', 48: '../../icons/icon48.png', 32: '../../icons/icon32.png', 16: '../../icons/icon16.png' }],
-];
+  ];
 const ZOOM = { 128: 1, 48: 2, 32: 3, 16: 5 };
 const load = (src) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = src; });
 const raster = (img, px, css) => { const c = document.createElement('canvas'); c.width = c.height = px; c.getContext('2d').drawImage(img, 0, 0, px, px); c.style.width = c.style.height = css + 'px'; return c; };
