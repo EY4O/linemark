@@ -29,6 +29,24 @@
         ],
         "createdAt": "2026-10-10T02:14:33.430Z",
         "reason": "User approved: cover <img> starts without src on purpose; hydrate() fills it from the local IndexedDB media store (data-media), so covers never load from the web"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.5625rem",
+        "files": [
+          "docs/index.html"
+        ],
+        "createdAt": "2026-10-10T15:58:52.970Z",
+        "reason": "User approved: bullet-glyph size in the 16px meta bullet; it scales with the bullet, which DESIGN.md exempts from the type ramp (emoji face)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.5rem",
+        "files": [
+          "docs/index.html"
+        ],
+        "createdAt": "2026-10-10T15:58:53.272Z",
+        "reason": "User approved: bullet-glyph size in the 16px meta bullet; it scales with the bullet, which DESIGN.md exempts from the type ramp (letters)"
       }
     ]
   }
