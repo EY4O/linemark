@@ -1,6 +1,6 @@
 # Linemark privacy policy
 
-**Effective date:** 9 October 2026
+**Effective date:** 10 October 2026
 
 Linemark is a bookmark manager for Chrome and other Chromium browsers. It is **local by default**: your library lives on your own computer, and the developer of Linemark never receives any of your data.
 
@@ -33,6 +33,9 @@ Linemark makes network requests only for the features below, and only when you u
 | **Link checks, previews, full-text indexing, Refresh** (optional; Chrome asks for site access first) | Linemark requests each saved page directly from its own website, much as your browser does when you visit it. Your cookies aren't sent. The website sees an ordinary request from your browser, including your IP address. |
 | **Optional sync** | See *Optional encrypted sync* below. |
 | **Site icons** | Linemark uses Chrome's own local cache of site icons. No icon service is contacted. |
+| **Find archived copy** (optional; on a dead link, only when you choose it) | Linemark asks the Internet Archive (archive.org) whether it has a copy of that one link, which tells archive.org the link's address. Nothing else is sent. |
+| **Suggestions** (optional; only when you click Suggest) | Uses the AI model built into Chrome, which runs on your computer. The page's title, address and text go to that local model only; nothing is sent over the network. |
+| **Tab groups** (optional) | **Open as tab group** opens a line's links in a coloured Chrome tab group. **Save as lines** reads the titles, colours and tab addresses of the tab groups in your window, on your device, when you choose it. |
 
 The library itself never loads anything from the web while you browse it. Fonts, icons and covers all come from the extension or from your local storage.
 
@@ -68,8 +71,9 @@ Specifically, Linemark:
 | `contextMenus` | **Save page / Save link to Linemark** in the right-click menu |
 | `bookmarks` | Import Chrome's bookmarks when you ask (read only) |
 | `favicon` | Show site icons from Chrome's own cache |
-| `tabs` (optional) | **Save all open tabs**, only when you use it |
-| Access to websites (optional) | Link checks, previews, full-text indexing and Refresh, only when you turn them on |
+| `tabs` (optional) | **Save all open tabs** and **Save tab groups as lines**, only when you use them |
+| `tabGroups` (optional) | Open a line as a tab group, or save your tab groups as lines, only when you use them |
+| Access to websites (optional) | Link checks, previews, full-text indexing and Refresh, only when you turn them on; archive.org, only when you choose **Find archived copy** |
 | `identity` (optional) | Sign in to Google for optional sync, only when you set it up |
 
 ## Your control

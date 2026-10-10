@@ -504,6 +504,25 @@ Sync lives in its own Settings section, after "Take links out", with an "Optiona
 ### Popup
 A compact band header: line bullet (34px), a status sentence ("Saved to" with a band-ok check, or "Already saved") over the line name as a picker, favourite and open-in-manager icon buttons, and a 4px stripe in the line colour (band-ink-2 grey for Unsorted). Below on surface: thumbnail with a Page / Screen / None cover switch, the editable title, host, tags, note, and a Remove / Done footer.
 
+### Network map
+The fifth view draws the listed links as a transit map. The left column is the sidebar's tree: 24px line bullets (letters on the line colour), branches joined to their parent by a 4px stem in the parent's colour that elbows into the child. Each line runs right as a 7px track in its colour; its links are 8px stations (surface fill, 4px ring in the line colour) labelled at -30° in 12.5px ink-2, cut at 22 characters. A link that stops on more than one line is an interchange: a 9px station with an ink ring, drawn on every line it serves. Up to 14 stations per line, then "+N more" to the line. The map scrolls sideways inside its own frame.
+
+### Interchanges, departures, smart lines
+- **Interchange:** a card shows its further lines as extra cover bullets, overlapping the main bullet to the right (as a transfer station's joined bullets); headlines show them as overlapped small bullets.
+- **Departures:** a system stop in band paper (a clock on a band-ink disc) that appears only while something is due (the Conditional Stop Rule). Cards carry a revisit chip: a quiet hover-fill pill, ink-filled when due.
+- **Smart lines:** a line whose bullet face is a filter, holding no links; its station sign shows its search in a pill beside the count. Smart lines never appear in pickers and never accept dropped links.
+- **Suggestions:** on-device AI results are dashed-outline chips (solid orange outline on hover) in a surface-2 box; each applies on click.
+
+### The network in operation (motion)
+All motion has a fade for reduced motion.
+- **Board flip:** a count that changes (sidebar, station sign) flips over like a split-flap board (0.45s).
+- **Track draw:** a new line or branch slides onto the band and draws its spur from the stem.
+- **Direction of travel:** moving to a stop lower in the sidebar brings the first twelve cards up from below; moving up brings them down, staggered 25ms.
+- **Filing:** dropping links on a line sends a dot in their line colour from the drop to that line's bullet, which takes it in with a small pulse.
+- **The checker as a train:** a band-paper dot rides the front of the progress bar; when a dead link is found, the Broken links bullet sounds one red ring.
+- **Popup arrival:** on a new save, a train runs in along the header stripe and stops under the bullet before "Saved to" shows.
+- `--band-brand` (#ff8a5c) is Linemark orange lifted for text on the band (toast actions): 4.7:1 or better on every band tone.
+
 ### Public site (docs/)
 The homepage and privacy page are a Persuade surface in the same world, not a second system: same tokens, Archivo, bullets, hairlines and shadows, with a larger type scale for reading at a distance. These sizes apply to docs/ only; the app keeps the ramp above.
 - **Type:** hero h1 `clamp(3rem, 6.2vw, 5.75rem)` at 780, 80% width, 0.96 leading, -0.03em; stop h2 `clamp(2rem, 3.6vw, 3rem)` at 770, 82% width; terminus h2 `clamp(2.5rem, 5vw, 4.25rem)` at 780, 80% width; ledes 1.25rem (hero) and 1.1875rem (stops) in ink-2, 48–58ch; body 1rem at 1.55.

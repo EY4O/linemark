@@ -51,6 +51,13 @@ async function unseal(key, buf) {
   return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)));
 }
 
+// The library is gzipped before it is encrypted (text shrinks to about a quarter). Reading accepts both forms,
+// so a library uploaded before compression still opens.
+const squeeze = async (bytes) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+const unsqueeze = async (bytes) => (bytes[0] === 0x1f && bytes[1] === 0x8b
+  ? new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer())
+  : bytes);
+
 // Images keep their MIME type inside the ciphertext: [type length][type][image bytes].
 async function sealBlob(key, blob) {
   const type = te.encode(blob.type || 'application/octet-stream');
@@ -301,7 +308,7 @@ async function runSync({ interactive = false } = {}) {
     let remote = { collections: [], bookmarks: [], tombstones: {} };
     if (files.has(LIBRARY)) {
       try {
-        remote = JSON.parse(td.decode(await unseal(key, await download(files.get(LIBRARY).id))));
+        remote = JSON.parse(td.decode(await unsqueeze(await unseal(key, await download(files.get(LIBRARY).id)))));
       } catch {
         throw new SyncError('The synced library couldn’t be decrypted with this device’s key. Turn sync off and on again with your passphrase.');
       }
@@ -331,7 +338,7 @@ async function runSync({ interactive = false } = {}) {
 
     // 3. upload the merged snapshot
     const snapshot = { app: 'ember', v: 1, at: Date.now(), collections: merged.collections, bookmarks: merged.bookmarks.map(({ _hay, ...b }) => b), tombstones: merged.tombstones };
-    const sealed = await seal(key, te.encode(JSON.stringify(snapshot)));
+    const sealed = await seal(key, await squeeze(te.encode(JSON.stringify(snapshot))));
     if (files.has(LIBRARY)) await update(files.get(LIBRARY).id, sealed);
     else await create(LIBRARY, sealed);
 

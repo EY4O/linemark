@@ -1,6 +1,13 @@
 // Authored stroke icons, 24px grid, 1.75 stroke, round joins.
 const P = {
   search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  filter: '<path d="M4 5.5h16l-6.2 7.2v5.6l-3.6 1.7v-7.3z"/>',
+  sparkles: '<path d="M10 4.5 11.6 9 16 10.5 11.6 12 10 16.5 8.4 12 4 10.5 8.4 9z"/><path d="M17.5 4v4M15.5 6h4M18 15.5v3M16.5 17h3"/>',
+  map: '<path d="M4 6.5 9 4.5l6 2 5-2v13l-5 2-6-2-5 2z"/><path d="M9 4.5v13M15 6.5v13"/>',
+  tabs: '<rect x="3.5" y="7" width="17" height="12.5" rx="1.8"/><path d="M3.5 10.5h17M7 7V5.2c0-.4.3-.7.7-.7h4.6c.4 0 .7.3.7.7V7"/>',
+  archive: '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1"/><path d="M5 9v9.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/>',
+  interchange: '<circle cx="8.5" cy="12" r="4.5"/><circle cx="15.5" cy="12" r="4.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   cards: '<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="1.5"/><rect x="13" y="13" width="7.5" height="7.5" rx="1.5"/>',
   list: '<rect x="3.5" y="4.5" width="6" height="5" rx="1"/><rect x="3.5" y="14.5" width="6" height="5" rx="1"/><path d="M13 6h7.5M13 9h5M13 16h7.5M13 19h5"/>',

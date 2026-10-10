@@ -28,10 +28,17 @@ SAVE IN ONE GESTURE
 • Save all your open tabs at once.
 
 ORGANISE ON LINES
-• Lines are colour-coded collections that can branch into sub-lines. Drag links onto a line to file them.
+• Lines are colour-coded collections that can branch into sub-lines. Drag links onto a line to file them, or type Videos/Markiplier to make a branch as you save.
+• A link can stop on more than one line, like an interchange station.
+• Smart lines: keep any search (#tag, site:, is:fav…) as a line that fills itself.
 • Give each line an icon (240 built in) or any emoji.
 • Tags, notes, favorites, and a Trash with undo.
-• Four views: cards, list, compact headlines and moodboard, with a card-size slider.
+• Five views: cards, list, compact headlines, moodboard and a network map that draws your library as a transit map.
+• Open a line as a Chrome tab group in its colour, or keep your tab groups as lines.
+
+COME BACK TO IT
+• Give a link a day to revisit. On that day it appears on the Departures board.
+• Optional suggestions for a line, tags and a summary, made by Chrome's built-in AI on your computer (where Chrome offers it). Nothing is sent anywhere.
 
 FIND ANYTHING AGAIN
 • Full-text search covers titles, tags, notes and the text of the pages themselves, and shows you the passage that matched.
@@ -86,9 +93,10 @@ The screenshots use a demo library (`store/demo-seed.html`). The bookmarks point
 | `contextMenus` | Adds "Save page to Linemark" and "Save link to Linemark" to the right-click menu. |
 | `bookmarks` | Lets the user import their existing Chrome bookmarks into Linemark (read only). |
 | `favicon` | Shows site icons from Chrome's local favicon cache, so no third-party icon service is needed. |
-| `tabs` (optional) | Requested only when the user chooses "Save all open tabs", to read the addresses and titles of the window's tabs. |
+| `tabs` (optional) | Requested only when the user chooses "Save all open tabs" or "Save tab groups as lines", to read the addresses and titles of the window's tabs. |
+| `tabGroups` (optional) | Requested only when the user opens a line as a tab group (to title and colour the group) or saves their tab groups as lines (to read each group's title and colour). |
 | `identity` (optional) | Requested only when the user turns on sync, to sign in to Google (Drive app-data scope only). |
-| Host permission `<all_urls>` (optional) | Requested only when the user runs a link check, fetches previews, indexes page text, or refreshes a bookmark. Linemark then requests the user's own saved pages directly from their websites. |
+| Host permission `<all_urls>` (optional) | Requested only when the user runs a link check, fetches previews, indexes page text, or refreshes a bookmark. Linemark then requests the user's own saved pages directly from their websites. When the user chooses "Find archived copy" on a dead link, it asks archive.org (origin https://archive.org/*) for that one link. |
 
 **Remote code:** No, I am not using remote code. All scripts, fonts and icons are packaged with the extension.
 

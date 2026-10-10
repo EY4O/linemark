@@ -376,6 +376,11 @@ body { overflow: hidden; }
 /* ================= bookmarks: cards ================= */
 .grid { --card-w: 260px; }
 .grid.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-w), 1fr)); gap: 22px 18px; align-items: start; }
+/* Big libraries: the browser skips laying out and painting cards that are off-screen, and remembers each card's
+   size once it has been drawn, so scrolling through thousands of links stays smooth. */
+.grid.cards > .card { content-visibility: auto; contain-intrinsic-size: auto 300px; }
+.grid.list > .card { content-visibility: auto; contain-intrinsic-size: auto 84px; }
+.grid.headlines > .card { content-visibility: auto; contain-intrinsic-size: auto 42px; }
 .card {
   --c: var(--brand);
   position: relative;
@@ -726,7 +731,7 @@ body { overflow: hidden; }
 }
 .toast.out { opacity: 0; transform: translateY(8px); transition: 0.25s; }
 .toast .bullet { --bs: 18px; }
-.toast button { border: 0; border-radius: 999px; height: 30px; padding: 0 12px; background: var(--band-active); color: var(--brand); font-weight: 700; }
+.toast button { border: 0; border-radius: 999px; height: 30px; padding: 0 12px; background: var(--band-active); color: var(--band-brand); font-weight: 700; }
 .toast button:hover { background: var(--band-raised); }
 .toast.plain { padding-right: 16px; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
@@ -991,3 +996,96 @@ body { overflow: hidden; }
 .emoji-row .field-error { flex-basis: 100%; }
 @media (pointer: coarse) { .icon-grid { grid-template-columns: repeat(6, 1fr); } .icon-cell { min-height: 44px; } }
 
+
+/* ---------- motion: the network in operation ---------- */
+/* counts flip like a departure board */
+.count.flip, .station-count b.flip { display: inline-block; animation: board-flip 0.45s var(--ease); transform-origin: 50% 60%; }
+@keyframes board-flip { 0% { transform: rotateX(88deg); opacity: 0.2; } 60% { transform: rotateX(-12deg); opacity: 1; } 100% { transform: none; } }
+/* the checker found a dead link: the Broken links bullet sounds once */
+.bullet.alarm { animation: alarm 0.9s var(--ease); }
+@keyframes alarm { 0% { box-shadow: 0 0 0 0 rgba(196, 40, 47, 0.7); } 100% { box-shadow: 0 0 0 10px rgba(196, 40, 47, 0); } }
+/* a new line or branch draws its spur and slides onto the band */
+.line-node.fresh > .stop { animation: stop-in 0.45s var(--ease) both; }
+.line-children > .line-node.fresh > .stop::after { animation: spur 0.4s var(--ease) both; transform-origin: left center; }
+@keyframes stop-in { from { opacity: 0; transform: translateX(-10px); } }
+@keyframes spur { from { transform: scaleX(0); } }
+/* moving between stations: the first cards arrive from the direction of travel */
+.grid.enter-down > .card:nth-child(-n + 12), .grid.enter-up > .card:nth-child(-n + 12) { animation: card-in 0.42s var(--ease) both; }
+.grid.enter-up > .card:nth-child(-n + 12) { animation-name: card-in-up; }
+.grid > .card:nth-child(2) { animation-delay: 25ms; } .grid > .card:nth-child(3) { animation-delay: 50ms; } .grid > .card:nth-child(4) { animation-delay: 75ms; }
+.grid > .card:nth-child(5) { animation-delay: 100ms; } .grid > .card:nth-child(6) { animation-delay: 125ms; } .grid > .card:nth-child(7) { animation-delay: 150ms; }
+.grid > .card:nth-child(8) { animation-delay: 175ms; } .grid > .card:nth-child(n + 9) { animation-delay: 200ms; }
+@keyframes card-in { from { opacity: 0; transform: translateY(14px); } }
+@keyframes card-in-up { from { opacity: 0; transform: translateY(-14px); } }
+/* filing a link: a dot rides from the drop to its line, and the line's bullet takes it in */
+.file-dot { position: fixed; z-index: 90; width: 18px; height: 18px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px var(--surface), var(--shadow-2); pointer-events: none; }
+.bullet.arrived { animation: arrived 0.5s var(--ease); }
+@keyframes arrived { 0% { transform: scale(1.35); } 100% { transform: none; } }
+/* the link checker as a train: a dot rides the front of the bar */
+.progress.train { position: relative; overflow: visible; }
+.progress.train > i { position: relative; }
+.progress.train > i::after { content: ''; position: absolute; right: -6px; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: var(--band-ink); box-shadow: 0 0 0 3px var(--band); transform: translateY(-50%); }
+@media (prefers-reduced-motion: reduce) {
+  .count.flip, .station-count b.flip, .line-node.fresh > .stop, .grid.enter-down > .card, .grid.enter-up > .card { animation: fade-in 0.3s ease-out both; animation-delay: 0s; }
+  .line-children > .line-node.fresh > .stop::after, .bullet.alarm, .bullet.arrived { animation: none; }
+}
+
+/* ---------- network map ---------- */
+.map-wrap { overflow: auto; margin: 0 -4px; padding: 0 4px 12px; }
+.netmap { display: block; font-family: var(--font); }
+.netmap .track { fill: none; stroke: var(--c); stroke-width: 7; stroke-linecap: round; }
+.netmap .stem { fill: none; stroke: var(--c); stroke-width: 4; stroke-linecap: round; opacity: 0.85; }
+.netmap .lb { fill: var(--c); }
+.netmap .lb-code { fill: var(--bi); font-size: 10.5px; font-weight: 800; font-stretch: 87.5%; text-anchor: middle; }
+.netmap .lb-name { fill: var(--ink); font-size: 15px; font-weight: 720; font-stretch: 87.5%; }
+.netmap .map-stop circle { fill: var(--surface); stroke: var(--c); stroke-width: 4; transition: r 0.15s var(--ease); }
+.netmap .map-stop.inter circle { stroke: var(--ink); stroke-width: 3.5; }
+.netmap .map-stop text { fill: var(--ink-2); font-size: 12.5px; font-weight: 560; }
+.netmap .map-stop:hover circle, .netmap .map-stop:focus-visible circle { r: 11; }
+.netmap .map-stop:hover text, .netmap .map-stop:focus-visible text { fill: var(--ink); text-decoration: underline; }
+.netmap a:focus { outline: none; }
+.netmap a:focus-visible circle { stroke: var(--brand); stroke-width: 4; }
+.netmap .line-label:hover .lb-name, .netmap .line-label:focus-visible .lb-name { text-decoration: underline; }
+.netmap .more-stops text { fill: var(--ink-3); font-size: 12.5px; font-weight: 650; }
+@media (prefers-reduced-motion: reduce) { .netmap .map-stop circle { transition: none; } }
+
+/* ---------- on-device suggestions ---------- */
+.ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: -4px 0 4px; }
+.ai-row .hint { color: var(--ink-3); font-size: 0.75rem; }
+.ai-out { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; padding: 10px 12px 12px; border: 1px solid var(--rule); border-radius: var(--r-2); background: var(--surface-2); }
+.ai-head { display: flex; align-items: center; gap: 6px; width: 100%; font-size: 0.8125rem; font-weight: 650; color: var(--ink-2); }
+.ai-head .hint { margin-left: auto; font-weight: 400; }
+.ai-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 10px 0 7px; border: 1px dashed var(--rule-strong); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 0.8125rem; font-weight: 600; }
+.ai-chip:hover { border-style: solid; border-color: var(--brand); }
+.ai-sum { width: 100%; margin: 4px 0 0; color: var(--ink-2); font-size: 0.8125rem; line-height: 1.5; }
+@media (pointer: coarse) { .ai-chip { min-height: 44px; } }
+
+/* ---------- interchange, departures, smart lines ---------- */
+/* An interchange: the link's further lines sit beside its line bullet, overlapping like a transfer station. */
+.card .on-line.also { left: calc(13px + var(--bs) * 0.8); z-index: 1; }
+.card .on-line.also-2 { left: calc(13px + var(--bs) * 1.6); z-index: 0; }
+.grid.list .card .on-line.also { display: none; }
+.grid.headlines .card .hl-also { margin-left: -9px; box-shadow: 0 0 0 2px var(--surface); }
+/* the day a link comes back: a quiet chip, ink when it is due */
+.due {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 20px;
+  margin-left: auto;
+  padding: 0 7px 0 5px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--ink-2);
+  font-size: 0.71875rem;
+  font-weight: 650;
+  font-stretch: 87.5%;
+  white-space: nowrap;
+}
+.due.now { background: var(--ink); color: var(--surface); }
+.health + .due, .fav-star + .due { margin-left: 6px; }
+/* a smart line's search, under the station name */
+.smart-q { display: inline-flex; align-items: center; gap: 4px; margin-left: 10px; padding: 1px 8px 1px 6px; border-radius: 999px; background: var(--hover); color: var(--ink-2); font-weight: 600; }
+.smart-form { padding: 0 6px 6px; }
+.smart-form .menu-search { width: 100%; }
+.group-head .btn[data-act='save-smart'] { margin-left: auto; }

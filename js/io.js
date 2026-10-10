@@ -129,7 +129,7 @@ const escAttr = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&qu
 
 export function toNetscape({ bookmarks, collections }) {
   const live = bookmarks.filter((b) => !b.trashedAt);
-  const kids = (pid) => collections.filter((c) => (c.parentId || null) === pid).sort((a, b) => a.order - b.order);
+  const kids = (pid) => collections.filter((c) => !c.smart && (c.parentId || null) === pid).sort((a, b) => a.order - b.order);
   const ids = new Set(collections.map((c) => c.id));
   const linkLine = (b, pad) => {
     const tags = b.tags.length ? ` TAGS="${escAttr(b.tags.join(','))}"` : '';
@@ -210,6 +210,8 @@ function cleanCollection(c, i) {
     // bullet face: a bundled icon name or a single emoji; anything else is dropped
     ...(typeof c.icon === 'string' && (/^lucide:[a-z0-9-]{1,40}$/.test(c.icon) || /^emoji:[^<>&"'\s]{1,16}$/u.test(c.icon)) ? { icon: c.icon } : {}),
     ...(Number.isFinite(c.updatedAt) ? { updatedAt: c.updatedAt } : {}),
+    // a smart line is a saved search: it shows matching links and never holds any
+    ...(c.smart && typeof c.query === 'string' && c.query.trim() ? { smart: true, query: str(c.query, 300).trim() } : {}),
   };
 }
 
@@ -235,6 +237,9 @@ function cleanBookmark(b, mediaIds) {
     trashedAt: Number.isFinite(b.trashedAt) ? b.trashedAt : null,
     metaFetched: !!b.metaFetched,
     ...(Number.isFinite(b.textAt) ? { textAt: b.textAt } : {}),
+    ...(Number.isFinite(b.revisitAt) ? { revisitAt: b.revisitAt } : {}),
+    // interchange: further lines this link also shows on
+    ...(Array.isArray(b.alsoOn) && b.alsoOn.some(isId) ? { alsoOn: [...new Set(b.alsoOn.filter(isId))].filter((id) => id !== b.collectionId).slice(0, 8) } : {}),
     ...(h ? { health: h } : {}),
   };
 }

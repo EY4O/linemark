@@ -3,7 +3,7 @@ import * as db from './db.js';
 import * as M from './model.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, menuItem, armConfirm, relTime } from './ui.js';
-import { lineBulletHTML } from './bullets.js';
+import { lineBulletHTML, loadIcons, usesIcons } from './bullets.js';
 
 let bm = null;          // the bookmark being saved/edited
 let existed = false;    // true when the page was already in the library
@@ -24,6 +24,7 @@ const persist = debounce(async () => { if (bm) await M.saveBookmark(bm); }, 250)
 
 async function main() {
   collections = await db.getAll('collections');
+  if (usesIcons(collections)) await loadIcons();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !M.isSavable(tab.url)) return renderUnsavable();
 
@@ -82,6 +83,8 @@ function renderBand() {
   const parents = c ? M.linePathOf(collections, c.id).slice(0, -1) : []; // a branch names the line it's on
   const band = $('#band');
   band.style.setProperty('--c', c ? c.color : 'var(--band-ink-2)');
+  // the first time a new save is shown, a train runs along the line stripe and stops at the bullet
+  if (!existed && !band.dataset.arrived) { band.dataset.arrived = '1'; band.classList.add('arrive'); }
   band.innerHTML = `
     ${bullet(c, 34)}
     <div class="pop-status">
@@ -211,7 +214,7 @@ function pickLine(anchor) {
   const flat = [];
   const kids = (pid) => collections.filter((c) => (c.parentId || null) === pid).sort((a, b) => a.order - b.order);
   const ids = new Set(collections.map((c) => c.id));
-  const walk = (list, d) => { for (const c of list) { flat.push([c, d]); walk(kids(c.id), d + 1); } };
+  const walk = (list, d) => { for (const c of list) { if (c.smart) continue; flat.push([c, d]); walk(kids(c.id), d + 1); } }; // smart lines are searches, not places to file
   walk(collections.filter((c) => !c.parentId || !ids.has(c.parentId)).sort((a, b) => a.order - b.order), 0);
   openMenu(anchor, (m, close) => {
     const draw = (q = '') => {

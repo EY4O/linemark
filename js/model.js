@@ -63,6 +63,47 @@ export function pickLineColor(usedColors) {
     .sort((a, b) => (count.get(a.value) || 0) - (count.get(b.value) || 0) || gap(b.value) - gap(a.value))[0].value;
 }
 
+// ---------- revisits (the departures board) ----------
+// A link can be given a day to come back to; on that day it shows on the Departures board.
+
+export const endOfToday = (now = Date.now()) => { const d = new Date(now); d.setHours(23, 59, 59, 999); return d.getTime(); };
+export const REVISIT_CHOICES = [['Tomorrow', 1], ['In 3 days', 3], ['In a week', 7], ['In 2 weeks', 14], ['In a month', 30]];
+export function revisitIn(days, now = Date.now()) { const d = new Date(now); d.setDate(d.getDate() + days); d.setHours(9, 0, 0, 0); return d.getTime(); }
+export function revisitLabel(at, now = Date.now()) {
+  if (at <= endOfToday(now)) return 'Due';
+  const days = Math.round((new Date(at).setHours(0, 0, 0, 0) - new Date(now).setHours(0, 0, 0, 0)) / 86400000);
+  if (days === 1) return 'Tomorrow';
+  if (days < 7) return `In ${days} days`;
+  if (days < 14) return 'In a week';
+  if (days < 31) return `In ${Math.round(days / 7)} weeks`;
+  return `In ${Math.round(days / 30)} month${days >= 45 ? 's' : ''}`;
+}
+
+// ---------- Chrome tab groups ----------
+// Lines and tab groups both carry a colour; these map one palette onto the other by hue.
+export const TAB_GROUP_COLORS = { grey: '#5c6773', blue: '#2f5bd8', red: '#d92a3a', yellow: '#f0a800', green: '#2f9e44', pink: '#c2255c', purple: '#7048e8', cyan: '#1c8fd6', orange: '#9a5b36' };
+export function tabGroupColor(hex) {
+  const h = hueOf(hex);
+  if (h === null) return 'grey';
+  const hues = Object.entries(TAB_GROUP_COLORS).filter(([, v]) => hueOf(v) !== null);
+  const dist = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+  return hues.sort((a, b) => dist(h, hueOf(a[1])) - dist(h, hueOf(b[1])))[0][0];
+}
+export const lineColorForGroup = (name) => TAB_GROUP_COLORS[name] || TAB_GROUP_COLORS.grey;
+
+// ---------- the Internet Archive ----------
+// Asked only when someone chooses "Find archived copy" on a link that no longer works.
+const ARCHIVE_API = () => globalThis.__LINEMARK_TEST_ARCHIVE__ || 'https://archive.org/wayback/available';
+export async function findArchivedCopy(url) {
+  const res = await fetch(`${ARCHIVE_API()}?url=${encodeURIComponent(url)}`, { credentials: 'omit' });
+  if (!res.ok) throw new Error('The Internet Archive didn’t answer.');
+  const snap = (await res.json())?.archived_snapshots?.closest;
+  if (!snap?.available || !/^https?:\/\/web\.archive\.org\//.test(snap.url.replace(/^http:/, 'https:')) && !globalThis.__LINEMARK_TEST_ARCHIVE__) return null;
+  const t = String(snap.timestamp || '');
+  const when = t.length >= 8 ? new Date(Date.UTC(+t.slice(0, 4), +t.slice(4, 6) - 1, +t.slice(6, 8))).getTime() : null;
+  return { url: snap.url.replace(/^http:/, 'https:'), when };
+}
+
 // ---------- line paths ----------
 // "Videos/Markiplier" names a line and a branch inside it. Names match case-insensitively.
 
@@ -82,7 +123,7 @@ export function resolveLinePath(collections, names) {
   let parentId = null;
   for (let i = 0; i < names.length; i++) {
     const want = names[i].toLowerCase();
-    const hit = collections.find((c) => (c.parentId || null) === parentId && c.name.trim().toLowerCase() === want);
+    const hit = collections.find((c) => !c.smart && (c.parentId || null) === parentId && c.name.trim().toLowerCase() === want);
     if (!hit) return { found, missing: names.slice(i) };
     found.push(hit);
     parentId = hit.id;
@@ -434,14 +475,15 @@ export function pageMetaExtractor() {
 
 // Screenshot of the visible tab, downscaled to a light JPEG blob.
 export async function captureTab(windowId, maxWidth = 800) {
-  const dataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: 'jpeg', quality: 80 });
+  // Captured lossless, then stored once as WebP: about a third smaller than the JPEG this used to keep.
+  const dataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: 'png' });
   const src = await (await fetch(dataUrl)).blob();
   const bmp = await createImageBitmap(src);
   const w = Math.min(maxWidth, bmp.width);
   const h = Math.round(bmp.height * (w / bmp.width));
   const canvas = new OffscreenCanvas(w, h);
   canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
-  return canvas.convertToBlob({ type: 'image/jpeg', quality: 0.72 });
+  return canvas.convertToBlob({ type: 'image/webp', quality: 0.78 });
 }
 
 export async function readPageMeta(tabId) {

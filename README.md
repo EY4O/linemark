@@ -16,14 +16,15 @@ Linemark is a Chrome extension for people who save a lot of links and want to fi
 
 ## ✨ Key Features
 
-- 🚇 **Lines and branches**: colour-coded collections that nest. Drag links onto a line to file them, or drag lines to reorder and nest them. In any line picker, type `Videos/Markiplier` to file a link on a new branch in one step.
+- 🚇 **Lines and branches**: colour-coded collections that nest. Drag links onto a line to file them, or type `Videos/Markiplier` in any line picker to make a branch as you file. A link can stop on several lines, like an interchange, and **smart lines** keep a search (`#tag`, `site:`, `is:fav`) as a line that fills itself.
 - 🎨 **Line icons**: give each line's bullet one of 240 built-in icons (Lucide) or any emoji, chosen from a searchable picker in the line's menu.
-- ⚡ **One-click save**: the popup saves the page as soon as it opens. Change the line, tags, note or cover afterwards if you want.
+- ⚡ **One-click save**: the popup saves the page as soon as it opens. Change the line, tags, note or cover afterwards. Where Chrome offers its built-in AI, the edit drawer can suggest a line, tags and a summary, worked out on your computer.
 - 🖼️ **Real previews, stored locally**: each card shows the page's own cover image or a screenshot taken when you saved it. Both are downloaded once and kept on your computer, so browsing your library never loads anything from the web.
 - 🔎 **Full-text search**: search titles, tags and notes, plus the text of the pages themselves. Results show the passage that matched. Filters include `#tag`, `site:`, `type:` and `is:fav`. You can also search from the address bar by typing `lm`, then Space.
-- 🩺 **Broken link checker**: find dead, moved and unverified links. Update moved addresses in one click, or trash the dead ones all at once.
-- 🗂️ **Four views**: Cards, List, Headlines and Moodboard, with a live card-size slider.
-- 📥 **Chrome import**: bring in your whole Chrome bookmark tree in one click, or import an HTML export from any browser, Raindrop or Pocket.
+- 🩺 **Broken link checker**: find dead, moved and unverified links. Update moved addresses in one click, point a dead link at its Internet Archive copy, or trash the dead ones all at once.
+- 🗺️ **Five views**: Cards, List, Headlines, Moodboard, and a **network map** that draws your library as a transit map.
+- 📥 **Chrome import and tab groups**: bring in your whole Chrome bookmark tree in one click, or an HTML export from any browser, Raindrop or Pocket. Open a line as a tab group in its colour, or keep your tab groups as lines.
+- 🕰️ **Departures board**: give a link a day to revisit, and it shows up on the board that day.
 - 🧹 **Tidy-up tools**: a duplicate finder that merges tags and notes, bulk move and tag, a restorable Trash, and Undo on every change.
 - 💾 **Your data, portable**: export Chrome-compatible HTML, or a full JSON backup that includes screenshots.
 - 🔐 **Optional encrypted sync**: local by default. Turn on sync to keep Chrome, Edge, Brave and Vivaldi in step through your own Google Drive. Everything is encrypted on your device with your passphrase first, so Google only stores scrambled data.

@@ -3,7 +3,8 @@ import * as db from './db.js';
 import * as M from './model.js';
 import * as IO from './io.js';
 import * as Sync from './sync.js';
-import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji } from './bullets.js';
+import * as AI from './ai.js';
+import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji, loadIcons, usesIcons } from './bullets.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
 
@@ -30,8 +31,9 @@ const S = {
   scan: null,
   sync: { enabled: false },
   syncSetup: false,
-  texts: null,
-  textsLoading: false,
+  textHits: null,  // { key, map: id -> { words, snip } } from the search worker
+  textAsked: null,
+  textGen: 0,      // bumped when this page changes page text, so the worker reloads its copy
   snippets: new Map(),
 };
 
@@ -41,7 +43,8 @@ async function load() {
   const [bookmarks, collections, ui] = await Promise.all([db.getAll('bookmarks'), db.getAll('collections'), db.getMeta('ui', null)]);
   S.bookmarks = bookmarks;
   S.collections = collections;
-  S.texts = null;
+  if (usesIcons(collections)) await loadIcons();
+  textsChanged();
   if (ui) Object.assign(S.ui, ui);
   index();
 }
@@ -49,13 +52,15 @@ async function load() {
 function index() {
   S.bm = new Map(S.bookmarks.map((b) => [b.id, b]));
   S.col = new Map(S.collections.map((c) => [c.id, c]));
-  const c = { all: 0, unsorted: 0, fav: 0, trash: 0, broken: 0, dead: 0, checked: 0, indexed: 0, byCol: new Map(), tags: new Map(), types: new Map() };
+  const c = { all: 0, unsorted: 0, fav: 0, trash: 0, broken: 0, dead: 0, checked: 0, indexed: 0, due: 0, byCol: new Map(), tags: new Map(), types: new Map() };
+  const dueBy = M.endOfToday();
   for (const b of S.bookmarks) {
-    b._hay ??= (b.title + ' ' + b.url + ' ' + b.excerpt + ' ' + b.note + ' ' + b.tags.join(' ')).toLowerCase();
+    b._hay ??= hayOf(b);
     if (b.trashedAt) { c.trash++; continue; }
     c.all++;
     if (b.favorite) c.fav++;
     if (b.textAt) c.indexed++;
+    if (b.revisitAt && b.revisitAt <= dueBy) c.due++;
     if (b.health) {
       c.checked++;
       if (b.health.state !== 'ok') c.broken++;
@@ -63,9 +68,13 @@ function index() {
     }
     if (!b.collectionId || !S.col.has(b.collectionId)) c.unsorted++;
     else c.byCol.set(b.collectionId, (c.byCol.get(b.collectionId) || 0) + 1);
+    // an interchange counts on every line it stops at
+    for (const a of b.alsoOn || []) if (a !== b.collectionId && S.col.has(a)) c.byCol.set(a, (c.byCol.get(a) || 0) + 1);
     for (const t of b.tags) c.tags.set(t, (c.tags.get(t) || 0) + 1);
   }
   S.counts = c;
+  const live = S.bookmarks.filter((b) => !b.trashedAt);
+  for (const col of S.collections) if (col.smart) c.byCol.set(col.id, matchQuery(live, col.query).length);
 }
 
 const saveUI = debounce(() => db.setMeta('ui', S.ui), 300);
@@ -76,6 +85,7 @@ function kidsOf(pid) {
 function roots() {
   return S.collections.filter((c) => !c.parentId || !S.col.has(c.parentId)).sort((a, b) => a.order - b.order);
 }
+const fileable = (c) => c && !c.smart;
 function descendants(id) {
   const out = new Set();
   const stack = [id];
@@ -128,7 +138,7 @@ function parseHash() {
   const arg = rest.join('/');
   if (kind === 'c' && arg) return { kind: 'c', id: arg };
   if (kind === 'tag' && arg) return { kind: 'tag', tag: arg };
-  if (['unsorted', 'favorites', 'trash', 'settings', 'duplicates', 'broken'].includes(kind)) return { kind };
+  if (['unsorted', 'favorites', 'trash', 'settings', 'duplicates', 'broken', 'departures'].includes(kind)) return { kind };
   return { kind: 'all' };
 }
 
@@ -138,7 +148,9 @@ function go(hash) {
 }
 
 function onRoute() {
+  const from = routeHash();
   S.route = parseHash();
+  S.enter = travelDirection(from, routeHash());
   if (S.route.kind === 'c' && !S.col.has(S.route.id)) S.route = { kind: 'all' };
   S.selected.clear();
   S.limit = PAGE;
@@ -170,13 +182,34 @@ function parseQuery(q) {
   return out;
 }
 
+// The non-text parts of a search: #tags, site:, type:, is:fav, has:note, is:broken.
+function passesFilters(b, q) {
+  return q.tags.every((t) => b.tags.some((x) => x.startsWith(t))) &&
+    q.sites.every((s) => M.hostOf(b.url).includes(s)) &&
+    (!q.types.length || q.types.includes(b.type)) &&
+    (!q.fav || b.favorite) &&
+    (!q.note || b.note) &&
+    (!q.broken || (b.health && b.health.state !== 'ok'));
+}
+// A smart line's saved search: filters plus words in titles, addresses, descriptions, notes and tags.
+function matchQuery(list, qstr) {
+  const q = parseQuery(qstr || '');
+  return list.filter((b) => passesFilters(b, q) && q.words.every((w) => (b._hay ??= hayOf(b)).includes(w)));
+}
+const hayOf = (b) => (b.title + ' ' + b.url + ' ' + b.excerpt + ' ' + b.note + ' ' + b.tags.join(' ')).toLowerCase();
+
 function baseSet(r = S.route) {
   const B = S.bookmarks;
   switch (r.kind) {
     case 'trash': return B.filter((b) => b.trashedAt);
     case 'unsorted': return B.filter((b) => !b.trashedAt && (!b.collectionId || !S.col.has(b.collectionId)));
     case 'favorites': return B.filter((b) => !b.trashedAt && b.favorite);
-    case 'c': return B.filter((b) => !b.trashedAt && b.collectionId === r.id);
+    case 'c': {
+      const col = S.col.get(r.id);
+      if (col?.smart) return matchQuery(B.filter((b) => !b.trashedAt), col.query);
+      return B.filter((b) => !b.trashedAt && (b.collectionId === r.id || b.alsoOn?.includes(r.id)));
+    }
+    case 'departures': { const by = M.endOfToday(); return B.filter((b) => !b.trashedAt && b.revisitAt && b.revisitAt <= by); }
     case 'tag': return B.filter((b) => !b.trashedAt && b.tags.includes(r.tag));
     case 'broken': return B.filter((b) => !b.trashedAt && b.health && b.health.state !== 'ok');
     case 'duplicates': {
@@ -195,48 +228,52 @@ function applyQuery(list) {
   S.snippets = new Map();
   if (!S.query.trim()) return list;
   const q = parseQuery(S.query);
-  // Page text is loaded on the first search, then searched alongside titles, tags and notes.
-  if (q.words.length && !S.texts && S.counts.indexed) loadTexts();
-  const T = S.texts;
+  // Page text is searched in a worker; its answer arrives a moment later and refreshes the list.
+  const key = q.words.join('\u0001');
+  let hits = null;
+  if (q.words.length && S.counts.indexed) {
+    if (S.textHits?.key === key) hits = S.textHits.map;
+    else askText(key, q.words);
+  }
   return list.filter((b) => {
-    if (!(q.tags.every((t) => b.tags.some((x) => x.startsWith(t))) &&
-      q.sites.every((s) => M.hostOf(b.url).includes(s)) &&
-      (!q.types.length || q.types.includes(b.type)) &&
-      (!q.fav || b.favorite) &&
-      (!q.note || b.note) &&
-      (!q.broken || (b.health && b.health.state !== 'ok')))) return false;
+    if (!passesFilters(b, q)) return false;
     let inText = null;
     for (const w of q.words) {
       if (b._hay.includes(w)) continue;
-      const t = T?.get(b.id);
-      if (!t || !t.low.includes(w)) return false;
-      inText ??= w;
+      const h = hits?.get(b.id);
+      if (!h || !h.words.includes(w)) return false;
+      inText = h;
     }
-    if (inText) S.snippets.set(b.id, snippetFor(T.get(b.id), inText));
+    if (inText?.snip) S.snippets.set(b.id, snippetHTML(inText.snip));
     return true;
   });
 }
 
-async function loadTexts() {
-  if (S.textsLoading) return;
-  S.textsLoading = true;
-  const rows = await db.getAll('texts');
-  S.texts = new Map(rows.map((r) => [r.id, { raw: r.text, low: r.text.toLowerCase() }]));
-  S.textsLoading = false;
-  if (S.query.trim()) refreshList();
+let searchWorker = null;
+function askText(key, words) {
+  if (S.textAsked === key) return;
+  S.textAsked = key;
+  if (!searchWorker) {
+    searchWorker = new Worker(new URL('./search-worker.js', import.meta.url), { type: 'module' });
+    searchWorker.onmessage = ({ data }) => {
+      if (data?.type !== 'result' || data.key !== S.textAsked) return; // a newer search has replaced this one
+      S.textHits = { key: data.key, map: new Map(data.hits.map(([id, w, snip]) => [id, { words: w, snip }])) };
+      if (S.query.trim()) refreshList();
+    };
+  }
+  searchWorker.postMessage({ type: 'search', key, words, gen: S.textGen });
 }
 
-// A short excerpt of page text around the first match, with the match marked.
-function snippetFor(t, word) {
-  const i = t.low.indexOf(word);
-  const start = Math.max(0, i - 70);
-  const end = Math.min(t.raw.length, i + word.length + 110);
-  let before = t.raw.slice(start, i);
-  let after = t.raw.slice(i + word.length, end);
-  if (start > 0) before = before.replace(/^\S*\s/, '');
-  if (end < t.raw.length) after = after.replace(/\s\S*$/, '');
-  const hit = t.raw.slice(i, i + word.length);
-  return `${start > 0 ? '…' : ''}${esc(before)}<mark>${esc(hit)}</mark>${esc(after)}${end < t.raw.length ? '…' : ''}`.replace(/\n/g, ' ');
+// This page added or removed page text: the worker reloads its copy on the next search.
+function textsChanged() {
+  S.textGen++;
+  S.textHits = null;
+  S.textAsked = null;
+}
+
+// The passage around a match, with the match marked (the worker sends the raw pieces).
+function snippetHTML(p) {
+  return `${p.cutStart ? '…' : ''}${esc(p.before)}<mark>${esc(p.hit)}</mark>${esc(p.after)}${p.cutEnd ? '…' : ''}`.replace(/\n/g, ' ');
 }
 
 const SORTS = {
@@ -257,6 +294,7 @@ function computeList() {
   if (S.type !== 'all') list = list.filter((b) => b.type === S.type);
   if (S.route.kind === 'duplicates') list.sort((a, b) => M.normalizeUrl(a.url).localeCompare(M.normalizeUrl(b.url)) || a.createdAt - b.createdAt);
   else if (S.route.kind === 'trash') list.sort((a, b) => b.trashedAt - a.trashedAt);
+  else if (S.route.kind === 'departures') list.sort((a, b) => a.revisitAt - b.revisitAt);
   else if (S.route.kind === 'broken') list.sort((a, b) => HEALTH_RANK[a.health.state] - HEALTH_RANK[b.health.state] || M.hostOf(a.url).localeCompare(M.hostOf(b.url)));
   else list.sort(SORTS[S.ui.sort] || SORTS.newest);
   S.list = list;
@@ -276,6 +314,8 @@ const unsortedBullet = (size = 20, color = 'currentColor', cls = '') => `<span c
 const allBullet = (size, bg = 'var(--band-ink)', fg = 'var(--band)') => `<span class="bullet" style="--bs:${size}px;--c:${bg};--bi:${fg}">${icon('cards', 12)}</span>`;
 const favBullet = (size) => `<span class="bullet" style="--bs:${size}px;--c:${FAV};--bi:#16171a">${icon('starFilled', 12)}</span>`;
 const trashBullet = (size, color = 'currentColor') => `<span class="bullet dashed" style="--bs:${size}px;--c:${color}"></span>`;
+// The departures board: a clock on a disc in band paper (on the dark band and toasts) or ink (on the station sign).
+const departuresBullet = (size, onBand = true) => `<span class="bullet" style="--bs:${size}px;--c:var(${onBand ? '--band-ink' : '--ink'});--bi:var(${onBand ? '--band' : '--surface'})">${icon('clock', Math.round(size * 0.58))}</span>`;
 const brokenBullet = (size, icoSize = 12) => `<span class="bullet" style="--bs:${size}px;--c:var(--danger);--bi:#fff">${icon('alert', icoSize)}</span>`;
 const tagBullet = (size) => `<span class="bullet" style="--bs:${size}px;--c:var(--ink);--bi:var(--surface)">${icon('hash', 12)}</span>`;
 
@@ -285,7 +325,7 @@ function renderBand() {
   const r = S.route;
   const cur = (kind, id) => (r.kind === kind && (id === undefined || r.id === id || r.tag === id) ? 'aria-current="page"' : '');
   const stop = (kind, label, bullet, count, extra = '') =>
-    `<a class="stop" href="#/${kind}" ${cur(kind)} data-drop="${kind}" ${extra}>${bullet}<span class="stop-name">${label}</span><span class="count">${count ? count.toLocaleString() : ''}</span></a>`;
+    `<a class="stop" href="#/${kind}" ${cur(kind)} data-drop="${kind}" ${extra}>${bullet}<span class="stop-name">${label}</span><span class="count" data-k="${kind}">${count ? count.toLocaleString() : ''}</span></a>`;
 
   const lineNode = (c, depth) => {
     const kids = kidsOf(c.id);
@@ -293,15 +333,15 @@ function renderBand() {
     const n = S.counts.byCol.get(c.id) || 0;
     const renaming = S.renaming === c.id;
     const here = r.kind === 'c' && r.id === c.id;
-    return `<div class="line-node" data-line="${c.id}">
-      <div class="stop line-stop" ${here ? 'data-current' : ''} style="--c:${c.color}" draggable="${renaming ? 'false' : 'true'}" data-drop="line" data-id="${c.id}">
+    return `<div class="line-node${S.fresh?.includes(c.id) ? ' fresh' : ''}" data-line="${c.id}">
+      <div class="stop line-stop${c.smart ? ' smart' : ''}" ${here ? 'data-current' : ''} style="--c:${c.color}" draggable="${renaming ? 'false' : 'true'}" data-drop="line" data-id="${c.id}"${c.smart ? ' data-smart="1"' : ''}>
         ${kids.length
           ? `<button class="twisty${open ? ' open' : ''}" data-act="twisty" aria-expanded="${!!open}" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(c.name)}">${icon('chevronRight', 14)}</button>`
           : '<span class="twisty none" aria-hidden="true"></span>'}
         ${renaming
           ? `${lineBullet(c, 20)}<input class="rename" value="${esc(c.name)}" aria-label="Line name" maxlength="80">`
           : `<a class="stop-link" href="#/c/${c.id}" ${here ? 'aria-current="page"' : ''} draggable="false"${depth ? ` data-depth="${depth}" data-path="${esc(M.linePathOf(S.collections, c.id).join(' › '))}"` : ''}>${lineBullet(c, 20)}<span class="stop-name" dir="auto">${esc(c.name)}</span></a>`}
-        <span class="count">${n ? n.toLocaleString() : ''}</span>
+        <span class="count" data-k="${c.id}">${n ? n.toLocaleString() : ''}</span>
         <button class="more" data-act="line-menu" aria-haspopup="menu" aria-label="Options for ${esc(c.name)}" title="Options (F2 renames)">${icon('more', 16)}</button>
       </div>
       ${open ? `<div class="line-children${depth + 1 > 8 ? ' flat' : depth + 1 > 2 ? ' deep' : ''}" style="--stem:${c.color}">${kids.map((k) => lineNode(k, depth + 1)).join('')}</div>` : ''}
@@ -325,6 +365,7 @@ function renderBand() {
       ${stop('all', 'All bookmarks', allBullet(20), S.counts.all)}
       ${stop('unsorted', 'Unsorted', unsortedBullet(20, 'var(--band-ink-2)'), S.counts.unsorted)}
       ${stop('favorites', 'Favorites', favBullet(20), S.counts.fav)}
+      ${S.counts.due ? stop('departures', 'Departures', departuresBullet(20), S.counts.due) : ''}
       ${S.counts.broken ? stop('broken', 'Broken links', brokenBullet(20), S.counts.broken) : ''}
       <section class="band-section" aria-label="Lines">
         <div class="band-head" data-drop="root">
@@ -349,6 +390,8 @@ function renderBand() {
     </div>`;
 
   renderScanStatus();
+  flipCounts($$('#band .count[data-k]'), 'band');
+  S.fresh = null; // drawn once
   const input = $('#band input.rename');
   if (input) { input.focus(); input.select(); }
 }
@@ -362,13 +405,14 @@ function stationInfo() {
     case 'favorites': return { name: 'Favorites', bullet: favBullet(46), color: FAV, path: [] };
     case 'trash': return { name: 'Trash', bullet: trashBullet(46, 'var(--ink-3)'), color: 'var(--ink-3)', path: [] };
     case 'tag': return { name: '#' + r.tag, bullet: tagBullet(46), color: 'var(--ink)', path: [] };
+    case 'departures': return { name: 'Departures', bullet: departuresBullet(46, false), color: 'var(--ink)', path: [], noun: 'link' };
     case 'broken': return { name: 'Broken links', bullet: brokenBullet(46, 20), color: 'var(--danger)', path: [{ label: 'Settings', hash: '#/settings', bullet: '' }] };
     case 'settings': return { name: 'Settings & data', bullet: `<span class="bullet" style="--bs:46px;--c:var(--ink);--bi:var(--surface)">${icon('settings', 20)}</span>`, color: 'var(--ink)', path: [], noCount: true };
     case 'duplicates': return { name: 'Duplicates', bullet: `<span class="bullet" style="--bs:46px;--c:var(--ink);--bi:var(--surface)">${icon('duplicate', 20)}</span>`, color: 'var(--ink)', path: [{ label: 'Settings', hash: '#/settings', bullet: '' }] };
     case 'c': {
       const c = S.col.get(r.id);
       const p = pathOf(r.id).slice(0, -1);
-      return { name: c.name, bullet: lineBullet(c, 46), color: c.color, path: p.map((x) => ({ label: x.name, hash: '#/c/' + x.id, bullet: lineBullet(x, 14) })) };
+      return { name: c.name, bullet: lineBullet(c, 46), color: c.color, path: p.map((x) => ({ label: x.name, hash: '#/c/' + x.id, bullet: lineBullet(x, 14) })), query: c.smart ? c.query : '' };
     }
     default: return { name: 'All bookmarks', bullet: allBullet(46, 'var(--brand)', '#16171a'), color: 'var(--brand)', path: [] };
   }
@@ -413,8 +457,9 @@ function renderStation() {
       ${info.path.length ? `<nav class="station-path" aria-label="Parent lines">${info.path.map((p) => `<button data-href="${p.hash}">${p.bullet}${esc(p.label)}</button>`).join(icon('chevronRight', 12))}</nav>` : ''}
       <h1 class="station-name">${esc(info.name)}</h1>
     </div>
-    <span class="station-count">${count}</span>`;
+    <span class="station-count">${count}${info.query ? `<span class="smart-q" title="This smart line shows every link matching this search">${icon('filter', 13)}${esc(info.query)}</span>` : ''}</span>`;
   if (searchVal === undefined) $('#search').value = S.query;
+  flipCounts($$('#station-id .station-count b'), 'station:' + key);
   syncSearchChrome();
   document.title = `${info.name} · Linemark`;
 }
@@ -432,6 +477,7 @@ const VIEWS = [
   { id: 'list', label: 'List', ic: 'list' },
   { id: 'headlines', label: 'Headlines', ic: 'headlines' },
   { id: 'moodboard', label: 'Moodboard', ic: 'moodboard' },
+  { id: 'map', label: 'Network map', ic: 'map' },
 ];
 const TYPES = [
   { id: 'article', label: 'Articles' },
@@ -447,6 +493,7 @@ function renderSubbar() {
   sb.hidden = false;
   const typeBtns = TYPES.filter((t) => S.counts.types.get(t.id));
   const sizeable = S.ui.view === 'cards' || S.ui.view === 'moodboard';
+  const isMap = S.ui.view === 'map';
   const extra = S.route.kind === 'trash' && S.counts.trash
     ? `<button class="btn sm danger" data-act="empty-trash">${icon('trash', 15)}<span class="lbl">Empty trash</span></button>`
     : S.route.kind === 'broken' && S.list.length
@@ -472,7 +519,7 @@ function renderSubbar() {
         ${[['newest', 'Newest first'], ['oldest', 'Oldest first'], ['updated', 'Recently edited'], ['title', 'Title A–Z'], ['site', 'By site']].map(([v, l]) => `<option value="${v}" ${S.ui.sort === v ? 'selected' : ''}>${l}</option>`).join('')}
       </select>${icon('chevronDown', 15)}
     </span>`}
-    <button class="btn sm ghost" data-act="select-all" title="Select all (Ctrl+A)" aria-label="Select all">${icon('select', 16)}<span class="lbl">Select</span></button>`;
+    ${isMap ? '' : `<button class="btn sm ghost" data-act="select-all" title="Select all (Ctrl+A)" aria-label="Select all">${icon('select', 16)}<span class="lbl">Select</span></button>`}`;
 }
 
 // ======================= content =======================
@@ -508,25 +555,27 @@ function cardHTML(b) {
   const when = trash ? `trashed ${relTime(b.trashedAt)}` : relTime(b.createdAt);
   // Every control names the link it acts on, so a list of buttons is never "Select, Select, Select…".
   const name = esc(b.title.length > 70 ? b.title.slice(0, 68) + '…' : b.title);
+  const also = (b.alsoOn || []).map((x) => S.col.get(x)).filter(fileable).slice(0, 2);
   return `<article class="card${sel ? ' selected' : ''}" data-id="${b.id}" draggable="true" aria-labelledby="t-${b.id}" style="--c:${col?.color || 'var(--ink-3)'}">
     <div class="cover-wrap">
       <div class="cover">${coverHTML(b, col)}</div>
       ${col ? lineBullet(col, null, 'on-line', col.name) : unsortedBullet(null, 'var(--ink-3)', 'on-line')}
+      ${also.map((x, i) => lineBullet(x, null, `on-line also also-${i + 1}`, 'Also on ' + x.name)).join('')}
     </div>
     <div class="card-body">
-      ${col ? lineBullet(col, 16, 'hl-bullet', col.name) : unsortedBullet(16, 'var(--ink-3)', 'hl-bullet')}
+      ${col ? lineBullet(col, 16, 'hl-bullet', col.name) : unsortedBullet(16, 'var(--ink-3)', 'hl-bullet')}${also.map((x) => lineBullet(x, 16, 'hl-bullet hl-also', 'Also on ' + x.name)).join('')}
       <a class="card-title" id="t-${b.id}" dir="auto" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" title="${esc(b.title)}">${esc(b.title)}</a>
       ${S.snippets.has(b.id) ? `<p class="card-snippet"><span class="snip-label">In page</span> ${S.snippets.get(b.id)}</p>` : b.excerpt ? `<p class="card-excerpt" dir="auto">${esc(b.excerpt)}</p>` : ''}
       ${b.note ? `<p class="card-note">${icon('note', 14)}<span dir="auto">${esc(b.note)}</span></p>` : ''}
       ${b.tags.length ? `<div class="tags">${b.tags.map((t) => `<button class="tag" data-tag="${esc(t)}" aria-label="Show links tagged ${esc(t)}"><span class="hash">#</span>${esc(t)}</button>`).join('')}</div>` : ''}
-      <div class="meta">${fav}<span class="host">${esc(host)}</span><span class="dot">·</span><span class="when" title="${esc(fullDate(trash ? b.trashedAt : b.createdAt))}">${when}</span>${b.favorite ? `<span class="fav-star" title="Favorite">${icon('starFilled', 14)}</span>` : ''}${!trash ? healthChip(b) : ''}</div>
+      <div class="meta">${fav}<span class="host">${esc(host)}</span><span class="dot">·</span><span class="when" title="${esc(fullDate(trash ? b.trashedAt : b.createdAt))}">${when}</span>${b.favorite ? `<span class="fav-star" title="Favorite">${icon('starFilled', 14)}</span>` : ''}${!trash ? healthChip(b) : ''}${!trash && b.revisitAt ? `<span class="due${b.revisitAt <= M.endOfToday() ? ' now' : ''}" title="Revisit ${esc(fullDate(b.revisitAt))}">${icon('clock', 13)}${M.revisitLabel(b.revisitAt)}</span>` : ''}</div>
     </div>
     <button class="check" data-act="select" aria-label="Select “${name}”" aria-pressed="${sel}">${icon('check', 15)}</button>
     <div class="card-actions">
       ${trash
         ? `<button class="icon-btn" data-act="restore" title="Restore" aria-label="Restore “${name}”">${icon('restore', 17)}</button>
            <button class="icon-btn danger" data-act="destroy" title="Delete forever" aria-label="Delete “${name}” forever">${icon('trash', 17)}</button>`
-        : `<button class="icon-btn${b.favorite ? ' on' : ''}" data-act="fav" title="${b.favorite ? 'Unfavorite' : 'Favorite'} (F)" aria-label="Favorite “${name}”" aria-pressed="${!!b.favorite}">${icon(b.favorite ? 'starFilled' : 'star', 17)}</button>
+        : `${S.route.kind === 'departures' ? `<button class="icon-btn" data-act="visited" title="Done: take it off the board" aria-label="Done with “${name}”">${icon('check', 17)}</button>` : ''}<button class="icon-btn${b.favorite ? ' on' : ''}" data-act="fav" title="${b.favorite ? 'Unfavorite' : 'Favorite'} (F)" aria-label="Favorite “${name}”" aria-pressed="${!!b.favorite}">${icon(b.favorite ? 'starFilled' : 'star', 17)}</button>
            <button class="icon-btn" data-act="edit" title="Edit (E)" aria-label="Edit “${name}”">${icon('edit', 17)}</button>
            <button class="icon-btn" data-act="card-menu" title="More" aria-label="More actions for “${name}”" aria-haspopup="menu">${icon('more', 17)}</button>`}
     </div>
@@ -566,13 +615,126 @@ function renderContent() {
         <div><dt><span class="health warn">${icon('alert', 13)}Unverified</span></dt><dd>The site wouldn’t confirm the page, often because of bot protection. Open it to check.</dd></div>
       </dl>`
     : '';
-  const searchElsewhere = S.query && S.route.kind !== 'all'
-    ? `<div class="group-head"><span>Searching in ${esc(stationInfo().name)}.</span><button class="btn sm ghost" data-act="search-all">${icon('search', 14)} Search all bookmarks</button></div>`
+  const smartHere = S.route.kind === 'c' && S.col.get(S.route.id)?.smart;
+  const searchElsewhere = S.query.trim()
+    ? `<div class="group-head">${S.route.kind !== 'all' ? `<span>Searching in ${esc(stationInfo().name)}.</span><button class="btn sm ghost" data-act="search-all">${icon('search', 14)} Search all bookmarks</button>` : ''}${smartHere ? '' : `<button class="btn sm ghost" data-act="save-smart" title="Keep this search as a line that fills itself">${icon('filter', 14)} Save as smart line</button>`}</div>`
     : '';
 
-  content.innerHTML = `${transfers}${legend}${searchElsewhere}<div class="grid ${S.ui.view}${S.selected.size ? ' selecting' : ''}" id="grid" style="--card-w:${S.ui.size}px">${list.slice(0, S.limit).map(cardHTML).join('')}</div><div class="more-sentinel" id="sentinel"></div>`;
+  if (S.ui.view === 'map') { S.enter = null; content.innerHTML = `${legend}${searchElsewhere}${mapHTML(list)}`; return; }
+  const enter = S.enter ? ` enter-${S.enter}` : '';
+  S.enter = null;
+  content.innerHTML = `${transfers}${legend}${searchElsewhere}<div class="grid ${S.ui.view}${enter}${S.selected.size ? ' selecting' : ''}" id="grid" style="--card-w:${S.ui.size}px">${list.slice(0, S.limit).map(cardHTML).join('')}</div><div class="more-sentinel" id="sentinel"></div>`;
   hydrate(content);
   observeMore();
+}
+
+// ======================= motion =======================
+
+// Counts change like a departure board: the number flips over when it differs from last time.
+const lastCounts = new Map();
+function flipCounts(els, scope) {
+  for (const el of els) {
+    const k = scope + ':' + (el.dataset.k || '');
+    const v = el.textContent;
+    const before = lastCounts.get(k);
+    lastCounts.set(k, v);
+    if (before !== undefined && before !== v && v) {
+      el.classList.remove('flip');
+      void el.offsetWidth;
+      el.classList.add('flip');
+      // a new dead link lights the Broken links stop red as the checker finds it
+      if (el.dataset.k === 'broken' && +v.replace(/\D/g, '') > +String(before).replace(/\D/g, '')) el.closest('.stop')?.querySelector('.bullet')?.classList.add('alarm');
+    }
+  }
+}
+
+// Which way the train travels: down the band (new stop lower in the sidebar) or up.
+function travelDirection(fromHash, toHash) {
+  if (fromHash === toHash) return null;
+  const order = $$('#band a.stop, #band a.stop-link, #band a.tag-pill').map((a) => a.getAttribute('href'));
+  const i = order.indexOf(fromHash), j = order.indexOf(toHash);
+  if (i < 0 || j < 0) return 'down';
+  return j > i ? 'down' : 'up';
+}
+
+// Filing a link: a dot in the link's line colour travels from where it was dropped to the line it now runs on.
+function fileAnimation(fromX, fromY, zone, color) {
+  const target = zone?.querySelector('.bullet');
+  if (!target) return;
+  const to = target.getBoundingClientRect();
+  const dot = document.createElement('span');
+  dot.className = 'file-dot';
+  dot.style.setProperty('--c', color || 'var(--brand)');
+  dot.style.left = fromX - 9 + 'px';
+  dot.style.top = fromY - 9 + 'px';
+  document.body.append(dot);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dx = to.left + to.width / 2 - fromX, dy = to.top + to.height / 2 - fromY;
+  const anim = reduce
+    ? dot.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 300 })
+    : dot.animate([{ transform: 'translate(0, 0) scale(1.4)', opacity: 0.95 }, { transform: `translate(${dx}px, ${dy}px) scale(0.6)`, opacity: 1 }], { duration: 520, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' });
+  anim.onfinish = () => { dot.remove(); target.classList.remove('arrived'); void target.offsetWidth; target.classList.add('arrived'); };
+}
+
+// ======================= network map =======================
+// The listed links drawn as a transit map: each line is a coloured track with its links as stations, branches hang
+// off their parent on a stem in its colour (as in the sidebar), and a link on more than one line is an interchange.
+const MAP = { label: 236, step: 104, row: 104, top: 84, max: 14 };
+function mapHTML(list) {
+  const visible = new Set(list.map((b) => b.id));
+  const items = new Map(); // line id ('' = unsorted) -> [{ b, inter }]
+  const add = (id, b, inter) => { if (!items.has(id)) items.set(id, []); items.get(id).push({ b, inter }); };
+  for (const b of list) {
+    const main = fileable(S.col.get(b.collectionId)) ? b.collectionId : '';
+    const also = (b.alsoOn || []).filter((x) => fileable(S.col.get(x)));
+    add(main, b, also.length > 0);
+    for (const x of also) add(x, b, true);
+  }
+  const rows = [];
+  const walk = (cs, depth, parentRow) => {
+    for (const c of cs) {
+      if (!fileable(c)) continue;
+      const hasOwn = items.has(c.id);
+      const sub = descendants(c.id);
+      if (!hasOwn && ![...sub].some((x) => items.has(x))) continue;
+      const row = { c, depth, parentRow, items: items.get(c.id) || [] };
+      rows.push(row);
+      walk(kidsOf(c.id), depth + 1, row);
+    }
+  };
+  walk(roots(), 0, null);
+  if (items.has('')) rows.push({ c: { id: '', name: 'Unsorted', color: 'var(--ink-3)', code: '' }, depth: 0, parentRow: null, items: items.get(''), unsorted: true });
+  rows.forEach((r, i) => { r.y = MAP.top + i * MAP.row; r.bx = 24 + r.depth * 20; });
+  const longest = Math.min(MAP.max, Math.max(1, ...rows.map((r) => r.items.length)));
+  const w = MAP.label + 40 + longest * MAP.step + 90;
+  const h = MAP.top + rows.length * MAP.row - 40;
+  const cut = (t, n) => (t.length > n ? t.slice(0, n - 1) + '…' : t);
+  const svg = rows.map((r) => {
+    const c = r.c;
+    const href = r.unsorted ? '#/unsorted' : '#/c/' + c.id;
+    const stem = r.parentRow ? `<path class="stem" d="M${r.parentRow.bx} ${r.parentRow.y + 12} V${r.y - 9} Q${r.parentRow.bx} ${r.y} ${r.parentRow.bx + 9} ${r.y} H${r.bx - 12}" style="--c:${r.parentRow.c.color}"/>` : '';
+    const shown = r.items.slice(0, MAP.max);
+    const end = MAP.label + 30 + Math.max(0, shown.length - 1) * MAP.step + 34;
+    const stations = shown.map(({ b, inter }, i) => {
+      const x = MAP.label + 30 + i * MAP.step;
+      return `<a class="map-stop${inter ? ' inter' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
+        <title>${esc(b.title)}</title>
+        <circle cx="${x}" cy="${r.y}" r="${inter ? 9 : 8}"/>
+        <text x="${x + 2}" y="${r.y - 17}" transform="rotate(-30 ${x + 2} ${r.y - 17})">${esc(cut(b.title, 22))}</text>
+      </a>`;
+    }).join('');
+    const more = r.items.length > MAP.max ? `<a class="more-stops" href="${href}"><text x="${end + 14}" y="${r.y + 5}">+${r.items.length - MAP.max} more</text></a>` : '';
+    return `<g class="line-row" style="--c:${c.color};--bi:${r.unsorted ? 'var(--surface)' : M.bulletInk(c.color)}">
+      ${stem}
+      <a class="line-label" href="${href}" aria-label="Line ${esc(c.name)}">
+        <circle class="lb" cx="${r.bx}" cy="${r.y}" r="12"/>${r.unsorted ? '' : `<text class="lb-code" x="${r.bx}" y="${r.y + 4}">${esc(c.code || M.codeFor(c.name))}</text>`}
+        <text class="lb-name" x="${r.bx + 20}" y="${r.y + 5}">${esc(cut(c.name, Math.max(8, 24 - r.depth * 2)))}</text>
+      </a>
+      ${shown.length ? `<path class="track" d="M${MAP.label} ${r.y} H${end}"/>` : ''}
+      ${stations}${more}
+    </g>`;
+  }).join('');
+  return `<div class="map-wrap"><svg class="netmap" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="group" aria-label="Network map: ${plural(visible.size, 'link')} on ${plural(rows.length, 'line')}">${svg}</svg></div>`;
 }
 
 function appendMore() {
@@ -647,6 +809,7 @@ function emptyHTML() {
     unsorted: ['Nothing unsorted', 'Everything you saved is on a line. New saves land here first.'],
     favorites: ['No favorites yet', 'Star a link to keep it one click away.'],
     duplicates: ['No duplicates', 'Every link in your library is unique.'],
+    departures: ['Nothing due', 'Links you set to revisit appear here on their day. Choose Revisit… in a link’s menu.'],
     broken: ['No broken links', 'Nothing is dead, moved or unverified. Check again any time from Settings → Health & search.'],
     tag: ['No links with this tag', 'The tag will disappear once nothing uses it.'],
     c: ['No links on this line yet', 'Drag links onto this line in the sidebar, or choose it when you save a page.'],
@@ -740,7 +903,7 @@ async function destroy(ids) {
   await db.delMany('media', media);
   for (const m of media) mediaCache.get(m)?.then((u) => u && URL.revokeObjectURL(u)), mediaCache.delete(m);
   await db.delMany('texts', ids);
-  ids.forEach((id) => S.texts?.delete(id));
+  textsChanged();
   const gone = new Set(ids);
   S.bookmarks = S.bookmarks.filter((b) => !gone.has(b.id));
   ids.forEach((id) => S.selected.delete(id));
@@ -751,11 +914,122 @@ async function destroy(ids) {
 
 async function move(ids, collectionId) {
   const snap = snapshot(ids);
-  await putBookmarks(ids.map((id) => Object.assign(S.bm.get(id), { collectionId, trashedAt: null })));
+  await putBookmarks(ids.map((id) => {
+    const b = Object.assign(S.bm.get(id), { collectionId, trashedAt: null });
+    if (b.alsoOn) b.alsoOn = b.alsoOn.filter((x) => x !== collectionId); // its main line now; no longer an extra stop
+    return b;
+  }));
   S.selected.clear();
   renderAll();
   const c = S.col.get(collectionId);
   toast(`${plural(ids.length, 'link')} moved to ${c ? c.name : 'Unsorted'}`, { action: 'Undo', onAction: () => restoreSnapshot(snap), lead: c ? lineBullet(c, 18) : unsortedBullet(18, 'var(--band-ink-2)') });
+}
+
+// Interchange: picking a line adds it as a further stop, or removes it if the link already stops there.
+async function toggleAlso(ids, cid) {
+  const c = S.col.get(cid);
+  if (!fileable(c)) return;
+  const has = ids.every((id) => S.bm.get(id).alsoOn?.includes(cid));
+  const snap = snapshot(ids);
+  await putBookmarks(ids.map((id) => {
+    const b = S.bm.get(id);
+    const set = new Set(b.alsoOn || []);
+    if (has) set.delete(cid); else if (b.collectionId !== cid) set.add(cid);
+    b.alsoOn = [...set].slice(0, 8);
+    if (!b.alsoOn.length) delete b.alsoOn;
+    return b;
+  }));
+  renderAll();
+  toast(has ? `${plural(ids.length, 'link')} no longer on ${c.name}` : `${plural(ids.length, 'link')} now also on ${c.name}`, { action: 'Undo', onAction: () => restoreSnapshot(snap), lead: lineBullet(c, 18) });
+}
+
+// The departures board: come back to a link on a given day.
+async function setRevisit(ids, at) {
+  const snap = snapshot(ids);
+  await putBookmarks(ids.map((id) => {
+    const b = S.bm.get(id);
+    if (at) b.revisitAt = at; else delete b.revisitAt;
+    return b;
+  }));
+  afterEdit(ids);
+  toast(at ? `${plural(ids.length, 'link')} on the board for ${M.revisitLabel(at).toLowerCase()}` : `${plural(ids.length, 'link')} taken off the board`, { action: 'Undo', onAction: () => restoreSnapshot(snap), lead: departuresBullet(18) });
+}
+function revisitMenu(anchor, ids) {
+  const b = S.bm.get(ids[0]);
+  openMenu(anchor, (m, close) => {
+    m.innerHTML = `<div class="label" style="padding:4px 9px 6px">Revisit</div>${M.REVISIT_CHOICES.map(([l, d]) => menuItem({ label: l, iconName: 'clock', attrs: `data-days="${d}"` })).join('')}${b?.revisitAt ? `<div class="menu-sep"></div>${menuItem({ label: 'Take off the board', iconName: 'x', attrs: 'data-days="0"' })}` : ''}`;
+    m.addEventListener('click', (e) => {
+      const d = e.target.closest('[data-days]')?.dataset.days;
+      if (d === undefined) return;
+      close();
+      setRevisit(ids, +d ? M.revisitIn(+d) : null);
+    });
+  }, { align: 'end' });
+}
+
+// Dead links: ask the Internet Archive for its closest copy (only when asked; it learns the address).
+async function archivedCopy(anchor, id) {
+  const b = S.bm.get(id);
+  const ok = await (M.hasChrome ? chrome.permissions.request({ origins: ['https://archive.org/*'] }).catch(() => false) : true);
+  if (!ok) { toast('Linemark needs permission to ask archive.org.'); return; }
+  toast('Asking the Internet Archive…');
+  let copy;
+  try { copy = await M.findArchivedCopy(b.url); } catch (err) { toast(err.message || 'The Internet Archive didn’t answer.'); return; }
+  if (!copy) { toast(`The Internet Archive has no copy of ${M.hostOf(b.url)}`); return; }
+  const when = copy.when ? new Date(copy.when).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'an earlier date';
+  openMenu(anchor, (m, close) => {
+    m.innerHTML = `<div class="label" style="padding:4px 9px 6px">Archived copy from ${esc(when)}</div>
+      ${menuItem({ label: 'Open archived copy', iconName: 'external', action: 'open' })}
+      ${menuItem({ label: 'Use it as this link’s address', iconName: 'archive', action: 'use' })}`;
+    m.addEventListener('click', async (e) => {
+      const act = e.target.closest('[data-mi]')?.dataset.mi;
+      if (!act) return;
+      close();
+      if (act === 'open') openTabs([copy.url]);
+      if (act === 'use') {
+        const snap = snapshot([id]);
+        b.note = [b.note, `Original address: ${b.url}`].filter(Boolean).join('\n');
+        b.url = copy.url;
+        b.health = { state: 'ok', code: 200, note: 'Archived copy', checkedAt: Date.now() };
+        await putBookmarks([b]);
+        renderAll();
+        toast('Now pointing at the archived copy', { action: 'Undo', onAction: () => restoreSnapshot(snap) });
+      }
+    });
+  }, { align: 'end' });
+}
+
+// Lines ↔ Chrome tab groups: open a line as a coloured group, or keep the window's groups as lines.
+async function openAsTabGroup(id) {
+  const c = S.col.get(id);
+  const urls = S.bookmarks.filter((b) => !b.trashedAt && (b.collectionId === id || b.alsoOn?.includes(id))).map((b) => b.url);
+  if (!urls.length) { toast(`${c.name} has no links to open`); return; }
+  if (urls.length > 20 && !confirmOpenMany(urls.length)) return;
+  if (!(await chrome.permissions.request({ permissions: ['tabGroups'] }).catch(() => false))) { toast('Linemark needs permission to make tab groups.'); return; }
+  const tabs = [];
+  for (const url of urls) tabs.push(await chrome.tabs.create({ url, active: false }));
+  const groupId = await chrome.tabs.group({ tabIds: tabs.map((t) => t.id) });
+  await chrome.tabGroups.update(groupId, { title: c.name, color: M.tabGroupColor(c.color), collapsed: false });
+  toast(`Opened ${plural(urls.length, 'tab')} as the ${c.name} tab group`, { lead: lineBullet(c, 18) });
+}
+async function saveTabGroups() {
+  if (!(await chrome.permissions.request({ permissions: ['tabs', 'tabGroups'] }).catch(() => false))) { toast('Linemark needs permission to read your tab groups.'); return; }
+  const groups = await chrome.tabGroups.query({ windowId: chrome.windows?.WINDOW_ID_CURRENT ?? -2 });
+  if (!groups.length) { toast('This window has no tab groups.'); return; }
+  let lines = 0, links = 0;
+  for (const g of groups) {
+    const tabs = (await chrome.tabs.query({ groupId: g.id })).filter((t) => M.isSavable(t.url));
+    if (!tabs.length) continue;
+    const name = (g.title || '').trim() || 'Tab group';
+    const plan = M.planLinePath(S.collections.filter(fileable), name);
+    const target = plan.target;
+    if (plan.created.length) { plan.created.forEach((x) => { x.color = M.lineColorForGroup(g.color); }); await putCollections(plan.created); lines++; }
+    const known = new Set(S.bookmarks.filter((b) => !b.trashedAt).map((b) => M.normalizeUrl(b.url)));
+    const fresh = tabs.filter((t) => !known.has(M.normalizeUrl(t.url))).map((t) => M.newBookmark({ url: t.url, title: t.title, collectionId: target.id }));
+    if (fresh.length) { await putBookmarks(fresh); links += fresh.length; }
+  }
+  renderAll();
+  toast(links ? `Saved ${plural(links, 'link')}${lines ? ` on ${plural(lines, 'new line')}` : ''} from your tab groups` : 'Every tab in those groups is already saved');
 }
 
 async function setFavorite(ids, on) {
@@ -812,6 +1086,7 @@ async function newLine(parentId = null) {
   if (parentId) S.col.get(parentId).expanded = true;
   await putCollections(parentId ? [c, S.col.get(parentId)] : [c]);
   S.renaming = c.id;
+  S.fresh = [c.id];
   renderBand();
   return c;
 }
@@ -832,9 +1107,13 @@ async function deleteLine(id) {
   const ids = new Set([id, ...descendants(id)]);
   const cols = S.collections.filter((c) => ids.has(c.id)).map((c) => structuredClone(c));
   const bms = S.bookmarks.filter((b) => ids.has(b.collectionId) && !b.trashedAt).map((b) => b.id);
-  const snap = snapshot(bms);
+  const stops = S.bookmarks.filter((b) => !ids.has(b.collectionId) && b.alsoOn?.some((x) => ids.has(x))).map((b) => b.id);
+  const snap = snapshot([...bms, ...stops]);
   const now = Date.now();
-  await putBookmarks(bms.map((bid) => Object.assign(S.bm.get(bid), { trashedAt: now })));
+  await putBookmarks([
+    ...bms.map((bid) => Object.assign(S.bm.get(bid), { trashedAt: now })),
+    ...stops.map((bid) => { const b = S.bm.get(bid); b.alsoOn = b.alsoOn.filter((x) => !ids.has(x)); if (!b.alsoOn.length) delete b.alsoOn; return b; }),
+  ]);
   await db.delMany('collections', [...ids]);
   await M.addTombstones([...ids]);
   S.collections = S.collections.filter((c) => !ids.has(c.id));
@@ -857,6 +1136,7 @@ async function placeLine(id, targetId, where) {
   else {
     const t = S.col.get(targetId);
     if (!t || t.id === id || descendants(id).has(t.id)) return;
+    if (where === 'into' && t.smart) where = 'after';
     if (where === 'into') { parentId = t.id; index = kidsOf(t.id).length; t.expanded = true; }
     else {
       parentId = t.parentId && S.col.has(t.parentId) ? t.parentId : null;
@@ -876,11 +1156,13 @@ async function placeLine(id, targetId, where) {
 
 function lineMenu(anchor, id) {
   const c = S.col.get(id);
+  if (c.smart) return smartLineMenu(anchor, c);
   openMenu(anchor, (m, close) => {
     m.innerHTML = `
       ${menuItem({ label: 'Rename', iconName: 'edit', action: 'rename' })}
       ${menuItem({ label: 'Add branch line', iconName: 'plus', action: 'child' })}
       ${menuItem({ label: 'Open all links', iconName: 'external', action: 'open' })}
+      ${M.hasChrome && chrome.tabs?.group ? menuItem({ label: 'Open as tab group', iconName: 'tabs', action: 'tab-group' }) : ''}
       <div class="menu-sep"></div>
       <div class="label" style="padding:4px 9px 0">Line colour</div>
       <div class="swatches" role="radiogroup" aria-label="Line colour">${M.LINE_COLORS.map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
@@ -906,10 +1188,11 @@ function lineMenu(anchor, id) {
       if (!act) return;
       close();
       if (act === 'rename') { S.renaming = id; renderBand(); }
-      if (act === 'icon') iconPicker(anchor, c);
+      if (act === 'icon') loadIcons().then(() => iconPicker(anchor, c));
       if (act === 'no-icon') { c.icon = ''; await putCollections([c]); renderAll(); }
       if (act === 'child') newLine(id);
-      if (act === 'open') openTabs(S.bookmarks.filter((b) => b.collectionId === id && !b.trashedAt).map((b) => b.url));
+      if (act === 'open') openTabs(S.bookmarks.filter((b) => (b.collectionId === id || b.alsoOn?.includes(id)) && !b.trashedAt).map((b) => b.url));
+      if (act === 'tab-group') openAsTabGroup(id);
       if (act === 'delete') deleteLine(id);
     });
     const codeInput = $('#code-input', m);
@@ -923,6 +1206,49 @@ function lineMenu(anchor, id) {
     });
     codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { codeInput.blur(); close(); } });
   });
+}
+
+// A smart line's menu: its search, name and colour (it holds no links, so no bullet or branches).
+function smartLineMenu(anchor, c) {
+  openMenu(anchor, (m, close) => {
+    m.innerHTML = `
+      <div class="label" style="padding:4px 9px 6px">Shows links matching</div>
+      <form class="smart-form"><input class="input menu-search" value="${esc(c.query)}" aria-label="Search for this smart line" spellcheck="false"></form>
+      ${menuItem({ label: 'Rename', iconName: 'edit', action: 'rename' })}
+      <div class="label" style="padding:4px 9px 0">Line colour</div>
+      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.LINE_COLORS.map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
+      <div class="menu-sep"></div>
+      ${menuItem({ label: 'Delete smart line', iconName: 'trash', action: 'delete', danger: true })}`;
+    $('.smart-form', m).addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = $('.menu-search', m).value.trim();
+      if (!q) return;
+      c.query = q;
+      close();
+      await putCollections([c]);
+      renderAll();
+    });
+    m.addEventListener('click', async (e) => {
+      const sw = e.target.closest('[data-color]');
+      if (sw) { c.color = sw.dataset.color; $$('.swatch', m).forEach((x) => x.setAttribute('aria-checked', x === sw)); await putCollections([c]); renderAll(); return; }
+      const act = e.target.closest('[data-mi]')?.dataset.mi;
+      if (!act) return;
+      close();
+      if (act === 'rename') { S.renaming = c.id; renderBand(); }
+      if (act === 'delete') deleteLine(c.id);
+    });
+  });
+}
+
+async function saveSmartLine() {
+  const q = S.query.trim();
+  if (!q) return;
+  const c = { id: M.uid(), name: q.length > 40 ? q.slice(0, 38) + '…' : q, code: 'S', color: nextColor(), parentId: null, order: roots().length, expanded: false, createdAt: Date.now(), smart: true, query: q };
+  await putCollections([c]);
+  S.query = '';
+  if ($('#search')) $('#search').value = '';
+  go('#/c/' + c.id);
+  toast(`Smart line “${c.name}” keeps every link matching ${q}`, { lead: lineBullet(c, 18) });
 }
 
 // Icon picker for a line's bullet: bundled Lucide icons (searchable) or any emoji.
@@ -961,10 +1287,10 @@ function iconPicker(anchor, c) {
 }
 
 // Line picker (used by Move, the drawer, and Add link).
-function linePicker(anchor, currentId, onPick, { allowNone = true, title } = {}) {
+function linePicker(anchor, currentId, onPick, { allowNone = true, title, checked = null, exclude = null } = {}) {
   openMenu(anchor, (m, close) => {
     const flat = [];
-    const walk = (list, depth) => { for (const c of list) { flat.push([c, depth]); walk(kidsOf(c.id), depth + 1); } };
+    const walk = (list, depth) => { for (const c of list) { if (!fileable(c)) continue; if (c.id !== exclude) flat.push([c, depth]); walk(kidsOf(c.id), depth + 1); } };
     walk(roots(), 0);
     const draw = (q = '') => {
       // "Videos/Markiplier" finds or creates a line and a branch inside it
@@ -974,7 +1300,7 @@ function linePicker(anchor, currentId, onPick, { allowNone = true, title } = {})
       const create = M.createLineLabel(S.collections, q);
       $('.picker-list', m).innerHTML =
         (allowNone && !ql ? menuItem({ label: 'Unsorted', lead: unsortedBullet(18, 'var(--ink-3)'), action: '', checked: !currentId, attrs: 'data-pick=""' }) : '') +
-        items.map(([c, d]) => menuItem({ label: ql && d ? path(c).join(' › ') : c.name, lead: `<span style="width:${ql ? 0 : d * 14}px;flex:none"></span>${lineBullet(c, 18)}`, checked: c.id === currentId, attrs: `data-pick="${c.id}"` })).join('') +
+        items.map(([c, d]) => menuItem({ label: ql && d ? path(c).join(' › ') : c.name, lead: `<span style="width:${ql ? 0 : d * 14}px;flex:none"></span>${lineBullet(c, 18)}`, checked: checked ? checked.has(c.id) : c.id === currentId, attrs: `data-pick="${c.id}"` })).join('') +
         (create ? menuItem({ label: create, iconName: 'plus', attrs: `data-create="${esc(q)}"` }) : '') +
         (!items.length && !q ? '<div class="menu-empty">No lines yet.</div>' : '');
     };
@@ -991,6 +1317,7 @@ function linePicker(anchor, currentId, onPick, { allowNone = true, title } = {})
       if (it.dataset.create) {
         const plan = M.planLinePath(S.collections, it.dataset.create);
         for (const o of plan.opened) S.col.get(o.id).expanded = true;
+        S.fresh = plan.created.map((x) => x.id);
         await putCollections([...plan.created, ...plan.opened.map((o) => S.col.get(o.id))]);
         close();
         onPick(plan.target?.id || null);
@@ -1037,6 +1364,9 @@ function cardMenu(anchor, id) {
       ${menuItem({ label: b.favorite ? 'Remove from Favorites' : 'Add to Favorites', iconName: b.favorite ? 'starFilled' : 'star', action: 'fav' })}
       ${menuItem({ label: 'Move to…', iconName: 'move', action: 'move' })}
       ${menuItem({ label: 'Add tags…', iconName: 'tag', action: 'tag' })}
+      ${menuItem({ label: 'Also show on…', iconName: 'interchange', action: 'also' })}
+      ${menuItem({ label: b.revisitAt ? `Revisit (${M.revisitLabel(b.revisitAt).toLowerCase()})…` : 'Revisit…', iconName: 'clock', action: 'revisit' })}
+      ${b.health && ['dead', 'warn'].includes(b.health.state) ? menuItem({ label: 'Find archived copy', iconName: 'archive', action: 'archive' }) : ''}
       ${b.health?.state === 'moved' ? menuItem({ label: `Use new address (${M.hostOf(b.health.finalUrl)})`, iconName: 'move', action: 'use-new' }) : ''}
       ${b.health && b.health.state !== 'ok' ? menuItem({ label: 'Mark as working', iconName: 'check', action: 'mark-ok' }) : ''}
       ${menuItem({ label: 'Copy link', iconName: 'copy', action: 'copy' })}
@@ -1052,6 +1382,9 @@ function cardMenu(anchor, id) {
       if (act === 'fav') setFavorite(ids, !b.favorite);
       if (act === 'move') linePicker(anchor, b.collectionId, (cid) => move(ids, cid), { title: `Move ${plural(ids.length, 'link')} to` });
       if (act === 'tag') tagPrompt(anchor, (tags) => addTags(ids, tags));
+      if (act === 'also') linePicker(anchor, null, (cid) => cid && toggleAlso(ids, cid), { title: 'Also show on', allowNone: false, checked: new Set(b.alsoOn || []), exclude: b.collectionId });
+      if (act === 'revisit') revisitMenu(anchor, ids);
+      if (act === 'archive') archivedCopy(anchor, id);
       if (act === 'copy') navigator.clipboard.writeText(b.url).then(() => toast('Link copied'));
       if (act === 'use-new') { b.url = b.health.finalUrl; b.health = { state: 'ok', code: 200, checkedAt: Date.now() }; putBookmarks([b]).then(renderAll); toast(`Address updated to ${M.hostOf(b.url)}`); }
       if (act === 'mark-ok') { b.health = { state: 'ok', code: 0, note: 'Marked as working', checkedAt: Date.now() }; putBookmarks([b]).then(renderAll); }
@@ -1223,7 +1556,7 @@ async function absorbPage(b, html) {
     const text = htmlToText(html);
     if (await M.saveText(b.id, text)) {
       b.textAt = Date.now();
-      if (S.texts) { const t = M.tidyText(text); S.texts.set(b.id, { raw: t, low: t.toLowerCase() }); }
+      textsChanged();
     }
   }
   if (!b.metaFetched) {
@@ -1264,7 +1597,7 @@ function renderScanStatus() {
     announcedQuarter = quarter;
     announce(quarter === 0 ? `${what}: ${j.total.toLocaleString()} to go.` : `${what}: ${quarter * 25}% done.`);
   }
-  el.innerHTML = `<div class="scan-line"><span>${what}</span><span class="tnum">${j.done.toLocaleString()} / ${j.total.toLocaleString()}</span><button class="icon-btn sm" data-act="scan-cancel" aria-label="Stop">${icon('x', 14)}</button></div><div class="progress"><i style="width:${(j.done / j.total) * 100}%"></i></div>`;
+  el.innerHTML = `<div class="scan-line"><span>${what}</span><span class="tnum">${j.done.toLocaleString()} / ${j.total.toLocaleString()}</span><button class="icon-btn sm" data-act="scan-cancel" aria-label="Stop">${icon('x', 14)}</button></div><div class="progress train"><i style="width:${(j.done / j.total) * 100}%"></i></div>`;
 }
 
 const SCAN_KINDS = {
@@ -1364,6 +1697,7 @@ function renderDrawer() {
       </div>
       <div class="field"><label>Line</label><button class="picker" id="d-line">${col ? lineBullet(col, 18) : unsortedBullet(18, 'var(--ink-3)')}<span class="name">${esc(col ? pathOf(col.id).map((x) => x.name).join(' › ') : 'Unsorted')}</span>${icon('chevronDown', 15)}</button></div>
       <div class="field"><label for="d-tag-input">Tags</label><div class="tags-input" id="d-tags">${b.tags.map((t) => `<span class="chip">#${esc(t)}<button data-act="rm-tag" data-t="${esc(t)}" aria-label="Remove ${esc(t)}">${icon('x', 12)}</button></span>`).join('')}<input id="d-tag-input" placeholder="${b.tags.length ? '' : 'Add tags…'}" autocomplete="off"></div></div>
+      <div class="ai-row" id="d-ai" hidden></div>
       <div class="field"><label for="d-excerpt">Description</label><textarea class="textarea" id="d-excerpt" rows="3">${esc(b.excerpt)}</textarea></div>
       <div class="field"><label for="d-note">Note</label><textarea class="textarea" id="d-note" rows="4" placeholder="Why you saved it, what to remember…">${esc(b.note)}</textarea></div>
       <div class="toggle-row"><span style="font-weight:600;display:flex;gap:8px;align-items:center">${icon('star', 17)} Favorite</span><button class="switch" role="switch" aria-checked="${b.favorite}" data-act="d-fav" aria-label="Favorite"></button></div>
@@ -1386,6 +1720,68 @@ function renderDrawer() {
     renderAll();
   }));
   wireTagInput(b);
+  offerSuggestions(b);
+}
+
+// On-device AI: offered only where Chrome has its built-in model; it runs only when Suggest is clicked.
+// The answer is kept for the open link, so applying one suggestion redraws the drawer with the rest.
+async function offerSuggestions(b) {
+  const box = $('#d-ai');
+  if (!box) return;
+  if (S.aiOut?.id === b.id) { box.hidden = false; showSuggestions(b, S.aiOut); return; }
+  const status = await AI.aiStatus();
+  if (status === 'unavailable' || S.editing !== b.id || !$('#d-ai')) return;
+  box.hidden = false;
+  box.innerHTML = `<button type="button" class="btn sm" id="d-suggest">${icon('sparkles', 15)} Suggest line, tags and summary</button><span class="hint">Uses Chrome’s built-in AI on this computer. Nothing is sent anywhere.${status === 'downloadable' ? ' The first time, Chrome downloads its model.' : ''}</span>`;
+  $('#d-suggest').addEventListener('click', async () => {
+    const btn = $('#d-suggest');
+    btn.disabled = true;
+    btn.innerHTML = `${icon('sparkles', 15)} Thinking…`;
+    try {
+      const text = (await db.get('texts', b.id))?.text || b.excerpt || '';
+      const lines = S.collections.filter(fileable).map((c) => M.linePathOf(S.collections, c.id).join('/'));
+      const out = await AI.suggest({ title: b.title, url: b.url, text, lines, tags: [...S.counts.tags.keys()] }, (p) => { btn.innerHTML = `${icon('sparkles', 15)} Downloading the model… ${Math.round(p * 100)}%`; });
+      S.aiOut = { id: b.id, ...out };
+      if (S.editing === b.id && $('#d-ai')) showSuggestions(b, S.aiOut);
+    } catch {
+      btn.disabled = false;
+      btn.innerHTML = `${icon('sparkles', 15)} Suggest line, tags and summary`;
+      toast('Chrome’s built-in AI couldn’t make a suggestion this time.');
+    }
+  });
+}
+
+function showSuggestions(b, out) {
+  const box = $('#d-ai');
+  const found = out.line ? M.resolveLinePath(S.collections, M.splitLinePath(out.line)) : null;
+  const existing = found && !found.missing.length ? found.found.at(-1) : null;
+  const showLine = out.line && (!existing || existing.id !== b.collectionId);
+  const tags = out.tags.filter((t) => !b.tags.includes(t));
+  const showSum = out.summary && b.excerpt !== out.summary;
+  if (!showLine && !tags.length && !showSum) { box.innerHTML = `<span class="hint">${icon('check', 14)} Suggestions applied.</span>`; return; }
+  box.innerHTML = `<div class="ai-out">
+      <div class="ai-head">${icon('sparkles', 14)} Suggestions <span class="hint">Click to apply</span></div>
+      ${showLine ? `<button type="button" class="ai-chip" data-ai="line">${existing ? lineBullet(existing, 16) : icon('plus', 14)}${esc(existing ? M.linePathOf(S.collections, existing.id).join(' › ') : 'New line: ' + M.splitLinePath(out.line).join(' › '))}</button>` : ''}
+      ${tags.map((t) => `<button type="button" class="ai-chip" data-ai="tag" data-t="${esc(t)}">${icon('plus', 13)}#${esc(t)}</button>`).join('')}
+      ${showSum ? `<p class="ai-sum">${esc(out.summary)}</p><button type="button" class="btn sm" data-ai="summary">Use as description</button>` : ''}
+    </div>`;
+  box.addEventListener('click', async (e) => {
+    const el = e.target.closest('[data-ai]');
+    if (!el) return;
+    const kind = el.dataset.ai;
+    if (kind === 'line') {
+      const plan = M.planLinePath(S.collections.filter(fileable), out.line);
+      for (const o of plan.opened) S.col.get(o.id).expanded = true;
+      if (plan.created.length || plan.opened.length) await putCollections([...plan.created, ...plan.opened.map((o) => S.col.get(o.id))]);
+      b.collectionId = plan.target?.id || null;
+      S.fresh = plan.created.map((x) => x.id);
+    }
+    if (kind === 'tag') b.tags = M.normalizeTags([...b.tags, el.dataset.t]);
+    if (kind === 'summary') b.excerpt = out.summary;
+    await putBookmarks([b]);
+    renderAll();
+    renderDrawer();
+  });
 }
 
 function autosize(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; }
@@ -1658,6 +2054,7 @@ async function renderSettings() {
       <p>Folders become lines, and links you already have are skipped.</p>
       <div class="rows">
         ${M.hasChrome ? `<div class="row"><div class="what"><b>Chrome bookmarks</b><span>Copies your bookmarks bar and other folders into Linemark. Chrome’s own bookmarks are left untouched.</span></div><div class="act"><button class="btn primary" data-act="import-chrome">${icon('download', 16)} Import</button></div></div>` : ''}
+        ${M.hasChrome && chrome.tabs?.group ? `<div class="row"><div class="what"><b>Tab groups</b><span>Keeps each tab group in this window as a line in its colour. Tabs you already saved are skipped.</span></div><div class="act"><button class="btn" data-act="save-tab-groups">${icon('tabs', 16)} Save as lines</button></div></div>` : ''}
         <div class="row"><div class="what"><b>Bookmark HTML file</b><span>The standard export from Chrome, Edge, Firefox, Safari, Raindrop or Pocket. Tags and descriptions are kept.</span></div><div class="act"><button class="btn" data-act="import-html">${icon('upload', 16)} Choose file</button></div></div>
         <div class="row"><div class="what"><b>Linemark backup</b><span>Restores lines, links, notes and screenshots from a JSON backup. Matching links are updated.</span></div><div class="act"><button class="btn" data-act="import-json">${icon('upload', 16)} Restore</button></div></div>
       </div>
@@ -1712,7 +2109,7 @@ async function renderSettings() {
         <div>Search from address bar <span title="Type lm (lower-case L, M), then Space"><kbd>L</kbd><kbd>M</kbd><kbd>Space</kbd></span></div>
         <div>Search <span><kbd>/</kbd></span></div>
         <div>Add link <span><kbd>N</kbd></span></div>
-        <div>Switch view <span><kbd>1</kbd>–<kbd>4</kbd></span></div>
+        <div>Switch view <span><kbd>1</kbd>–<kbd>5</kbd></span></div>
         <div>Edit focused link <span><kbd>E</kbd></span></div>
         <div>Favorite focused link <span><kbd>F</kbd></span></div>
         <div>Select all <span><kbd>Ctrl</kbd><kbd>A</kbd></span></div>
@@ -1825,6 +2222,9 @@ function bindEvents() {
       case 'select-all': selectAll(); break;
       case 'edit': openDrawer(id); break;
       case 'fav': setFavorite(selectionOr(id), !S.bm.get(id).favorite); break;
+      case 'visited': setRevisit(selectionOr(id), null); break;
+      case 'save-smart': saveSmartLine(); break;
+      case 'save-tab-groups': saveTabGroups(); break;
       case 'card-menu': cardMenu(actEl, id); break;
       case 'restore': restore(selectionOr(id)); break;
       case 'destroy': if (armConfirm(actEl, '')) destroy(selectionOr(id)); else toast('Click the trash icon again to delete forever'); break;
@@ -2028,7 +2428,7 @@ function bindEvents() {
     const card = document.activeElement?.closest?.('.card');
     const id = card?.dataset.id;
     if (e.key === 'n') { e.preventDefault(); addPopover($('.station-tools .btn.primary')); return; }
-    if (/^[1-4]$/.test(e.key) && S.route.kind !== 'settings') { setView(VIEWS[+e.key - 1].id); return; }
+    if (/^[1-5]$/.test(e.key) && S.route.kind !== 'settings') { setView(VIEWS[+e.key - 1].id); return; }
     if ((e.key === 'Delete' || e.key === 'Backspace') && (S.selected.size || id)) {
       e.preventDefault();
       const ids = S.selected.size ? [...S.selected] : [id];
@@ -2211,6 +2611,7 @@ function bindDrag() {
         if (kind === 'line' && (zone.dataset.id === dragLine || descendants(dragLine).has(zone.dataset.id))) return;
       } else if (!dragIds && !external(e)) return;
       if (!dragLine && kind === 'root') return;
+      if (!dragLine && zone.dataset.smart) return;
       e.preventDefault();
       clearDropMarks();
       if (dragLine && kind === 'line') zone.classList.add('drop-' + lineWhere(zone, e));
@@ -2253,7 +2654,12 @@ function bindDrag() {
     }
     if (!ids?.length) return;
     const kind = zone.dataset.drop;
-    if (kind === 'line') move(ids, zone.dataset.id);
+    if (kind === 'line') {
+      const color = S.col.get(S.bm.get(ids[0])?.collectionId)?.color;
+      const target = zone.dataset.id;
+      await move(ids, target);
+      fileAnimation(e.clientX, e.clientY, $(`#band .line-stop[data-id="${target}"]`), color);
+    }
     else if (kind === 'unsorted') move(ids, null);
     else if (kind === 'favorites') { await setFavorite(ids, true); toast(`${plural(ids.length, 'link')} added to Favorites`, { lead: favBullet(18) }); }
     else if (kind === 'trash') trash(ids);

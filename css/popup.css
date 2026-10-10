@@ -15,6 +15,20 @@ body { width: 380px; max-width: 100%; min-height: 200px; } /* narrows for a scro
 }
 .pop-band::after { content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 4px; background: var(--c); transition: background 0.3s; }
 .pop-band .bullet { --bs: 34px; transition: background 0.3s; }
+/* a new save: a train runs in along the stripe from the right and stops under the bullet; then "Saved to" shows */
+.pop-band.arrive::before { content: ''; position: absolute; z-index: 1; bottom: -8px; left: 25px; width: 12px; height: 12px; border-radius: 50%; background: var(--band-ink); box-shadow: 0 0 0 3px var(--c); animation: train-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pop-band.arrive .pop-note { animation: note-in 0.3s ease-out 0.55s both; }
+.pop-band.arrive .bullet { animation: bullet-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both; }
+@keyframes train-in { from { transform: translateX(330px); } }
+@keyframes note-in { from { opacity: 0; transform: translateY(3px); } }
+@keyframes bullet-in { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .pop-band.arrive::before { animation: train-fade 0.8s ease-out both; }
+  .pop-band.arrive .pop-note { animation: note-fade 0.3s ease-out both; }
+  .pop-band.arrive .bullet { animation: none; }
+  @keyframes train-fade { from { opacity: 0; } }
+  @keyframes note-fade { from { opacity: 0; } }
+}
 .pop-status { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .pop-note { font-size: 0.75rem; color: var(--band-ink-2); display: flex; align-items: center; gap: 5px; }
 .pop-note .ic { color: var(--band-ok); }
@@ -87,7 +101,7 @@ body { width: 380px; max-width: 100%; min-height: 200px; } /* narrows for a scro
 .pop-empty p { margin: 0 0 6px; color: var(--ink-2); }
 .toasts { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
 .toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px; background: var(--band); color: var(--band-ink); font-size: 0.8125rem; box-shadow: var(--shadow-3); white-space: nowrap; }
-.toast button { border: 0; border-radius: 999px; padding: 4px 10px; background: var(--band-active); color: var(--brand); font-weight: 700; }
+.toast button { border: 0; border-radius: 999px; padding: 4px 10px; background: var(--band-active); color: var(--band-brand); font-weight: 700; }
 .toast.out { opacity: 0; transition: 0.2s; }
 .thumb-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-3); }
 

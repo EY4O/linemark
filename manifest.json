@@ -32,7 +32,7 @@
     "bookmarks",
     "favicon"
   ],
-  "optional_permissions": ["tabs", "identity"],
+  "optional_permissions": ["tabs", "tabGroups", "identity"],
   "optional_host_permissions": ["<all_urls>"],
   "oauth2": {
     "client_id": "1037985269779-s7bdmv2c3t320ng3kv0cbtmjoorfr7hl.apps.googleusercontent.com",

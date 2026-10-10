@@ -35,6 +35,7 @@
   --brand-text: #c23c0b;
   --brand-soft: rgba(255, 90, 31, 0.13);
   --brand-hover: #ff6f3a;
+  --band-brand: #ff8a5c; /* Linemark orange lifted for text on the band (toast actions): 4.7:1 or better on every band tone */
   --fav: #f0a800;
   --warn-ink: #8a5a00;
   --warn-soft: rgba(240, 168, 0, 0.17);

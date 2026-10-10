@@ -62,6 +62,11 @@ const server = http.createServer(async (req, res) => {
   const send = (code, body, type = 'text/plain', extra = {}) => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*', ...extra }); res.end(body); };
   if (url.pathname === '/__test/moved') return send(302, '', 'text/plain', { Location: `http://localhost:${PORT}/__test/page1.html` });
   if (url.pathname === '/__test/forbidden') return send(403, 'Forbidden');
+  // A stand-in for the Internet Archive's availability API.
+  if (url.pathname === '/__archive') {
+    const has = (url.searchParams.get('url') || '').includes('gone');
+    return send(200, JSON.stringify({ archived_snapshots: has ? { closest: { available: true, url: 'http://web.archive.org/web/20240102030405/https://gone.example/', timestamp: '20240102030405' } } : {} }), 'application/json');
+  }
   if (url.pathname === '/__test/app.html') {
     // the real app.html, with absolute paths and the chrome.* stub injected ahead of the app module
     let html = fs.readFileSync(path.join(ROOT, 'app.html'), 'utf8');
@@ -158,7 +163,7 @@ const A11Y = String.raw`
   const fails = []; const seen = new Set(); const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (w.nextNode()) { const el = w.currentNode.parentElement; if (!w.currentNode.textContent.trim() || !el || seen.has(el) || !vis(el) || el.closest('[hidden], template, .ph')) continue; seen.add(el);
     const cs = getComputedStyle(el); const fg = parse(cs.color); const bg = bgOf(el); if (!fg || !bg) continue; const f = blend(fg, bg); const a = lum(f), b = lum(bg); const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-    const size = parseFloat(cs.fontSize); const large = size >= 24 || (size >= 18.66 && +cs.fontWeight >= 700); if (ratio < (large ? 3 : 4.5)) fails.push(el.className + ' ' + ratio.toFixed(2)); }
+    const size = parseFloat(cs.fontSize); const large = size >= 24 || (size >= 18.66 && +cs.fontWeight >= 700); if (ratio < (large ? 3 : 4.5)) fails.push((el.className || el.tagName + ' "' + el.textContent.trim().slice(0, 30) + '" in .' + (el.parentElement?.className || '')) + ' ' + ratio.toFixed(2)); }
   const inter = [...document.querySelectorAll('a[href], button, input, select, textarea, [role=button], [tabindex]')].filter(vis);
   const name = (el) => (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.getAttribute('placeholder') || (el.id && document.querySelector('label[for="' + el.id + '"]')?.textContent) || el.closest('label')?.textContent || '').trim();
   return { contrast: fails, unnamed: inter.filter((e) => !name(e)).map((e) => e.className), nested: document.querySelectorAll('a [role=button], a button, button button').length,
@@ -248,6 +253,21 @@ console.log('Model and import/export');
     assert(r.cover === '', 'cover pointing at a missing image should be cleared');
     assert(/^#[0-9a-f]{6}$/i.test(r.color), 'colour not sanitised: ' + r.color);
     assert(!r.bad, 'javascript: URL was restored');
+  });
+  await test('tab-group colours, revisit labels, and new fields survive a restore', async () => {
+    const r = await p.ev(`const M = await import('/js/model.js'); const IO = await import('/js/io.js'); const db = await import('/js/db.js');
+      const day = 86400000;
+      const backup = { app: 'linemark', version: 2, collections: [{ id: 'sm', name: 'Favourite type', color: '#2f5bd8', smart: true, query: 'is:fav #type' }, { id: 'l1', name: 'One', color: '#c2255c' }, { id: 'l2', name: 'Two', color: '#0b7a75' }],
+        bookmarks: [{ id: 'x1', url: 'https://example.com/x', title: 'X', collectionId: 'l1', tags: [], alsoOn: ['l2', 'l1', 'bad id!'], revisitAt: 1900000000000 }], media: [], texts: [] };
+      await IO.restoreBackup(JSON.stringify(backup));
+      const sm = await db.get('collections', 'sm'); const x = await db.get('bookmarks', 'x1');
+      return { colors: [M.tabGroupColor('#2f5bd8'), M.tabGroupColor('#c2255c'), M.tabGroupColor('#5c6773'), M.lineColorForGroup('cyan')],
+        labels: [M.revisitLabel(Date.now() - day), M.revisitLabel(M.revisitIn(1)), M.revisitLabel(M.revisitIn(7))],
+        smart: [sm.smart, sm.query], also: x.alsoOn, revisit: x.revisitAt };`);
+    assert(JSON.stringify(r.colors) === JSON.stringify(['blue', 'pink', 'grey', '#1c8fd6']), 'colours: ' + JSON.stringify(r.colors));
+    assert(JSON.stringify(r.labels) === JSON.stringify(['Due', 'Tomorrow', 'In a week']), 'labels: ' + JSON.stringify(r.labels));
+    assert(r.smart[0] === true && r.smart[1] === 'is:fav #type', 'smart line lost: ' + JSON.stringify(r.smart));
+    assert(JSON.stringify(r.also) === JSON.stringify(['l2']) && r.revisit === 1900000000000, 'link fields: ' + JSON.stringify(r));
   });
   await test('no page errors', async () => assert(!p.errors.length, p.errors.join('\n')));
   await p.close();
@@ -356,6 +376,119 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     assert(rows.length === 1 && rows[0].includes('Videos › Markiplier'), 'rows: ' + JSON.stringify(rows));
     await p.key('Escape');
     await p.key('Escape');
+  });
+  await test('a search can be kept as a smart line that fills itself', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return document.querySelector('.station-name')?.textContent === 'All bookmarks'`);
+    await p.ev(`const s = document.querySelector('#search'); s.value = '#type'; s.dispatchEvent(new Event('input', { bubbles: true }));`);
+    await p.until(`return !!document.querySelector('[data-act=save-smart]')`);
+    await p.ev(`document.querySelector('[data-act=save-smart]').click();`);
+    await p.until(`return document.querySelector('.station-name')?.textContent === '#type'`);
+    const r = await p.ev(`const db = await import('/js/db.js'); const c = (await db.getAll('collections')).find((x) => x.smart);
+      return [c?.query, document.querySelectorAll('#grid .card').length, document.querySelector('.line-stop.smart .count')?.textContent, !!document.querySelector('.smart-q')];`);
+    assert(r[0] === '#type' && r[1] === 1 && r[2] === '1' && r[3], 'smart line: ' + JSON.stringify(r));
+  });
+  await test('a link can also stop on another line (interchange)', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return document.querySelectorAll('#grid .card').length === 6`);
+    await p.ev(`document.querySelector('#grid .card[data-id=b3] [data-act=card-menu]').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=also]')`);
+    await p.ev(`document.querySelector('.menu [data-mi=also]').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-pick=c_rust]')`);
+    await p.ev(`document.querySelector('.menu [data-pick=c_rust]').click();`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).alsoOn?.includes('c_rust')`);
+    const r = await p.ev(`return [document.querySelector('.line-stop[data-id=c_rust] .count').textContent, !!document.querySelector('#grid .card[data-id=b3] .on-line.also')];`);
+    assert(r[0] === '2' && r[1], 'interchange: ' + JSON.stringify(r));
+    await p.ev(`location.hash = '#/c/c_rust';`);
+    await p.until(`return [...document.querySelectorAll('#grid .card')].map((c) => c.dataset.id).sort().join() === 'b3,b4'`);
+  });
+  await test('revisit puts a link on the Departures board, and Done takes it off', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return document.querySelectorAll('#grid .card').length === 6`);
+    await p.ev(`document.querySelector('#grid .card[data-id=b2] [data-act=card-menu]').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=revisit]')`);
+    await p.ev(`document.querySelector('.menu [data-mi=revisit]').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-days="1"]')`);
+    await p.ev(`document.querySelector('.menu [data-days="1"]').click();`);
+    await p.until(`return document.querySelector('#grid .card[data-id=b2] .due')?.textContent.includes('Tomorrow')`);
+    assert(!(await p.ev(`return !!document.querySelector('a.stop[href="#/departures"]')`)), 'the board shows before anything is due');
+    // make it due today, as it will be tomorrow
+    await p.ev(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b2'); b.revisitAt = Date.now() - 1000; await db.put('bookmarks', b); location.reload();`);
+    await p.until(`return document.querySelector('a.stop[href="#/departures"] .count')?.textContent === '1'`);
+    await p.ev(`location.hash = '#/departures';`);
+    await p.until(`return document.querySelector('#grid .card[data-id=b2] [data-act=visited]')`);
+    await p.ev(`document.querySelector('#grid .card[data-id=b2] [data-act=visited]').click();`);
+    await p.until(`return !document.querySelector('a.stop[href="#/departures"]')`);
+    assert(!(await p.ev(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b2')).revisitAt`)), 'revisit not cleared');
+  });
+  await test('a dead link can be pointed at its Internet Archive copy', async () => {
+    await p.ev(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b5'); b.url = 'https://gone.example/'; b.health = { state: 'dead', code: 404, checkedAt: Date.now() }; await db.put('bookmarks', b); location.hash = '#/all'; location.reload();`);
+    await p.until(`return !!document.querySelector('#grid .card[data-id=b5] [data-act=card-menu]')`);
+    await p.ev(`document.querySelector('#grid .card[data-id=b5] [data-act=card-menu]').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=archive]')`);
+    await p.ev(`document.querySelector('.menu [data-mi=archive]').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=use]')`);
+    assert(await p.ev(`return document.querySelector('.menu .label').textContent.includes('2024')`), 'archive date missing');
+    await p.ev(`document.querySelector('.menu [data-mi=use]').click();`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b5')).url.startsWith('https://web.archive.org/')`);
+    const r = await p.ev(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b5'); return [b.health.state, b.note.includes('Original address: https://gone.example/')];`);
+    assert(r[0] === 'ok' && r[1], 'archive: ' + JSON.stringify(r));
+  });
+  await test('a line opens as a Chrome tab group, and tab groups save as lines', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return !!document.querySelector('.line-stop[data-id=c_rust] .more')`);
+    await p.ev(`document.querySelector('.line-stop[data-id=c_rust] .more').click();`);
+    await p.until(`return !!document.querySelector('.menu [data-mi=tab-group]')`);
+    await p.ev(`document.querySelector('.menu [data-mi=tab-group]').click();`);
+    await p.until(`return window.__tabCalls.groups.length === 1 && window.__tabCalls.groups[0].title`);
+    const g = await p.ev(`return window.__tabCalls.groups[0];`);
+    // Rust holds its own link and the interchange added above; clay maps to Chrome's orange group
+    assert(g.title === 'Rust' && g.color === 'orange' && g.tabIds.length === 2, 'group: ' + JSON.stringify(g));
+    await p.ev(`location.hash = '#/settings';`);
+    await p.until(`return !!document.querySelector('[data-act=save-tab-groups]')`);
+    await p.ev(`document.querySelector('[data-act=save-tab-groups]').click();`);
+    await p.until(`const db = await import('/js/db.js'); return (await db.getAll('collections')).some((c) => c.name === 'Research trip')`);
+    const r = await p.ev(`const db = await import('/js/db.js'); const c = (await db.getAll('collections')).find((x) => x.name === 'Research trip'); return [c.color, (await db.getAll('bookmarks')).filter((b) => b.collectionId === c.id).map((b) => b.title).sort()];`);
+    assert(r[0] === '#1c8fd6' && JSON.stringify(r[1]) === JSON.stringify(['Tab A', 'Tab B']), 'saved group: ' + JSON.stringify(r));
+  });
+  await test('on-device AI suggests a line, tags and a summary, applied one at a time', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return !!document.querySelector('#grid .card[data-id=b1] .card-title')`);
+    await p.ev(`document.querySelector('#grid .card[data-id=b1] .card-title').focus();`);
+    await p.key('e', 'e');
+    await p.until(`return !!document.querySelector('#d-suggest')`);
+    await p.ev(`document.querySelector('#d-suggest').click();`);
+    await p.until(`return !!document.querySelector('.ai-out [data-ai=line]')`);
+    assert(await p.ev(`return document.querySelector('.ai-out [data-ai=line]').textContent.includes('New line: Design › Interfaces')`), 'line suggestion');
+    await p.ev(`document.querySelector('.ai-out [data-ai=line]').click();`);
+    await p.until(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b1'); const c = await db.get('collections', b.collectionId); return c?.name === 'Interfaces' && c.parentId === 'c_design';`);
+    await p.until(`return !!document.querySelector('.ai-out [data-t=layout]')`);
+    await p.ev(`document.querySelector('.ai-out [data-t=layout]').click();`);
+    await p.until(`return !!document.querySelector('.ai-out [data-ai=summary]')`);
+    await p.ev(`document.querySelector('.ai-out [data-ai=summary]').click();`);
+    await p.until(`const db = await import('/js/db.js'); const b = await db.get('bookmarks', 'b1'); return b.tags.includes('layout') && b.excerpt === 'A practical guide to designing interfaces.';`);
+    await p.key('Escape');
+  });
+  await test('the network map draws lines, branches, stations and interchanges', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return !!document.querySelector('[data-view=map]')`);
+    await p.ev(`document.querySelector('[data-view=map]').click();`);
+    await p.until(`return !!document.querySelector('svg.netmap')`);
+    const r = await p.ev(`const live = document.querySelectorAll('svg.netmap .map-stop').length;
+      return [live, document.querySelectorAll('svg.netmap .map-stop.inter').length, document.querySelectorAll('svg.netmap .stem').length, [...document.querySelectorAll('svg.netmap .lb-name')].map((t) => t.textContent)];`);
+    // b3 stops on Design and (as an interchange) on Rust, so it is drawn twice
+    assert(r[0] >= 6 && r[1] >= 2 && r[2] >= 2, 'map: ' + JSON.stringify(r));
+    assert(r[3].includes('Design') && r[3].includes('Rust') && r[3].includes('Unsorted'), 'rows: ' + JSON.stringify(r[3]));
+    await p.ev(`document.querySelector('[data-view=cards]').click();`);
+    await p.until(`return !!document.querySelector('#grid .card')`);
+  });
+  await test('moving down the band brings cards in from below, and back up from above', async () => {
+    await p.ev(`location.hash = '#/all';`);
+    await p.until(`return document.querySelector('.station-name')?.textContent === 'All bookmarks'`);
+    await p.ev(`document.querySelector('.line-stop[data-id=c_read] .stop-link').click();`);
+    await p.until(`return document.querySelector('#grid')?.classList.contains('enter-down')`);
+    await p.ev(`document.querySelector('a.stop[href="#/all"]').click();`);
+    await p.until(`return document.querySelector('#grid')?.classList.contains('enter-up')`);
   });
   await test("a sub-line's current row leaves its parent's stem unbroken", async () => {
     await p.ev(`document.querySelector('.line-stop[data-id=c_rust] .stop-link').click();`);
