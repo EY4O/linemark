@@ -61,9 +61,10 @@ export function closeMenu() {
 export function isMenuOpen() { return !!openMenuEl; }
 
 // anchor: an element or {x, y}. build(menuEl, close) fills the menu.
-export function openMenu(anchor, build, { align = 'start', width } = {}) {
+// focus: false keeps focus where it is (suggestion lists under a text field).
+export function openMenu(anchor, build, { align = 'start', width, focus = true } = {}) {
   closeMenu();
-  menuReturn = anchor instanceof Element ? anchor : document.activeElement;
+  menuReturn = !focus || !(anchor instanceof Element) ? document.activeElement : anchor;
   const m = document.createElement('div');
   m.className = 'menu';
   m.setAttribute('role', 'menu');
@@ -110,8 +111,7 @@ export function openMenu(anchor, build, { align = 'start', width } = {}) {
     window.removeEventListener('resize', closeMenu);
     document.removeEventListener('scroll', onScroll, true);
   };
-  const first = m.querySelector('input, .menu-item');
-  first?.focus({ preventScroll: true });
+  if (focus) m.querySelector('input, .menu-item')?.focus({ preventScroll: true });
   return m;
 }
 

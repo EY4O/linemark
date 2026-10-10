@@ -304,6 +304,27 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     await p.key('Escape');
     assert(await p.ev(`return document.activeElement.closest('.card')?.dataset.id === 'b3'`), 'focus did not return to the card');
   });
+  await test('typing a tag letter by letter, with suggestions open, makes one tag', async () => {
+    await p.ev(`document.querySelector('#grid .card[data-id=b3] .card-title').focus();`);
+    await p.key('e', 'e');
+    await p.until(`return !!document.querySelector('#d-tag-input')`);
+    await p.ev(`document.querySelector('#d-tag-input').focus();`);
+    await p.key('r', 'r');
+    assert(await p.ev(`return !!document.querySelector('.menu') && document.activeElement.id === 'd-tag-input'`), 'suggestions took focus from the field');
+    for (const ch of 'eading') await p.key(ch, ch);
+    await p.key('Enter');
+    await p.until(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).tags.includes('reading')`);
+    const tags = await p.ev(`const db = await import('/js/db.js'); return (await db.get('bookmarks', 'b3')).tags`);
+    assert(JSON.stringify(tags) === '["ui","reading"]', 'tags: ' + JSON.stringify(tags));
+    await p.key('Escape');
+  });
+  await test("a sub-line's current row leaves its parent's stem unbroken", async () => {
+    await p.ev(`document.querySelector('.line-stop[data-id=c_rust] .stop-link').click();`);
+    await p.until(`return !!document.querySelector('.line-stop[data-id=c_rust][data-current]')`);
+    const gap = await p.ev(`const row = document.querySelector('.line-stop[data-id=c_rust]'); const kids = row.closest('.line-children'); return row.getBoundingClientRect().left - kids.getBoundingClientRect().left;`);
+    assert(gap >= 5, 'current row starts ' + gap + 'px from the stem; it covers it');
+    await p.shot('sidebar-sub-line-current');
+  });
   await test('narrow window (320px) has no overflow', async () => {
     await cdp('Emulation.setDeviceMetricsOverride', { width: 320, height: 700, deviceScaleFactor: 1, mobile: true }, p.sessionId);
     await sleep(300);

@@ -2,7 +2,7 @@
 import * as db from './db.js';
 import * as M from './model.js';
 import { icon } from './icons.js';
-import { esc, $, $$, debounce, toast, openMenu, menuItem, armConfirm, relTime } from './ui.js';
+import { esc, $, $$, debounce, toast, openMenu, closeMenu, menuItem, armConfirm, relTime } from './ui.js';
 import { lineBulletHTML } from './bullets.js';
 
 let bm = null;          // the bookmark being saved/edited
@@ -179,13 +179,12 @@ function wireTags() {
   const suggest = () => {
     const q = input.value.trim().replace(/^#/, '').toLowerCase();
     const list = q ? [...allTags].filter((t) => t.includes(q) && !bm.tags.includes(t)).slice(0, 5) : [];
-    if (!list.length) { document.querySelector('.menu')?.remove(); return; }
+    if (!list.length) { closeMenu(); return; }
     openMenu(box, (m, close) => {
       m.innerHTML = list.map((t) => menuItem({ label: '#' + t, attrs: `data-tag="${esc(t)}"` })).join('');
       m.addEventListener('mousedown', (e) => e.preventDefault());
       m.addEventListener('click', (e) => { const t = e.target.closest('[data-tag]')?.dataset.tag; if (t) { input.value = ''; close(); commit(t); input.focus(); } });
-    });
-    input.focus();
+    }, { focus: false });
   };
   box.addEventListener('click', (e) => {
     const rm = e.target.closest('[data-t]');
@@ -197,10 +196,14 @@ function wireTags() {
     suggest();
   });
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && input.value.trim()) { e.preventDefault(); e.stopPropagation(); const v = input.value; input.value = ''; commit(v); document.querySelector('.menu')?.remove(); }
+    if (e.key === 'Enter' && input.value.trim()) { e.preventDefault(); e.stopPropagation(); const v = input.value; input.value = ''; commit(v); closeMenu(); }
     if (e.key === 'Backspace' && !input.value && bm.tags.length) { bm.tags.pop(); persist(); redraw(); }
   });
-  input.addEventListener('blur', () => { if (input.value.trim()) { const v = input.value; input.value = ''; commit(v); } });
+  // Leaving the field commits what was typed, unless focus moved into the suggestion list.
+  input.addEventListener('blur', (e) => {
+    if (e.relatedTarget?.closest?.('.menu')) return;
+    if (input.value.trim()) { const v = input.value; input.value = ''; closeMenu(); commit(v); }
+  });
 }
 
 function pickLine(anchor) {

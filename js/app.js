@@ -1434,9 +1434,8 @@ function wireTagInput(b) {
     openMenu($('#d-tags'), (m) => {
       m.innerHTML = list.map((t) => menuItem({ label: '#' + t, attrs: `data-t="${esc(t)}"` })).join('');
       m.addEventListener('mousedown', (e) => e.preventDefault());
-      m.addEventListener('click', (e) => { const t = e.target.closest('[data-t]')?.dataset.t; if (t) { closeMenu(); commit(t); } });
-    });
-    input.focus();
+      m.addEventListener('click', (e) => { const t = e.target.closest('[data-t]')?.dataset.t; if (t) { input.value = ''; closeMenu(); commit(t); } });
+    }, { focus: false });
   };
   input.addEventListener('input', () => {
     if (input.value.includes(',')) { const v = input.value; input.value = ''; closeMenu(); commit(v); return; }
@@ -1446,7 +1445,11 @@ function wireTagInput(b) {
     if (e.key === 'Enter') { e.preventDefault(); const v = input.value; input.value = ''; closeMenu(); commit(v); }
     if (e.key === 'Backspace' && !input.value && b.tags.length) { b.tags.pop(); putBookmarks([b]).then(() => { renderDrawer(); $('#d-tag-input')?.focus(); renderBand(); refreshCard(b.id); }); }
   });
-  input.addEventListener('blur', () => { if (input.value.trim()) { const v = input.value; input.value = ''; commit(v); } });
+  // Leaving the field commits what was typed, unless focus moved into the suggestion list.
+  input.addEventListener('blur', (e) => {
+    if (e.relatedTarget?.closest?.('.menu')) return;
+    if (input.value.trim()) { const v = input.value; input.value = ''; closeMenu(); commit(v); }
+  });
   $('#d-tags').addEventListener('click', (e) => { if (e.target.id === 'd-tags') input.focus(); });
 }
 
