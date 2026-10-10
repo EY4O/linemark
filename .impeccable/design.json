@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-09T21:44:48.351Z",
+  "generatedAt": "2026-10-10T06:53:46.000Z",
   "title": "Design System: Linemark",
   "extensions": {
     "colorMeta": {
@@ -659,6 +659,14 @@
       }
     },
     "typographyMeta": {
+      "month": {
+        "displayName": "Month (Wrapped)",
+        "purpose": "Wrapped only. Journey month name set twice: 900/62% width in rule-strong behind (aria-hidden), and 220/125% width at 0.62em in ink over it as the h2."
+      },
+      "poster": {
+        "displayName": "Poster (Wrapped)",
+        "purpose": "Wrapped only. Summary count; Journey start/end year and stop count at 75% width, 0.95, -0.03em."
+      },
       "display": {
         "displayName": "Station Name",
         "purpose": "Station sign name; 22px under 860px."
@@ -885,6 +893,16 @@
         "name": "cover-host",
         "value": "clamp(14px, calc(var(--card-w) * 0.073), 28px)",
         "purpose": "Placeholder host name in the grid."
+      },
+      {
+        "name": "poster",
+        "value": "clamp(4rem, 8vw, 6rem)",
+        "purpose": "Wrapped only: Summary count, Journey start/end year and stop count."
+      },
+      {
+        "name": "month",
+        "value": "clamp(5rem, 13cqw, 10.5rem)",
+        "purpose": "Wrapped only: Journey month name (ghost and fore)."
       }
     ],
     "radiusScale": {
@@ -1084,7 +1102,7 @@
       },
       {
         "name": "The On-Ramp Rule",
-        "body": "Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider.",
+        "body": "Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider, and Wrapped's Poster and Month steps.",
         "section": "typography"
       },
       {

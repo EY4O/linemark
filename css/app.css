@@ -261,9 +261,13 @@ body { overflow: hidden; }
   white-space: nowrap;
   overflow: hidden;
 }
-.station-path button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; padding: 0; color: inherit; font-weight: 600; }
+.station-path a { position: relative; display: inline-flex; align-items: center; gap: 5px; color: inherit; font-weight: 600; text-decoration: none; border-radius: 4px; }
 .station-path .bullet { --bs: 14px; }
-.station-path button:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.station-path a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+@media (pointer: coarse) {
+  .station-path { overflow-x: clip; overflow-y: visible; }
+  .station-path a::before { content: ''; position: absolute; inset: -20px -4px -6px; }
+}
 .station-path .ic { opacity: 0.6; }
 .station-name {
   margin: 1px 0 0;
@@ -1052,8 +1056,8 @@ body { overflow: hidden; }
 .wrapped { max-width: 960px; padding-bottom: 40px; }
 .wrap-years { display: flex; gap: 6px; margin-bottom: 18px; }
 .wrap-hero { padding: 6px 0 10px; }
-.wrap-big { margin: 0; font-size: clamp(4rem, 9vw, 7rem); line-height: 0.92; font-weight: 800; font-stretch: 78%; letter-spacing: -0.035em; color: var(--ink); }
-.wrap-lede { margin: 8px 0 0; font-size: 1.25rem; color: var(--ink-2); }
+.wrap-big { margin: 0; font-size: clamp(4rem, 8vw, 6rem); line-height: 0.92; font-weight: 800; font-stretch: 78%; letter-spacing: -0.035em; color: var(--ink); }
+.wrap-lede { margin: 8px 0 0; font-size: 1.375rem; color: var(--ink-2); }
 .wrap-note { margin: 4px 0 0; color: var(--ink-2); }
 .year-line { display: block; width: 100%; max-width: 880px; margin: 18px 0 6px; overflow: visible; }
 .year-line .track { stroke: var(--brand); stroke-width: 8; stroke-linecap: round; fill: none; }
@@ -1066,8 +1070,7 @@ body { overflow: hidden; }
 /* on a phone the year line scales to about 40%, so its labels are set larger in the drawing to stay readable */
 @media (max-width: 600px) { .year-line .m { font-size: 26px; } .year-line .n { font-size: 30px; } .year-line .track { stroke-width: 12; } }
 .wrap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 22px; }
-.wrap-card { position: relative; overflow: hidden; padding: 22px 20px 20px; border: 1px solid var(--rule); border-radius: var(--r-2); background: var(--surface); }
-.wrap-card::before { content: ''; position: absolute; inset: 0 0 auto; height: 4px; background: var(--brand); }
+.wrap-card { padding: 18px 20px 20px; border: 1px solid var(--rule); border-radius: var(--r-2); background: var(--surface); }
 .wrap-card h2 { margin: 0 0 12px; font-size: 1.125rem; font-weight: 740; font-stretch: 85%; }
 .wrap-lines, .wrap-sites { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .wrap-lines li, .wrap-sites li { display: flex; align-items: center; gap: 10px; }
@@ -1076,7 +1079,7 @@ body { overflow: hidden; }
 .wrap-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .wrap-facts { margin: 0; display: grid; gap: 10px; }
 .wrap-facts div { display: grid; grid-template-columns: 48px 1fr; align-items: baseline; gap: 10px; }
-.wrap-facts dt { font-size: 1.75rem; font-weight: 800; font-stretch: 80%; color: var(--ink); }
+.wrap-facts dt { font-size: 1.875rem; font-weight: 800; font-stretch: 80%; color: var(--ink); }
 .wrap-facts dd { margin: 0; color: var(--ink-2); }
 .wrap-first { display: flex; flex-direction: column; gap: 4px; margin: 0; }
 .wrap-first span { color: var(--ink-3); font-size: 0.875rem; }
@@ -1107,22 +1110,23 @@ body { overflow: hidden; }
 .wrap-bar .wrap-years { margin: 0; }
 .wrapped.journey-mode { max-width: none; }
 .jr-wrap { position: relative; border-block: 1px solid var(--rule); }
-.jr-hud { position: absolute; z-index: 2; left: 0; top: 16px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0; pointer-events: none; color: var(--ink-2); font-size: 0.8125rem; font-weight: 560; }
-.jr-hud b { color: var(--ink); font-size: 1rem; font-weight: 740; font-stretch: 87.5%; }
+.jr-hud { position: absolute; z-index: 2; left: 0; top: 16px; right: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0; pointer-events: none; color: var(--ink-2); font-size: 0.8125rem; font-weight: 560; }
+.jr-hud b { color: var(--ink); font-size: 1.0625rem; font-weight: 740; font-stretch: 87.5%; }
 .journey { container-type: inline-size; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
 .journey:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 /* the dot rides at 36% across; the padding lets the first and last stops reach it */
-.jr-track { --top: 72px; --ln: 336px; --tile: 300px; position: relative; display: flex; align-items: flex-start; width: max-content; height: 620px; padding: 0 64cqw 0 36cqw; }
+/* heights follow the text size: the month station sits among the stops' own (which drop as their captions grow), and
+   month names start below the lowest of those, so larger text makes the ride taller instead of crossing it */
+.jr-track { --top: calc(48px + 1.5rem); --tile: 300px; --img: calc(var(--tile) * 2 / 3); --ln: calc(var(--top) + 74px + var(--img) + 5rem); position: relative; display: flex; align-items: flex-start; width: max-content; min-height: calc(var(--ln) + 104px + 12rem); padding: 0 64cqw 0 36cqw; }
 .jr-svg { position: absolute; left: 0; top: 0; z-index: 1; overflow: visible; pointer-events: none; }
 .jr-node { position: absolute; left: 0; top: var(--ln); width: 0; height: 0; }
 .jr-stop .jr-node { position: static; display: block; margin-top: 30px; }
-.jr-start, .jr-end { position: relative; flex: none; width: 300px; height: 100%; }
-.jr-start p, .jr-end p { position: absolute; left: 0; top: 110px; margin: 0; font-size: 4.5rem; font-weight: 800; font-stretch: 75%; line-height: 0.95; letter-spacing: -0.03em; color: var(--ink); }
-.jr-end p { font-size: 3rem; }
-.jr-start p span, .jr-end p span { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 1rem; font-weight: 620; font-stretch: 100%; letter-spacing: 0; color: var(--brand-text); }
+.jr-start, .jr-end { position: relative; flex: none; align-self: stretch; min-width: 300px; padding: calc(var(--top) + 38px) 56px 0 0; }
+.jr-start p, .jr-end p { margin: 0; font-size: clamp(4rem, 8vw, 6rem); font-weight: 800; font-stretch: 75%; line-height: 0.95; letter-spacing: -0.03em; white-space: nowrap; color: var(--ink); }
+.jr-start p span, .jr-end p span { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 1.0625rem; white-space: normal; font-weight: 620; font-stretch: 100%; letter-spacing: 0; color: var(--brand-text); }
 .jr-end p span { color: var(--ink-2); }
-.jr-month { position: relative; flex: none; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; padding: 0 64px 40px 0; }
-.jr-meta { margin: 0 0 6px 6px; color: var(--ink-2); font-size: 0.875rem; font-weight: 620; }
+.jr-month { position: relative; flex: none; align-self: stretch; display: flex; flex-direction: column; padding: calc(var(--ln) + 104px) 64px 40px 0; }
+.jr-meta { margin: 10px 0 0 6px; color: var(--ink-2); font-size: 0.875rem; font-weight: 620; }
 /* the month, said twice: black condensed behind, light and wide over it */
 .jr-name { position: relative; margin: 0; font-size: clamp(5rem, 13cqw, 10.5rem); line-height: 0.82; letter-spacing: -0.04em; white-space: nowrap; }
 .jr-ghost { display: block; color: var(--rule-strong); font-weight: 900; font-stretch: 62%; }
@@ -1134,7 +1138,7 @@ body { overflow: hidden; }
 .jr-stop:hover .jr-img { transform: translateY(-4px); }
 .jr-stop:focus-visible { outline: none; }
 .jr-stop:focus-visible .jr-img { outline: 2px solid var(--brand); outline-offset: 3px; }
-.jr-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em; font-size: 1rem; line-height: 1.3; font-weight: 680; }
+.jr-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em; font-size: 1.0625rem; line-height: 1.3; font-weight: 680; }
 .jr-stop:hover .jr-title { text-decoration: underline; text-underline-offset: 3px; }
 .jr-sub { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--ink-2); font-size: 0.8125rem; }
 .jr-sub > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1157,9 +1161,7 @@ body { overflow: hidden; }
   }
 }
 @media (max-width: 600px) {
-  .jr-track { --top: 84px; --ln: 300px; --tile: 220px; height: 560px; padding: 0 84cqw 0 16cqw; }
-  .jr-start p, .jr-end p { font-size: 3.25rem; }
-  .jr-name { font-size: 5.5rem; }
+  .jr-track { --top: calc(60px + 1.5rem); --tile: 220px; padding: 0 84cqw 0 16cqw; }
 }
 @media (prefers-reduced-motion: reduce) {
   .jr-dot .halo { animation: none; opacity: 0.25; }

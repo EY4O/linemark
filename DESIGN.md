@@ -44,6 +44,20 @@ colors:
   line-slate: "#5c6773"
   line-rose: "#e0607e"
 typography:
+  month:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(5rem, 13cqw, 10.5rem)"
+    fontWeight: 900
+    lineHeight: 0.82
+    letterSpacing: "-0.04em"
+    fontVariation: "'wdth' 62"
+  poster:
+    fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(4rem, 8vw, 6rem)"
+    fontWeight: 800
+    lineHeight: 0.92
+    letterSpacing: "-0.035em"
+    fontVariation: "'wdth' 78"
   display:
     fontFamily: "Archivo, Segoe UI Variable Text, Segoe UI, system-ui, sans-serif"
     fontSize: "30px"
@@ -362,6 +376,8 @@ Dark theme keeps the same roles with re-tuned values (see the sidecar); the band
 **Sizing:** every size is set in rem on the browser's root, so Chrome's default font-size setting scales the whole interface. The px values below are the sizes at the default 16px root (body is 0.875rem = 14px, a deliberate dense step for an operate surface). Text-bearing controls use minimum heights, never fixed ones, so larger text grows a control instead of clipping it. Bullet letters are the one exception: they scale with the bullet, not the root, because a bullet is a sign glyph.
 
 ### Hierarchy
+- **Month** (Wrapped only; 900, `clamp(5rem, 13cqw, 10.5rem)`, 0.82, -0.04em, 62% width): the Journey's month name, set twice. The condensed black echo in rule-strong sits behind and is aria-hidden; over it the same name light and wide (220, 125% width, 0.62em, -0.02em) in ink is the h2.
+- **Poster** (Wrapped only; 800, `clamp(4rem, 8vw, 6rem)`, 0.92, -0.035em, 78% width): the Summary count. The Journey's start and end year and stop count use it at 75% width, 0.95 and -0.03em.
 - **Display** (760, 30px, 1.08, 85% width): the station name in the station sign. 22px under 860px.
 - **Headline** (760, 26px, 1.15, 85% width): empty-state headings, balanced wrap.
 - **Wordmark** (760, 22px, 1, 87.5% width): "Linemark" beside the brand bullet in the band.
@@ -383,7 +399,7 @@ Dark theme keeps the same roles with re-tuned values (see the sidecar); the band
 
 **The Tabular Count Rule.** Every count, date and number uses tabular figures so columns of counts align, including the status codes in health chips.
 
-**The On-Ramp Rule.** Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider.
+**The On-Ramp Rule.** Sizes come from the ramp above; a new element takes the nearest step rather than a new size. The only fluid sizes are the cover clamps tied to the card-size slider, and Wrapped's Poster and Month steps.
 
 ## Layout
 
@@ -509,8 +525,8 @@ The fifth view draws the listed links as a transit map. The left column is the s
 
 ### Linemark Wrapped
 Settings → Library → Linemark Wrapped, with a **Summary | Journey** switch (a `.seg`, remembered).
-- **Summary:** a poster-sized count (`clamp(4rem, 9vw, 7rem)` at 800, 78% width), a year line of twelve month stations sized by saves (busiest filled orange, quiet months grey), and cards with a 4px brand stripe clipped inside the top edge. **Save as image** draws a 1080×1350 PNG on the signage-black band, whatever the theme.
-- **Journey:** the year as one ride, scrolling sideways in its own frame. Each month is said twice: a condensed black name (900, 62% width) in rule-strong behind, drifting with the scroll, and the same name light and wide (220, 125% width) in ink over it. Each page saved is a stop: its cover (greyed until reached), title, and line path. A dotted ink-3 line runs level and takes changes in height on 45° diagonals, metro style; a white dot rides it at 36% across (16% on phones), filling the line behind it in each stop's line colour. A HUD names the month, the line and the count ridden. A vertical wheel rides the line until either end, then the page scrolls on. These poster sizes belong to Wrapped only; the app keeps the ramp above.
+- **Summary:** a count in Poster (`clamp(4rem, 8vw, 6rem)` at 800, 78% width), a year line of twelve month stations sized by saves (busiest filled orange, quiet months grey), and plain cards: surface, 1px rule border, 10px radius, no stripe. **Save as image** draws a 1080×1350 PNG on the signage-black band, whatever the theme.
+- **Journey:** the year as one ride, scrolling sideways in its own frame. Each month is said twice in Month: a condensed black name (900, 62% width) in rule-strong behind, drifting with the scroll and aria-hidden, and the same name light and wide (220, 125% width) in ink over it, which is the h2. The month's save count sits under the name. Each page saved is a stop: its cover (greyed until reached), title, and line path. A dotted ink-3 line runs level and takes changes in height on 45° diagonals, metro style; a white dot rides it at 36% across (16% on phones), filling the line behind it in each stop's line colour. A HUD names the month, the line and the count ridden. The track's heights are calc() with rem, so larger text grows the ride instead of overlapping it. Covers load only as they come within about 1200px of the view. Riding is native sideways scrolling: trackpad, Shift+wheel, the scrollbar, or arrow keys with the region focused; a plain vertical wheel scrolls the page. These poster sizes belong to Wrapped only; the app keeps the ramp above.
 
 ### Interchanges, departures, smart lines
 - **Interchange:** a card shows its further lines as extra cover bullets, overlapping the main bullet to the right (as a transfer station's joined bullets); headlines show them as overlapped small bullets.

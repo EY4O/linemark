@@ -472,7 +472,7 @@ function renderStation() {
   $('#station-id').innerHTML = `
     ${info.bullet}
     <div class="station-text">
-      ${info.path.length ? `<nav class="station-path" aria-label="Parent lines">${info.path.map((p) => `<button data-href="${p.hash}">${p.bullet}${esc(p.label)}</button>`).join(icon('chevronRight', 12))}</nav>` : ''}
+      ${info.path.length ? `<nav class="station-path" aria-label="Parent lines">${info.path.map((p) => `<a href="${p.hash}">${p.bullet}${esc(p.label)}</a>`).join(icon('chevronRight', 12))}</nav>` : ''}
       ${arriving && !reducedMotion()
         ? `<h1 class="station-name flap" aria-label="${esc(info.name)}">${[...info.name].map((ch, i) => `<span aria-hidden="true" style="--i:${Math.min(i, 24)}">${esc(ch)}</span>`).join('')}</h1>`
         : `<h1 class="station-name">${esc(info.name)}</h1>`}
@@ -747,7 +747,6 @@ function renderWrapped() {
   const actions = `<div class="wrap-actions"><button class="btn primary" data-act="wrap-export">${icon('download', 16)} Save as image</button><span class="hint">A picture of your year, made on your computer. Share it, or keep it.</span></div>`;
   if (journey) {
     content.innerHTML = `<div class="wrapped journey-mode">${bar}${journeyHTML(d)}${actions}</div>`;
-    hydrate(content);
     wireJourney();
     return;
   }
@@ -800,11 +799,12 @@ function journeyHTML(d) {
     if (!bs.length) return '';
     const shown = bs.slice(0, JR.perMonth);
     const lead = S.col.get(shown[0].collectionId);
-    const head = `<section class="jr-month" aria-label="${esc(long(m))}: ${plural(bs.length, 'save')}">
+    // the month is a heading (the light name); its black echo behind is decoration
+    const head = `<div class="jr-month">
         <i class="jr-node" data-c="${fileable(lead) ? lead.color : ''}" data-month="${esc(long(m))}"></i>
-        <p class="jr-meta tnum">${String(m + 1).padStart(2, '0')} · ${d.year} — ${plural(bs.length, 'save')}${m === d.busiestMonth && bs.length > 1 ? ', the busiest month' : ''}</p>
-        <h3 class="jr-name" aria-hidden="true"><span class="jr-ghost">${esc(long(m))}</span><span class="jr-fore">${esc(long(m))}</span></h3>
-      </section>`;
+        <h2 class="jr-name"><span class="jr-ghost" aria-hidden="true">${esc(long(m))}</span><span class="jr-fore">${esc(long(m))}</span></h2>
+        <p class="jr-meta tnum">${plural(bs.length, 'save')}${m === d.busiestMonth && bs.length > 1 ? ', the busiest month' : ''}</p>
+      </div>`;
     const stops = shown.map((b) => {
       const c = S.col.get(b.collectionId);
       const line = fileable(c) ? c : null;
@@ -824,7 +824,7 @@ function journeyHTML(d) {
       <div class="journey" tabindex="0" role="region" aria-label="Your ${d.year}, month by month. Scroll sideways to ride it.">
         <div class="jr-track">
           <svg class="jr-svg" aria-hidden="true"></svg>
-          <div class="jr-start"><i class="jr-node" data-c="var(--brand)"></i><p class="tnum">${d.year}<span>Scroll to ride the year ${icon('arrowRight', 16)}</span></p></div>
+          <div class="jr-start"><i class="jr-node" data-c="var(--brand)"></i><p class="tnum">${d.year}<span>Scroll sideways to ride the year ${icon('arrowRight', 16)}</span></p></div>
           ${blocks}
           <div class="jr-end"><i class="jr-node" data-c="var(--brand)"></i><p class="tnum">${plural(list.length, 'stop')}<span>End of the line, for now.</span></p></div>
         </div>
@@ -891,20 +891,16 @@ function wireJourney() {
     hud.n.textContent = `${passed} of ${total}`;
   }
   const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
-  // a vertical wheel rides the line while there is line left; at either end the page scrolls on as usual
-  const onWheel = (e) => {
-    if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-    const max = sc.scrollWidth - sc.clientWidth;
-    if ((e.deltaY > 0 && sc.scrollLeft >= max - 1) || (e.deltaY < 0 && sc.scrollLeft <= 0)) return;
-    e.preventDefault();
-    sc.scrollLeft += e.deltaY * (e.deltaMode === 1 ? 32 : 1);
-  };
   sc.addEventListener('scroll', onScroll, { passive: true });
-  sc.addEventListener('wheel', onWheel, { passive: false });
   const ro = new ResizeObserver(() => build());
   ro.observe(sc);
+  // a year can hold hundreds of stops: each cover is read from storage only as it comes within a screen or so
+  const near = new IntersectionObserver((es) => {
+    for (const e of es) if (e.isIntersecting) { near.unobserve(e.target); hydrate(e.target); }
+  }, { root: sc, rootMargin: '0px 1200px' });
+  sc.querySelectorAll('.jr-stop').forEach((s) => near.observe(s));
   document.fonts.ready.then(() => sc.isConnected && build());
-  jrStop = () => { ro.disconnect(); cancelAnimationFrame(raf); jrStop = null; };
+  jrStop = () => { ro.disconnect(); near.disconnect(); cancelAnimationFrame(raf); jrStop = null; };
 }
 
 // The image: a signage-black card with the year line in Linemark orange, drawn on a canvas.
@@ -2467,10 +2463,6 @@ function bindEvents() {
 
   document.addEventListener('click', async (e) => {
     const t = e.target;
-
-    // station breadcrumb
-    const hrefBtn = t.closest('[data-href]');
-    if (hrefBtn) { go(hrefBtn.dataset.href); return; }
 
     // view / type / theme toggles
     const v = t.closest('[data-view]');
