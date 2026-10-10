@@ -195,7 +195,7 @@ function parseQuery(q) {
 // The non-text parts of a search: #tags, site:, type:, is:fav, has:note, has:highlights, is:broken.
 function passesFilters(b, q) {
   return q.tags.every((t) => b.tags.some((x) => x.startsWith(t))) &&
-    q.sites.every((s) => M.hostOf(b.url).includes(s)) &&
+    q.sites.every((s) => M.hostOf(b.url).includes(s) || M.hostOf(siteUrl(b)).includes(s)) &&
     (!q.types.length || q.types.includes(b.type)) &&
     (!q.fav || b.favorite) &&
     (!q.note || b.note) &&
@@ -315,7 +315,7 @@ const SORTS = {
   oldest: (a, b) => a.createdAt - b.createdAt,
   updated: (a, b) => b.updatedAt - a.updatedAt,
   title: (a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
-  site: (a, b) => M.hostOf(a.url).localeCompare(M.hostOf(b.url)) || b.createdAt - a.createdAt,
+  site: (a, b) => M.hostOf(siteUrl(a)).localeCompare(M.hostOf(siteUrl(b))) || b.createdAt - a.createdAt,
 };
 
 const HEALTH_RANK = { dead: 0, moved: 1, warn: 2, ok: 3 };
@@ -569,10 +569,14 @@ function renderSubbar() {
 
 // ======================= content =======================
 
+// The site a link belongs to: its own, or for a saved image, the page it was saved from (an image server's name
+// says nothing about where it was found).
+const siteUrl = (b) => b.fromUrl || b.url;
+
 function coverHTML(b, col) {
-  const host = M.hostOf(b.url);
+  const host = M.hostOf(siteUrl(b));
   const color = col?.color || M.colorFor(host);
-  const ph = `<div class="ph" style="--pc:${color};--pi:${M.bulletInk(color)}"><span class="fav-tile">${favImg(b.url, 24) || esc((host[0] || '?').toUpperCase())}</span><span class="ph-host">${esc(host || b.url).replace(/\./g, '.<wbr>')}</span></div>`;
+  const ph = `<div class="ph" style="--pc:${color};--pi:${M.bulletInk(color)}"><span class="fav-tile">${favImg(siteUrl(b), 24) || esc((host[0] || '?').toUpperCase())}</span><span class="ph-host">${esc(host || b.url).replace(/\./g, '.<wbr>')}</span></div>`;
   if (b.cover?.startsWith('media:')) return `<img alt="" data-media="${esc(b.cover.slice(6))}" decoding="async">` + `<template>${ph}</template>`;
   // A cover that still points at a website is never loaded from it; it shows the placeholder until stored.
   return ph;
@@ -593,10 +597,10 @@ function healthChip(b) {
 
 function cardHTML(b) {
   const col = S.col.get(b.collectionId);
-  const host = M.hostOf(b.url);
+  const host = M.hostOf(siteUrl(b));
   const sel = S.selected.has(b.id);
   const trash = !!b.trashedAt;
-  const fav = favImg(b.url, 16, 'fav') || `<span class="fav-fallback">${esc((host[0] || '?').toUpperCase())}</span>`;
+  const fav = favImg(siteUrl(b), 16, 'fav') || `<span class="fav-fallback">${esc((host[0] || '?').toUpperCase())}</span>`;
   const when = trash ? `trashed ${relTime(b.trashedAt)}` : relTime(b.createdAt);
   // Every control names the link it acts on, so a list of buttons is never "Select, Select, Select…".
   const name = esc(b.title.length > 70 ? b.title.slice(0, 68) + '…' : b.title);
@@ -742,7 +746,7 @@ function wrappedData() {
   for (const b of live) for (const t of b.tags) tagCount.set(t, (tagCount.get(t) || 0) + 1);
   const topTags = [...tagCount].sort((a, b) => b[1] - a[1]).slice(0, 6);
   const hostCount = new Map();
-  for (const b of live) { const h = M.hostOf(b.url); hostCount.set(h, (hostCount.get(h) || 0) + 1); }
+  for (const b of live) { const h = M.hostOf(siteUrl(b)); hostCount.set(h, (hostCount.get(h) || 0) + 1); }
   const topSites = [...hostCount].sort((a, b) => b[1] - a[1]).slice(0, 3);
   const built = S.collections.filter((c) => !c.smart && inYear(c.createdAt || 0));
   const branches = built.filter((c) => c.parentId);

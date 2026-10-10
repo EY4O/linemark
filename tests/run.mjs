@@ -577,6 +577,12 @@ console.log('Library (plain page with stubbed Chrome APIs)');
     await h.until(`return !!document.querySelector('#grid .card[data-id="${r[7]}"]')`);
     await h.ev(`document.querySelector('#grid .card[data-id="${r[7]}"] [data-act=edit]').click();`);
     await h.until(`return document.querySelector('#drawer .drawer-meta a')?.textContent === 'Page one'`);
+    // a saved image belongs to the page it came from: its card names that site, and site: finds it there
+    await h.ev(`document.querySelector('[data-act=close-drawer]').click(); const M = await import('/js/model.js'); const db = await import('/js/db.js');
+      const b = await db.get('bookmarks', '${r[7]}'); b.fromUrl = 'https://en.wikipedia.org/wiki/Shinkansen'; await M.saveBookmark(b); location.reload();`);
+    await h.until(`return document.querySelector('#grid .card[data-id="${r[7]}"] .meta .host')?.textContent === 'en.wikipedia.org'`);
+    await h.ev(`const s = document.querySelector('#search'); s.value = 'site:wikipedia.org'; s.dispatchEvent(new Event('input', { bubbles: true }));`);
+    await h.until(`return document.querySelectorAll('#grid .card').length === 1 && !!document.querySelector('#grid .card[data-id="${r[7]}"]')`);
     assert(!h.errors.length, h.errors.join('\n'));
     await h.close();
   });
