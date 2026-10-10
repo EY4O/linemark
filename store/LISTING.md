@@ -33,12 +33,18 @@ ORGANISE ON LINES
 • Smart lines: keep any search (#tag, site:, is:fav…) as a line that fills itself.
 • Give each line an icon (240 built in) or any emoji.
 • Tags, notes, favorites, and a Trash with undo.
-• Five views: cards, list, compact headlines, moodboard and a network map that draws your library as a transit map.
+• Five views: cards, list, compact headlines, moodboard and a network map that draws your library as a transit map, with each link a station in the shape of its kind (article, video, document, image or plain link).
+• Unsorted fills up like a crowded platform: a ring sweeps round it as links wait, so you can see when it's time to file.
 • Open a line as a Chrome tab group in its colour, or keep your tab groups as lines.
 
 COME BACK TO IT
 • Give a link a day to revisit. On that day it appears on the Departures board.
 • Optional suggestions for a line, tags and a summary, made by Chrome's built-in AI on your computer (where Chrome offers it). Nothing is sent anywhere.
+
+MAKE IT YOURS
+• City palettes: recolour every line after London, Paris, Tokyo, New York, Berlin or Seoul, and switch back any time.
+• Linemark Wrapped: your year on the lines, as a summary or as a ride through the year month by month, with a picture you can save and share.
+• An optional station chime when you save a page (off by default).
 
 FIND ANYTHING AGAIN
 • Full-text search covers titles, tags, notes and the text of the pages themselves, and shows you the passage that matched.
@@ -63,9 +69,9 @@ Light and dark themes, full keyboard support, and 44px touch targets on touchscr
 |---|---|---|
 | Store icon | `icon-128.png` | 128×128 |
 | Screenshot 1: the library, with lines and icons | `screenshot-1.png` | 1280×800 |
-| Screenshot 2: editing a link inside a line | `screenshot-2.png` | 1280×800 |
+| Screenshot 2: the network map, each link a station in the shape of its kind | `screenshot-2.png` | 1280×800 |
 | Screenshot 3: full-text search (dark theme) | `screenshot-3.png` | 1280×800 |
-| Screenshot 4: giving a line an icon | `screenshot-4.png` | 1280×800 |
+| Screenshot 4: Linemark Wrapped, the Journey through the year | `screenshot-4.png` | 1280×800 |
 | Screenshot 5: broken-link checker | `screenshot-5.png` | 1280×800 |
 | Small promo tile | `promo-small.png` | 440×280 |
 | Marquee promo tile (optional) | `promo-marquee.png` | 1400×560 |
@@ -121,8 +127,15 @@ It is published from the public repository [EY4O/linemark-site](https://github.c
 
 ## Distribution tab
 
-- **Visibility:** *Unlisted* while you and friends try it. Anyone with the link can install it, and it doesn't appear in search. Switch to *Public* when ready.
+- **Visibility:** 1.0.0 was approved as *Unlisted*: anyone with the link can install it, and it doesn't appear in search. Switch to *Public* when you want people to find it.
 - **Regions:** all.
+
+## Uploading 1.2.4 (the update after 1.0.0)
+
+1. **Package → Upload new package:** `dist/linemark-1.2.4.zip`.
+2. **Store listing → Description:** paste the description above. Since 1.0.0 it adds the network map's shapes, the crowded Unsorted ring, city palettes, Wrapped, the station chime and the `Cooking/Baking` example; the rest is unchanged.
+3. **Privacy:** the justifications above already cover the optional `tabs`, `tabGroups` and `identity` permissions and the archive.org lookup that 1.2.4 asks for.
+4. **Submit for review.** The only permission new since 1.0.0 is the optional `tabGroups`, which may make this review a little longer.
 
 ## Before you submit
 

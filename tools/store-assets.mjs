@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Renders the Chrome Web Store images into store/images/:
-//   screenshot-1..5.png   1280x800 screenshots of the real app (demo library: store/demo-seed.html)
+//   screenshot-1..5.png   1280x800 screenshots of the real app (demo library: store/demo-seed.html):
+//                         the library, the network map, full-text search (dark), Wrapped's Journey, broken links
 //   promo-small.png       440x280 small promo tile   (store/promo/promo.html)
 //   promo-marquee.png     1400x560 marquee tile
 //   icon-128.png          the store icon (same file as icons/icon128.png)
@@ -73,19 +74,18 @@ const ready = `return !!document.querySelector('#grid .card') || !!document.quer
 let p = await page(1280, 800);
 await p.go('/__store/demo-seed.html?view=cards&to=/all'); await p.until(ready);
 await p.shot('screenshot-1.png');
-// 2. inside a line, editing a link (notes, tags, line picker)
-await p.ev(`location.hash = '#/c/design';`); await p.until(`return document.querySelector('.station-name')?.textContent === 'Design'`);
-await p.ev(`document.querySelector('#grid .card [data-act=edit]').click();`); await p.until(`return document.querySelector('#drawer.open')`);
+// 2. the network map: lines as tracks, each link a station in the shape of its kind
+await p.ev(`document.querySelector('[data-view=map]').click();`); await p.until(`return document.querySelectorAll('svg.netmap .map-stop').length > 6`);
 await p.ev(`document.activeElement.blur();`);
 await p.shot('screenshot-2.png');
-await p.ev(`document.querySelector('[data-act=close-drawer]').click();`);
-// 4. giving a line an icon
-await p.ev(`location.hash = '#/all';`); await p.until(ready);
-await p.ev(`document.querySelector('.line-stop[data-id=japan] .more').click();`); await p.until(`return document.querySelector('.menu [data-mi=icon]')`);
-await p.ev(`document.querySelector('.menu [data-mi=icon]').click();`); await p.until(`return document.querySelectorAll('.icon-picker .icon-cell').length > 100`);
-await p.ev(`document.querySelector('.icon-picker .icon-cell[data-icon=train-front]')?.scrollIntoView({ block: 'center' }); document.querySelector('.icon-picker .icon-cell[data-icon=train-front]')?.focus();`);
+await p.ev(`document.querySelector('[data-view=cards]').click();`); await p.until(ready);
+// 4. Linemark Wrapped: the Journey through the year
+await p.ev(`location.hash = '#/wrapped';`); await p.until(`return !!document.querySelector('[data-act=wrap-view][data-v=journey]')`);
+await p.ev(`document.querySelector('[data-act=wrap-view][data-v=journey]').click();`); await p.until(`return document.querySelectorAll('.jr-fill').length > 0`);
+// framed on a month, with its big name in view (the store's 800px height puts it below the fold otherwise)
+await p.ev(`const j = document.querySelector('.journey'), m = [...document.querySelectorAll('.jr-month')][2]; j.scrollLeft = m.offsetLeft - j.clientWidth * 0.3; document.querySelector('#content').scrollTop = 100;`); await sleep(1400);
 await p.shot('screenshot-4.png');
-await p.ev(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));`);
+await p.ev(`document.querySelector('[data-act=wrap-view][data-v=summary]').click();`);
 // 5. broken links
 await p.ev(`location.hash = '#/broken';`); await p.until(`return document.querySelector('.legend')`);
 await p.shot('screenshot-5.png');

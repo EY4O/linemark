@@ -312,7 +312,7 @@ body { overflow: hidden; }
 .subbar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 52px;
   padding: 8px 28px;
   border-bottom: 1px solid var(--rule);
@@ -951,7 +951,8 @@ body { overflow: hidden; }
   .card-actions [data-act='fav'], .card-actions [data-act='edit'] { display: none; }
   .card-actions { padding: 2px; }
 }
-@media (max-width: 860px) {
+/* up to laptop widths the subbar's own buttons (Select, Open all) show icon only, so the toolbar stays on one row */
+@media (max-width: 1366px) {
   .subbar > .btn.ghost .lbl { display: none; }
   .subbar > .btn.ghost { padding: 0 9px; }
 }
@@ -1176,7 +1177,8 @@ body { overflow: hidden; }
 /* ---------- link types as shapes ---------- */
 /* passengers are solid shapes (cards, the type filter); stations on the map are outlined */
 .shape { flex: none; fill: currentColor; }
-.type-filter button .shape { margin-right: 5px; color: var(--ink-3); }
+.type-filter button { padding: 0 8px; }
+.type-filter button .shape { margin-right: 4px; color: var(--ink-3); }
 .type-filter button[aria-pressed='true'] .shape { color: var(--ink); }
 .meta .kind { display: inline-flex; flex: none; margin-left: auto; color: var(--ink-3); }
 .meta .kind + .fav-star { margin-left: 2px; }
