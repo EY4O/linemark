@@ -85,7 +85,7 @@ function renderBand() {
   band.innerHTML = `
     ${bullet(c, 34)}
     <div class="pop-status">
-      <span class="pop-note">${existed ? `Already saved · ${esc(relTime(bm.createdAt))}` : `${icon('check', 14)} Saved to`}${parents.length ? ` <span class="pop-path">${esc(parents.join(' › '))} ›</span>` : ''}</span>
+      <span class="pop-note">${existed ? `Already saved · ${esc(relTime(bm.createdAt))}` : `${icon('check', 14)} Saved to`}${parents.length ? `${existed ? ' · ' : ' '}<span class="pop-path">${esc(parents.join(' › '))} ›</span>` : ''}</span>
       <button class="pop-line" id="line-btn" title="Change line"><span>${esc(c ? c.name : 'Unsorted')}</span>${icon('chevronDown', 16)}</button>
     </div>
     <button class="icon-btn${bm.favorite ? ' on' : ''}" id="fav-btn" title="${bm.favorite ? 'Unfavorite' : 'Favorite'}" aria-pressed="${bm.favorite}">${icon(bm.favorite ? 'starFilled' : 'star', 19)}</button>

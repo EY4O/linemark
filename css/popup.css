@@ -96,6 +96,11 @@ body { width: 380px; max-width: 100%; min-height: 200px; } /* narrows for a scro
   .pop-line { min-height: 44px; }
   .pop-band .icon-btn { width: 44px; height: 44px; }
   .cover-switch button { min-height: 44px; }
+  /* the cover switch gets its own full-width row under the preview and title, so each button is wide enough to tap */
+  .pop-cover { display: contents; }
+  .pop-thumb { grid-column: 1; grid-row: 1; }
+  .pop-main > div:last-child { grid-column: 2; grid-row: 1; }
+  .cover-switch { grid-column: 1 / -1; grid-row: 2; }
   .tags-input input { min-height: 44px; }
   .btn, .btn.sm { min-height: 44px; }
   .menu-item { min-height: 44px; }
