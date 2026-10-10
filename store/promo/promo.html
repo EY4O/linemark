@@ -3,7 +3,8 @@
      ?size=small   440x280 small promo tile
      ?size=marquee 1400x560 marquee tile
      Google asks for no text, saturated colour, a filled frame and crisp edges, readable at half size.
-     The art is Linemark's own world: coloured lines meeting at an interchange marked by the orange L bullet. -->
+     The art is Linemark's own world: coloured lines meeting at an interchange marked by the logo (the white tile,
+     drawn as in store/logo/tile-white.svg). -->
 <html><head><meta charset="utf-8"><title>promo</title>
 <style>
   html, body { margin: 0; background: #16171a; overflow: hidden; }
@@ -42,17 +43,28 @@ const marquee = {
 };
 const P = size === 'marquee' ? marquee : small;
 const [bx, by, br] = P.bullet;
-const s = br / 44; // the L glyph scales with the bullet
-const glyph = `<g fill="#16171a" transform="translate(${bx} ${by}) scale(${s})"><rect x="-13" y="-22" width="11" height="44"/><rect x="-13" y="11" width="25" height="11"/></g>`;
+// The logo at the hub: the 96-unit tile of tile-white.svg scaled to 2 * br, ringed by a gap in the ground colour so
+// the lines read as running into it.
+const s = (br * 2) / 96, gap = (P.stroke * 0.45) / s;
+const logo = `<g transform="translate(${bx} ${by}) scale(${s}) translate(-64 -64)">
+    <rect x="${16 - gap}" y="${16 - gap}" width="${96 + gap * 2}" height="${96 + gap * 2}" rx="${22 + gap}" fill="#16171a"/>
+    <rect x="16" y="16" width="96" height="96" rx="22" fill="#ffffff"/>
+    <g fill="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="${C.cobalt}" d="M64 31H54a12 12 0 0 0-12 12v56l22-22"/>
+      <path stroke="${C.magenta}" d="M64 31h10a12 12 0 0 1 12 12v56L64 77"/>
+      <path stroke="${C.teal}" d="M64 51l22 22"/>
+      <path stroke="#ff5a1f" d="M64 31v46"/>
+    </g>
+    <g fill="#fff" stroke-width="3"><circle cx="42" cy="61" r="4.5" stroke="${C.cobalt}"/><circle cx="64" cy="51" r="4.5" stroke="#ff5a1f"/><circle cx="86" cy="73" r="4.5" stroke="${C.magenta}"/></g>
+    <g fill="#fff" stroke="#16171a" stroke-width="3.25"><circle cx="64" cy="31" r="5.75"/><circle cx="64" cy="77" r="5.75"/></g>
+  </g>`;
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="#16171a"/>
   ${P.lines.map(([c, d]) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${P.stroke}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
   ${(P.interchanges || []).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${P.station * 1.9}" fill="#f4f3ef" stroke="#16171a" stroke-width="${P.station * 0.8}"/>`).join('')}
   ${P.stations.filter(([x, y]) => !(P.interchanges || []).some(([a, b]) => a === x && b === y)).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${P.station}" fill="#f4f3ef" stroke="#16171a" stroke-width="${P.station * 0.6}"/>`).join('')}
-  <circle cx="${bx}" cy="${by}" r="${br + P.stroke * 0.45}" fill="#16171a"/>
-  <circle cx="${bx}" cy="${by}" r="${br}" fill="#ff5a1f"/>
-  ${glyph}
+  ${logo}
 </svg>`;
 document.body.innerHTML = svg;
 document.title = 'ready';
