@@ -63,8 +63,8 @@ Light and dark themes, full keyboard support, and 44px touch targets on touchscr
 
 The screenshots use a demo library (`store/demo-seed.html`). The bookmarks point at real public sites, and the cover images are abstract drawings standing in for page screenshots.
 
-**Homepage URL:** `[your site or repository URL]`
-**Support URL:** `[your issues page or contact page]`
+**Homepage URL:** `https://ey4o.github.io/linemark-site/`
+**Support URL:** `https://github.com/EY4O/linemark-site/issues`
 
 ---
 
@@ -101,9 +101,11 @@ The screenshots use a demo library (`store/demo-seed.html`). The bookmarks point
 - ☑ I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
 - ☑ I do not use or transfer user data to determine creditworthiness or for lending purposes.
 
-**Privacy policy URL:** where you publish `docs/privacy.html`, for example `https://<you>.github.io/<repo>/privacy.html`.
+**Privacy policy URL:** `https://ey4o.github.io/linemark-site/privacy.html`
 
-> Before publishing, replace `[your contact email]` in `PRIVACY.md` and `docs/privacy.html`.
+It is published from the public repository [EY4O/linemark-site](https://github.com/EY4O/linemark-site), which holds only that page and its font. After changing `docs/privacy.html` here, copy it (and `docs/fonts/`) into that repository and push.
+
+> The contact address in `PRIVACY.md` and `docs/privacy.html` is iamlooneth@gmail.com.
 
 ---
 

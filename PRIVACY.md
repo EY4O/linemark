@@ -93,4 +93,4 @@ If this policy changes, the effective date above will change too. Material chang
 
 ## Contact
 
-Questions about privacy: **[your contact email]**
+Questions about privacy: **[iamlooneth@gmail.com](mailto:iamlooneth@gmail.com)**
