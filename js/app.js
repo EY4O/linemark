@@ -480,7 +480,7 @@ function renderSubbar() {
 function coverHTML(b, col) {
   const host = M.hostOf(b.url);
   const color = col?.color || M.colorFor(host);
-  const ph = `<div class="ph" style="--pc:${color};--pi:${M.bulletInk(color)}"><span class="fav-tile">${favImg(b.url, 24) || esc((host[0] || '?').toUpperCase())}</span><span class="ph-host">${esc(host || b.url)}</span></div>`;
+  const ph = `<div class="ph" style="--pc:${color};--pi:${M.bulletInk(color)}"><span class="fav-tile">${favImg(b.url, 24) || esc((host[0] || '?').toUpperCase())}</span><span class="ph-host">${esc(host || b.url).replace(/\./g, '.<wbr>')}</span></div>`;
   if (b.cover?.startsWith('media:')) return `<img alt="" data-media="${esc(b.cover.slice(6))}" decoding="async">` + `<template>${ph}</template>`;
   // A cover that still points at a website is never loaded from it; it shows the placeholder until stored.
   return ph;

@@ -407,7 +407,7 @@ body { overflow: hidden; }
 .grid .card .on-line { --bs: clamp(18px, calc(var(--card-w) * 0.092), 32px); }
 .grid .ph .fav-tile { width: clamp(30px, calc(var(--card-w) * 0.15), 56px); height: clamp(30px, calc(var(--card-w) * 0.15), 56px); font-size: clamp(0.875rem, calc(var(--card-w) * 0.07), 1.625rem); }
 .grid .ph .ph-host { font-size: clamp(0.875rem, calc(var(--card-w) * 0.073), 1.75rem); }
-.ph .ph-host { font-size: 1.125rem; line-height: 1.1; font-weight: 760; font-stretch: 80%; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.ph .ph-host { font-size: 1.125rem; line-height: 1.1; font-weight: 760; font-stretch: 80%; letter-spacing: -0.01em; overflow-wrap: break-word; min-width: 0; }
 .cover-wrap { position: relative; flex: none; }
 .card .on-line {
   position: absolute;
@@ -835,6 +835,8 @@ body { overflow: hidden; }
   .grid.list .card-actions { transform: translateY(-50%); }
   .check { opacity: 1; }
   .stop .more { opacity: 1; }
+  /* The box stays visible on touch, so on covers it sits beside the card menu (top right), clear of the site icon. */
+  .grid:not(.list):not(.headlines) .check { left: auto; right: 64px; top: 14px; }
 }
 /* Coarse pointers get 44px targets; mouse users keep the dense layout. */
 @media (pointer: coarse) {
@@ -850,8 +852,18 @@ body { overflow: hidden; }
   .tag { padding: 8px 2px; margin: -8px 0; }
   .check { width: 32px; height: 32px; }
   .menu-item { min-height: 44px; }
-  .chip button { padding: 8px; margin: -6px -4px -6px 0; }
-  .select-wrap select { height: 40px; }
+  .chip button { display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; margin: -10px -12px -10px -6px; }
+  .select-wrap select { height: 44px; }
+  .band-head .icon-btn { width: 44px; height: 44px; }
+  .band-foot .theme-btn { width: 44px; }
+  .stop .more { width: 44px; height: 44px; }
+  .tag { padding: 13px 2px; margin: -13px 0; }
+  .tag-pill { height: 44px; }
+  .tags-input input { min-height: 44px; }
+  .field .picker, .title-input { min-height: 44px; }
+  /* the checkbox and twisty keep their size; their hit area reaches 44px */
+  .check::before, .stop .twisty::before { content: ''; position: absolute; inset: -6px; }
+  .stop .twisty { position: relative; }
 }
 /* The type filter scrolls sideways instead of pushing the toolbar wider than the window. */
 .subbar > * { min-width: 0; }

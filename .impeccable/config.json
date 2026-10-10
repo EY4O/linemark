@@ -20,6 +20,15 @@
         ],
         "createdAt": "2026-10-10T01:50:01.564Z",
         "reason": "User approved: .scope::after is the full-width 5px station stripe along the bottom of the Google permission panel (the Wayfinding Lines stripe motif), not a side tab on a card"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "js/app.js"
+        ],
+        "createdAt": "2026-10-10T02:14:33.430Z",
+        "reason": "User approved: cover <img> starts without src on purpose; hydrate() fills it from the local IndexedDB media store (data-media), so covers never load from the web"
       }
     ]
   }
