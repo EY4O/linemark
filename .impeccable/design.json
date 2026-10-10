@@ -919,6 +919,21 @@
       "scrim": "rgba(15, 16, 18, 0.18) (dark: rgba(0, 0, 0, 0.45))",
       "match-underline": "rgba(255, 90, 31, 0.45)",
       "shimmer": "rgba(127, 127, 127, 0.14)"
+    },
+    "publicSite": {
+      "scope": "docs/index.html and docs/privacy.html only; the app keeps its own ramp.",
+      "type": {
+        "hero": "clamp(3rem, 6.2vw, 5.75rem) / 780 / 80% width / 0.96 / -0.03em",
+        "stop": "clamp(2rem, 3.6vw, 3rem) / 770 / 82% width / 1.02 / -0.025em",
+        "terminus": "clamp(2.5rem, 5vw, 4.25rem) / 780 / 80% width / 0.98",
+        "lede": "1.25rem hero, 1.1875rem stops, ink-2",
+        "body": "1rem / 1.55"
+      },
+      "route": "5px orange line in the band; 24px band dots with 5px orange border; current stop is a solid orange disc (0 0 0 3px band, 0 0 0 5px band-ink) that rides the line on scroll.",
+      "stopRing": "30px circle, 6px orange border, ground fill, leading each stop h2; 27px / 5px under 880px.",
+      "phoneStem": "Under 880px: 5px orange stem, 2px radius, down the left edge joining the stop rings.",
+      "permissionPanel": "Band-black block, 10px radius, 24px 26px 26px padding, full-width 5px orange bottom stripe.",
+      "button": "46px pill, 700 weight; primary orange/brand-ink, secondary surface with rule-strong border."
     }
   },
   "components": [

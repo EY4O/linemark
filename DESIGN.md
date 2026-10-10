@@ -504,6 +504,13 @@ Sync lives in its own Settings section, after "Take links out", with an "Optiona
 ### Popup
 A compact band header: line bullet (34px), a status sentence ("Saved to" with a band-ok check, or "Already saved") over the line name as a picker, favourite and open-in-manager icon buttons, and a 4px stripe in the line colour (band-ink-2 grey for Unsorted). Below on surface: thumbnail with a Page / Screen / None cover switch, the editable title, host, tags, note, and a Remove / Done footer.
 
+### Public site (docs/)
+The homepage and privacy page are a Persuade surface in the same world, not a second system: same tokens, Archivo, bullets, hairlines and shadows, with a larger type scale for reading at a distance. These sizes apply to docs/ only; the app keeps the ramp above.
+- **Type:** hero h1 `clamp(3rem, 6.2vw, 5.75rem)` at 780, 80% width, 0.96 leading, -0.03em; stop h2 `clamp(2rem, 3.6vw, 3rem)` at 770, 82% width; terminus h2 `clamp(2.5rem, 5vw, 4.25rem)` at 780, 80% width; ledes 1.25rem (hero) and 1.1875rem (stops) in ink-2, 48–58ch; body 1rem at 1.55.
+- **Route:** the band carries the page's stops on a 5px orange line; each stop is a 24px band-black dot with a 5px orange border, and the current one is marked by a solid orange disc ringed band-ink that rides the line as you scroll. In the content each stop heading leads with a 30px ring (6px orange border on ground). Under 880px the band collapses to a top bar and a 5px orange stem joins the rings down the left edge instead.
+- **Permission panel:** the Google-scope panel is a band-black block (10px radius, 24/26px padding) with a full-width 5px orange stripe along its bottom edge; the terminus uses the same band block with a 10px line-colour stripe.
+- **Buttons:** 46px pills (700 weight); primary orange with signage-black ink, secondary surface with a strong hairline.
+
 ### Named Rules
 **The Conditional Stop Rule.** A system stop that reports a problem (Broken links) appears only while the problem exists. An empty problem stop is noise.
 

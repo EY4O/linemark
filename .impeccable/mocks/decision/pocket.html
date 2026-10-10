@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>The Pocket Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{font-family:Archivo,system-ui,sans-serif;background:#cfcfca;padding:34px 40px;color:#16171a}
+.fold{height:100%;display:grid;grid-template-columns:440px 1fr;box-shadow:0 18px 40px rgba(0,0,0,.22);border-radius:6px;overflow:hidden}
+.cover{background:#16171a;color:#f4f3ef;padding:44px 40px;display:flex;flex-direction:column;position:relative}
+.cover:after{content:"";position:absolute;right:0;top:0;bottom:0;width:18px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.35))}
+.b{display:inline-grid;place-items:center;border-radius:50%;font-weight:800;font-stretch:87.5%;flex:none}
+.cover .b.big{width:84px;height:84px;background:#ff5a1f;color:#16171a;font-size:46px}
+.cover h1{font-size:92px;line-height:.92;font-weight:790;font-stretch:78%;letter-spacing:-.035em;margin-top:34px}
+.cover p{font-size:19px;line-height:1.45;color:#c9cad0;margin-top:20px;max-width:30ch}
+.cta{margin-top:30px;height:52px;border-radius:999px;background:#ff5a1f;color:#16171a;font-weight:720;font-size:17px;display:inline-flex;align-items:center;padding:0 26px;align-self:flex-start}
+.cover .legend{margin-top:auto;display:grid;gap:10px;font-size:15px;font-weight:620;font-stretch:87.5%}
+.cover .legend span{display:flex;gap:10px;align-items:center}
+.cover .legend .b{width:22px;height:22px;font-size:10.5px;color:#fff}
+.cover .legend small{color:#a8aab0;font-weight:450;font-size:13px;margin-left:auto}
+.spread{background:#fff;position:relative;display:grid;grid-template-columns:1fr 1fr}
+.spread:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:26px;margin-left:-13px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.07),transparent)}
+.spread svg{position:absolute;inset:0;width:100%;height:100%}
+.lbl{position:absolute;font-size:14px;font-weight:650;font-stretch:87.5%;background:#fff;padding:2px 4px}
+.hdr{position:absolute;left:36px;top:30px;right:36px;display:flex;align-items:center;gap:12px}
+.hdr h2{font-size:26px;font-weight:760;font-stretch:85%;letter-spacing:-.02em}
+.hdr span{margin-left:auto;font-size:13px;color:#686b73}
+.pop{position:absolute;left:520px;top:300px;width:300px;background:#fff;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);overflow:hidden}
+.pop .cov{aspect-ratio:16/10;background:#2f9e44;color:#fff;display:grid;place-items:end start;padding:12px;font-weight:770;font-stretch:80%;font-size:24px}
+.pop p{padding:12px 14px 14px;font-size:16px;font-weight:660;line-height:1.3}
+.pop p small{display:block;color:#686b73;font-weight:400;font-size:13px;margin-top:4px}
+.search{position:absolute;left:36px;right:36px;bottom:30px;height:44px;border-radius:999px;background:#f7f7f5;border:1px solid #e3e3df;display:flex;align-items:center;padding:0 18px;color:#686b73;font-size:15px}
+</style></head><body>
+<div class="fold">
+  <section class="cover">
+    <span class="b big">L</span>
+    <h1>Linemark</h1>
+    <p>Your bookmarks as a transit map. Every collection is a line; every link is a stop.</p>
+    <a class="cta">Add to Chrome</a>
+    <div class="legend">
+      <span><span class="b" style="background:#2f9e44">Rd</span>Reading<small>6 stops</small></span>
+      <span><span class="b" style="background:#d92a3a">De</span>Design<small>5 stops</small></span>
+      <span><span class="b" style="background:#2f5bd8">Tr</span>Travel<small>5 stops</small></span>
+    </div>
+  </section>
+  <section class="spread">
+    <div class="hdr"><h2>Sample network</h2><span>Click any stop</span></div>
+    <svg viewBox="0 0 920 832" preserveAspectRatio="none" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M60 260 H360 L470 370 H860" stroke="#2f9e44" stroke-width="12"/>
+      <path d="M200 120 V420 L330 550 H780" stroke="#d92a3a" stroke-width="12"/>
+      <path d="M90 680 H420 L560 540 V160 H840" stroke="#2f5bd8" stroke-width="12"/>
+      <g fill="#fff" stroke="#16171a" stroke-width="5">
+        <circle cx="120" cy="260" r="11"/><circle cx="200" cy="260" r="15"/><circle cx="300" cy="260" r="11"/><circle cx="560" cy="370" r="15"/><circle cx="720" cy="370" r="11"/>
+        <circle cx="200" cy="170" r="11"/><circle cx="200" cy="360" r="11"/><circle cx="420" cy="550" r="11"/><circle cx="640" cy="550" r="11"/>
+        <circle cx="180" cy="680" r="11"/><circle cx="330" cy="680" r="11"/><circle cx="560" cy="260" r="11"/><circle cx="700" cy="160" r="11"/>
+      </g>
+    </svg>
+    <span class="lbl" style="left:86px;top:212px">Practical Typography</span>
+    <span class="lbl" style="left:216px;top:150px">Refactoring UI</span>
+    <span class="lbl" style="left:640px;top:330px">Long reads</span>
+    <span class="lbl" style="left:120px;top:704px">Seat 61</span>
+    <span class="lbl" style="left:600px;top:120px">Rome2Rio</span>
+    <div class="pop"><div class="cov">practicaltypography.com</div><p>Butterick's Practical Typography<small>Reading · #type · "The four most important rules…"</small></p></div>
+    <div class="search">Search titles, tags and the text of every page</div>
+  </section>
+</div>
+</body></html>
