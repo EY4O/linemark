@@ -1,0 +1,56 @@
+<!doctype html>
+<!-- Logo comparison: the bare mark, the dark tile, the orange tile and the current icon, each rasterised at the
+     real sizes Chrome uses (then enlarged without smoothing), and at actual size on light and dark toolbars. -->
+<html><head><meta charset="utf-8"><title>Linemark logo tiles</title>
+<style>
+  @font-face { font-family: 'Archivo'; src: url('../../fonts/archivo-wdth.woff2') format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; }
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1400px; padding: 44px 56px 52px; background: #f2f2ef; color: #16171a; font-family: 'Archivo', 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  h1 { margin: 0; font-size: 44px; font-weight: 790; font-stretch: 80%; letter-spacing: -0.02em; }
+  h1 + p { margin: 6px 0 28px; color: #474a51; font-size: 18px; }
+  .grid { display: grid; grid-template-columns: 150px 170px 130px 130px 130px 1fr 1fr; gap: 14px 16px; align-items: center; }
+  .h { font-size: 13px; color: #686b73; text-align: center; }
+  .name { font-size: 16px; font-weight: 720; font-stretch: 85%; }
+  .name small { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: #686b73; font-stretch: 100%; }
+  .cell { display: grid; place-items: center; height: 170px; background: #fff; border-radius: 12px; border: 1px solid #e3e3df; }
+  canvas { image-rendering: pixelated; display: block; }
+  /* a toolbar strip at actual size: a 16px icon in its 28px button, at 1x (16px file) and 2x (32px file) */
+  .bar { height: 170px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .bar.light { background: #f1f3f4; border: 1px solid #e3e3df; } .bar.dark { background: #35363a; }
+  .bar figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 12px; color: #686b73; }
+  .bar.dark figure { color: #a3a5ab; }
+  .bar canvas { width: 16px; height: 16px; image-rendering: auto; }
+  .slot { width: 28px; height: 28px; display: grid; place-items: center; }
+</style></head>
+<body>
+<h1>Linemark logo: bare or on a tile</h1>
+<p>Rasterised at the real pixel size, then enlarged without smoothing. The toolbar columns are actual size.</p>
+<div class="grid" id="grid">
+  <span></span><span class="h">128 · store</span><span class="h">48 · extensions page, 2x</span><span class="h">32 · toolbar on hi-dpi, 3x</span><span class="h">16 · toolbar, 5x</span><span class="h">Light toolbar, actual size</span><span class="h">Dark toolbar, actual size</span>
+</div>
+<script>
+const SETS = [
+  ['Bare', 'Ribbon in line colours', { 128: 'linemark-logo.svg', 48: 'linemark-logo-32.svg', 32: 'linemark-logo-32.svg', 16: 'linemark-logo-16.svg' }],
+  ['Dark tile', 'The signage band', { 128: 'tile-dark.svg', 48: 'tile-dark-32.svg', 32: 'tile-dark-32.svg', 16: 'tile-dark-16.svg' }],
+  ['Orange tile', 'The current icon’s ground', { 128: 'tile-orange.svg', 48: 'tile-orange-32.svg', 32: 'tile-orange-32.svg', 16: 'tile-orange-16.svg' }],
+  ['Current', 'The L roundel', { 128: '../../icons/icon128.png', 48: '../../icons/icon48.png', 32: '../../icons/icon32.png', 16: '../../icons/icon16.png' }],
+];
+const ZOOM = { 128: 1, 48: 2, 32: 3, 16: 5 };
+const load = (src) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+const raster = (img, px, css) => { const c = document.createElement('canvas'); c.width = c.height = px; c.getContext('2d').drawImage(img, 0, 0, px, px); c.style.width = c.style.height = css + 'px'; return c; };
+(async () => {
+  const grid = document.getElementById('grid');
+  for (const [name, sub, files] of SETS) {
+    const img = {}; for (const s of [128, 48, 32, 16]) img[s] = await load(files[s]);
+    grid.insertAdjacentHTML('beforeend', `<span class="name">${name}<small>${sub}</small></span>`);
+    for (const s of [128, 48, 32, 16]) { const cell = document.createElement('div'); cell.className = 'cell'; cell.append(raster(img[s], s, s * ZOOM[s])); grid.append(cell); }
+    for (const tone of ['light', 'dark']) {
+      const bar = document.createElement('div'); bar.className = `bar ${tone}`;
+      for (const [s, label] of [[16, '1x'], [32, '2x']]) { const f = document.createElement('figure'); const slot = document.createElement('span'); slot.className = 'slot'; slot.append(raster(img[s], s, 16)); f.append(slot); f.insertAdjacentHTML('beforeend', label); bar.append(f); }
+      grid.append(bar);
+    }
+  }
+  document.title = 'ready';
+})();
+</script>
+</body></html>

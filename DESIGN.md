@@ -505,6 +505,9 @@ The atom of the system. A circle (default 22px) filled with the line colour, car
 
 The ink colour still comes from `bulletInk`. The picker is a menu, not a modal: a search field, an 8-column grid of 20px icons (keyboard: arrow keys move in two dimensions), and an emoji field. The selected icon is marked with the brand-soft fill and a 1.5px brand ring.
 
+### Extension icon
+A bookmark ribbon drawn as a transit map, in ink on a brand-orange rounded tile (sources in store/logo/: `tile-orange.svg` for 128px, `tile-orange-32.svg` for 32 and 48px, `tile-orange-16.svg` for 16px). At 128 two edge lines meet the trunk at a top interchange and at the notch, a branch leaves the trunk at 45°, and the tile fills the store's 96x96 safe area. At 32/48 the branch and lower stations drop and the tile fills the canvas; at 16 the trunk drops too, leaving the ribbon's outline and a station dot. The full-colour version (`linemark-logo.svg`: cobalt and magenta edges, orange trunk, teal branch) is for places with room to show the lines. The in-app wordmark stays the orange L line bullet.
+
 ### Station Sign (signature)
 The header of the work area: a 46px bullet, the station name in Display, a count in Meta with the number in ink, and a 4px stripe in the line colour along its bottom edge that sweeps in from the left on arrival (0.6s; a 0.3s fade under reduced motion). The parent path (small bullets, chevron separators, each a link) renders above the name only when the place has a parent: child lines, and Broken links, which lives under Settings. Top-level lines and the other system stops show no text above the name.
 

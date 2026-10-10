@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Linemark's icon: a bookmark ribbon drawn as a transit map, in ink on the brand orange. Two edge lines meet the
+       trunk at the top interchange and at the notch; a branch leaves the trunk at 45°. The tile fills the store's
+       96x96 safe area. Smaller sizes: tile-orange-32.svg (32 and 48px) and tile-orange-16.svg. -->
+  <rect x="16" y="16" width="96" height="96" rx="22" fill="#ff5a1f"/>
+  <g fill="none" stroke="#16171a" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M64 31H54a12 12 0 0 0-12 12V99L64 77"/>
+    <path d="M64 31H74a12 12 0 0 1 12 12V99L64 77"/>
+    <path d="M64 51l22 22"/>
+    <path d="M64 31V77"/>
+  </g>
+  <g fill="#fff" stroke="#16171a" stroke-width="3">
+    <circle cx="42" cy="61" r="4.5"/>
+    <circle cx="64" cy="51" r="4.5"/>
+    <circle cx="86" cy="73" r="4.5"/>
+  </g>
+  <g fill="#fff" stroke="#16171a" stroke-width="3.25">
+    <circle cx="64" cy="31" r="5.75"/>
+    <circle cx="64" cy="77" r="5.75"/>
+  </g>
+</svg>

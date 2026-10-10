@@ -1,0 +1,90 @@
+<!doctype html>
+<!-- Logo preview sheet: the proposed mark at every size Chrome uses, rasterised at real pixel sizes
+     (then enlarged without smoothing) on light and dark toolbars, beside the current icon. -->
+<html><head><meta charset="utf-8"><title>Linemark logo</title>
+<style>
+  @font-face { font-family: 'Archivo'; src: url('../../fonts/archivo-wdth.woff2') format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; }
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1400px; padding: 48px 56px 56px; background: #f2f2ef; color: #16171a; font-family: 'Archivo', 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  h1 { margin: 0; font-size: 44px; font-weight: 790; font-stretch: 80%; letter-spacing: -0.02em; }
+  h1 + p { margin: 6px 0 32px; color: #474a51; font-size: 18px; }
+  h2 { margin: 0 0 14px; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #474a51; }
+  section { margin-top: 36px; }
+  .row { display: flex; gap: 24px; align-items: stretch; }
+  .tile { flex: 1; border-radius: 14px; padding: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; border: 1px solid #e3e3df; background: #fff; }
+  .tile.dark { background: #16171a; border-color: #16171a; color: #f4f3ef; }
+  .tile small { font-size: 14px; color: #686b73; }
+  .tile.dark small { color: #a3a5ab; }
+  .hero img { width: 300px; height: 300px; }
+  canvas { image-rendering: pixelated; display: block; }
+  .sizes { display: flex; align-items: flex-end; gap: 18px; }
+  .sizes figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .sizes figcaption { font-size: 13px; color: #686b73; }
+  .dark .sizes figcaption { color: #a3a5ab; }
+  /* a Chrome toolbar strip: omnibox stand-in, then extension icons at real size */
+  .bar { display: flex; align-items: center; gap: 14px; height: 52px; padding: 0 16px; border-radius: 10px; }
+  .bar .omni { flex: 1; height: 34px; border-radius: 17px; }
+  .bar.light { background: #f1f3f4; } .bar.light .omni { background: #fff; }
+  .bar.darkbar { background: #35363a; } .bar.darkbar .omni { background: #202124; }
+  .bar canvas, .bar img { width: 16px; height: 16px; image-rendering: auto; }
+  .bar .slot { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; }
+  .label { font-size: 13px; color: #686b73; width: 120px; }
+  .compare { display: grid; grid-template-columns: 140px repeat(4, 1fr); gap: 16px 24px; align-items: center; }
+  .compare .h { font-size: 13px; color: #686b73; text-align: center; }
+  .compare .cell { display: grid; place-items: center; height: 150px; background: #fff; border-radius: 12px; border: 1px solid #e3e3df; }
+</style></head>
+<body>
+<h1>Linemark logo</h1>
+<p>A bookmark ribbon drawn as a transit map, in Linemark's line colours. Colours change only at stations; lines keep to 0, 45 and 90 degrees.</p>
+
+<div class="row hero">
+  <div class="tile"><img src="linemark-logo.svg" alt=""><small>Full mark, on paper</small></div>
+  <div class="tile dark"><img src="linemark-logo.svg" alt=""><small>On the signage band</small></div>
+</div>
+
+<section>
+  <h2>Every size Chrome uses, rasterised, then enlarged</h2>
+  <div class="row">
+    <div class="tile"><div class="sizes" id="sizes-light"></div></div>
+    <div class="tile dark"><div class="sizes" id="sizes-dark"></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>In the toolbar, actual size (16px; Chrome uses the 32px file on high-density screens)</h2>
+  <div class="row" style="flex-direction:column;gap:12px">
+    <div class="bar light"><span class="omni"></span><span class="label">16px A</span><span class="slot" data-tb="16"></span><span class="label">16px B</span><span class="slot" data-tb="16b"></span><span class="label">2x · 32px file at 16</span><span class="slot" data-tb="32"></span><span class="label">current</span><span class="slot"><img src="../../icons/icon32.png" alt=""></span></div>
+    <div class="bar darkbar"><span class="omni"></span><span class="label" style="color:#a3a5ab">16px A</span><span class="slot" data-tb="16"></span><span class="label" style="color:#a3a5ab">16px B</span><span class="slot" data-tb="16b"></span><span class="label" style="color:#a3a5ab">2x · 32px file at 16</span><span class="slot" data-tb="32"></span><span class="label" style="color:#a3a5ab">current</span><span class="slot"><img src="../../icons/icon32.png" alt=""></span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Current and proposed</h2>
+  <div class="compare" id="compare">
+    <span></span><span class="h">128 · store, extensions page</span><span class="h">48 · extensions page</span><span class="h">32 · toolbar, 2x</span><span class="h">16 · toolbar, favicon</span>
+  </div>
+</section>
+
+<script>
+const FILES = { 128: 'linemark-logo.svg', 48: 'linemark-logo-32.svg', 32: 'linemark-logo-32.svg', 16: 'linemark-logo-16.svg', '16b': 'linemark-logo-16b.svg' };
+const ZOOM = { 128: 1, 48: 2, 32: 3, 16: 5, '16b': 5 };
+const load = (src) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+// rasterise at the real pixel size, as Chrome would, then show it `zoom` times larger without smoothing
+const raster = (img, px, zoom) => { const c = document.createElement('canvas'); c.width = c.height = px; c.getContext('2d').drawImage(img, 0, 0, px, px); c.style.width = c.style.height = px * zoom + 'px'; return c; };
+(async () => {
+  const imgs = {}; for (const [k, f] of Object.entries(FILES)) imgs[k] = await load(f);
+  const cur = {}; for (const s of [128, 48, 32, 16]) cur[s] = await load(`../../icons/icon${s}.png`);
+  for (const id of ['sizes-light', 'sizes-dark']) {
+    const box = document.getElementById(id);
+    for (const s of [128, 48, 32, 16, '16b']) { const px = parseInt(s); const f = document.createElement('figure'); f.append(raster(imgs[s], px, ZOOM[s])); f.insertAdjacentHTML('beforeend', `<figcaption>${s === '16b' ? '16px B' : s === 16 ? '16px A' : px + 'px'}${ZOOM[s] > 1 ? ` · ${ZOOM[s]}x` : ''}</figcaption>`); box.append(f); }
+  }
+  document.querySelectorAll('[data-tb]').forEach((slot) => { const s = slot.dataset.tb; const c = raster(imgs[s], parseInt(s), 1); c.style.width = c.style.height = '16px'; c.style.imageRendering = 'auto'; slot.append(c); });
+  const cmp = document.getElementById('compare');
+  for (const [name, set] of [['Current', cur], ['Proposed', imgs]]) {
+    cmp.insertAdjacentHTML('beforeend', `<span class="h" style="text-align:left;font-weight:700;color:#16171a">${name}</span>`);
+    for (const s of [128, 48, 32, 16]) { const cell = document.createElement('div'); cell.className = 'cell'; cell.append(raster(set[s], s, s === 128 ? 1 : Math.min(ZOOM[s], 3))); cmp.append(cell); }
+  }
+  document.title = 'ready';
+})();
+</script>
+</body></html>

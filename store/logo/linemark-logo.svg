@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Linemark: a bookmark ribbon drawn as a transit map. Cobalt runs up the left edge and magenta up the right,
+       meeting the orange trunk at the top interchange and again at the notch; a teal branch leaves the trunk at 45°.
+       Colours change only at stations; lines keep to 0, 45 and 90 degrees. Artwork sits in the store's 96x96 safe area. -->
+  <g fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="#2f5bd8" d="M64 25H50a14 14 0 0 0-14 14v69l28-28"/>
+    <path stroke="#c2255c" d="M64 25h14a14 14 0 0 1 14 14v69L64 80"/>
+    <path stroke="#0b7a75" d="M64 49l28 28"/>
+    <path stroke="#ff5a1f" d="M64 25v55"/>
+  </g>
+  <g fill="#fff" stroke-width="3.5">
+    <circle cx="36" cy="60" r="5.5" stroke="#2f5bd8"/>
+    <circle cx="64" cy="49" r="5.5" stroke="#ff5a1f"/>
+    <circle cx="92" cy="77" r="5.5" stroke="#c2255c"/>
+  </g>
+  <g fill="#fff" stroke="#16171a" stroke-width="3.5">
+    <circle cx="64" cy="25" r="6.5"/>
+    <circle cx="64" cy="80" r="6.5"/>
+  </g>
+</svg>
