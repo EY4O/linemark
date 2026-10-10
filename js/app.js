@@ -1573,7 +1573,7 @@ function linePicker(anchor, currentId, onPick, { allowNone = true, title, checke
     const walk = (list, depth) => { for (const c of list) { if (!fileable(c)) continue; if (c.id !== exclude) flat.push([c, depth]); walk(kidsOf(c.id), depth + 1); } };
     walk(roots(), 0);
     const draw = (q = '') => {
-      // "Videos/Markiplier" finds or creates a line and a branch inside it
+      // "Cooking/Baking" finds or creates a line and a branch inside it
       const ql = M.splitLinePath(q).join('/').toLowerCase();
       const path = (c) => M.linePathOf(S.collections, c.id);
       const items = flat.filter(([c]) => !ql || path(c).join('/').toLowerCase().includes(ql));

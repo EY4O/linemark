@@ -28,7 +28,7 @@ SAVE IN ONE GESTURE
 • Save all your open tabs at once.
 
 ORGANISE ON LINES
-• Lines are colour-coded collections that can branch into sub-lines. Drag links onto a line to file them, or type Videos/Markiplier to make a branch as you save.
+• Lines are colour-coded collections that can branch into sub-lines. Drag links onto a line to file them, or type Cooking/Baking to make a branch as you save.
 • A link can stop on more than one line, like an interchange station.
 • Smart lines: keep any search (#tag, site:, is:fav…) as a line that fills itself.
 • Give each line an icon (240 built in) or any emoji.

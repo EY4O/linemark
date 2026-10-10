@@ -224,7 +224,7 @@ function pickLine(anchor) {
   walk(collections.filter((c) => !c.parentId || !ids.has(c.parentId)).sort((a, b) => a.order - b.order), 0);
   openMenu(anchor, (m, close) => {
     const draw = (q = '') => {
-      // "Videos/Markiplier" finds or creates a line and a branch inside it
+      // "Cooking/Baking" finds or creates a line and a branch inside it
       const ql = M.splitLinePath(q).join('/').toLowerCase();
       const path = (c) => M.linePathOf(collections, c.id);
       const items = flat.filter(([c]) => !ql || path(c).join('/').toLowerCase().includes(ql));

@@ -105,7 +105,7 @@ export async function findArchivedCopy(url) {
 }
 
 // ---------- line paths ----------
-// "Videos/Markiplier" names a line and a branch inside it. Names match case-insensitively.
+// "Cooking/Baking" names a line and a branch inside it. Names match case-insensitively.
 
 export const splitLinePath = (q = '') => String(q).split('/').map((s) => s.trim()).filter(Boolean);
 

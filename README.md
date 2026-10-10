@@ -16,7 +16,7 @@ Linemark is a Chrome extension for people who save a lot of links and want to fi
 
 ## ✨ Key Features
 
-- 🚇 **Lines and branches**: colour-coded collections that nest. Drag links onto a line to file them, or type `Videos/Markiplier` in any line picker to make a branch as you file. A link can stop on several lines, like an interchange, and **smart lines** keep a search (`#tag`, `site:`, `is:fav`) as a line that fills itself.
+- 🚇 **Lines and branches**: colour-coded collections that nest. Drag links onto a line to file them, or type `Cooking/Baking` in any line picker to make a branch as you file. A link can stop on several lines, like an interchange, and **smart lines** keep a search (`#tag`, `site:`, `is:fav`) as a line that fills itself.
 - 🎨 **Line icons**: give each line's bullet one of 240 built-in icons (Lucide) or any emoji, chosen from a searchable picker in the line's menu.
 - ⚡ **One-click save**: the popup saves the page as soon as it opens. Change the line, tags, note or cover afterwards. Where Chrome offers its built-in AI, the edit drawer can suggest a line, tags and a summary, worked out on your computer.
 - 🖼️ **Real previews, stored locally**: each card shows the page's own cover image or a screenshot taken when you saved it. Both are downloaded once and kept on your computer, so browsing your library never loads anything from the web.
