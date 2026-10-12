@@ -2,7 +2,7 @@
 
 The same extension as the Chrome Web Store item (see `store/LISTING.md`), listed at [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons). Registering and submitting are free. Certification takes up to seven business days.
 
-Build the package with `node tools/package.mjs` and upload `dist/linemark-<version>.zip`: the same zip as Chrome's. Text in the extension that names the browser ("Import Edge favorites", "Edge's built-in AI", "this Edge profile") follows the browser it runs in (`M.BROWSER` in `js/model.js`).
+Build the packages with `node tools/package.mjs` and upload `dist/edge-<version>.zip`: the same files and version as Chrome's `dist/chrome-<version>.zip`. Text in the extension that names the browser ("Import Edge favorites", "Edge's built-in AI", "this Edge profile") follows the browser it runs in (`M.BROWSER` in `js/model.js`).
 
 ---
 

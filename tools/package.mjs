@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Builds the Chrome Web Store upload: dist/linemark-<version>.zip
-// containing only what the extension runs: manifest, pages, css, js, fonts and icons.
+// Builds the store uploads: dist/chrome-<version>.zip (Chrome Web Store) and dist/edge-<version>.zip (Microsoft
+// Edge Add-ons), the same files under the same version, containing only what the extension runs: manifest, pages,
+// css, js, fonts and icons.
 // A "key" in manifest.json (used to give the unpacked copy the store's ID) is left out:
 // the store sets the ID itself and rejects uploads that carry one.
 //
@@ -57,7 +58,10 @@ const end = Buffer.alloc(22);
 end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(files.length, 8); end.writeUInt16LE(files.length, 10);
 end.writeUInt32LE(cdBuf.length, 12); end.writeUInt32LE(offset, 16);
 
-const out = path.join(ROOT, 'dist', `linemark-${manifest.version}.zip`);
-fs.mkdirSync(path.dirname(out), { recursive: true });
-fs.writeFileSync(out, Buffer.concat([...parts, cdBuf, end]));
-console.log(`wrote ${path.relative(ROOT, out)}: ${files.length} files, ${(fs.statSync(out).size / 1024).toFixed(0)} KB`);
+const zip = Buffer.concat([...parts, cdBuf, end]);
+fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
+for (const store of ['chrome', 'edge']) {
+  const out = path.join(ROOT, 'dist', `${store}-${manifest.version}.zip`);
+  fs.writeFileSync(out, zip);
+  console.log(`wrote ${path.relative(ROOT, out)}: ${files.length} files, ${(zip.length / 1024).toFixed(0)} KB`);
+}

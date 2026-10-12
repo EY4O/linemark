@@ -92,7 +92,7 @@ A line stores its bullet as `icon: "lucide:<name>"` or `icon: "emoji:<emoji>"`. 
 
 ```bash
 node tools/store-assets.mjs   # screenshots, promo tiles and icon, into store/images/
-node tools/package.mjs        # dist/linemark-<version>.zip for upload
+node tools/package.mjs        # dist/chrome-<version>.zip and dist/edge-<version>.zip for upload
 ```
 
 `store/LISTING.md` has every listing field ready to paste: description, permission justifications and the data-usage answers. `PRIVACY.md` and `docs/privacy.html` are the privacy policy; publish the HTML page and use its URL in the listing.
