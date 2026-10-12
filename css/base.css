@@ -315,6 +315,13 @@ kbd {
 .swatch.custom.set { background: var(--c); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--c); }
 .swatch.custom input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; }
 .swatch.custom:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 3px; }
+/* touch: 30px swatches, 4px apart, each answering taps across its whole grid cell (gaps included), so the two rows
+   of seven keep the menu's height while every tap lands on a colour */
+@media (pointer: coarse) {
+  .swatches { gap: 4px; }
+  .swatch { position: relative; width: 30px; height: 30px; }
+  .swatch::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; }
+}
 
 @keyframes fade-in { from { opacity: 0; } }
 /* Reduced motion: nothing slides, scales or sweeps; state changes still fade so they stay noticeable. */
