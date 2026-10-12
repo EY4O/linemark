@@ -6,7 +6,7 @@ import * as Sync from './sync.js';
 import * as AI from './ai.js';
 import { chime } from './chime.js';
 import { shapeIcon, shapePath, shapeOf, TYPE_NAME } from './shapes.js';
-import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji, loadIcons, usesIcons } from './bullets.js';
+import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji, loadIcons, usesIcons, brandSvg, brandTitle, searchBrands } from './bullets.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
 
@@ -1492,7 +1492,7 @@ function lineMenu(anchor, id) {
       ${M.hasChrome && chrome.tabs?.group ? menuItem({ label: 'Open as tab group', iconName: 'tabs', action: 'tab-group' }) : ''}
       <div class="menu-sep"></div>
       <div class="label" style="padding:4px 9px 0">Line colour</div>
-      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.lineColors().map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
+      ${colourSwatches(c)}
       <div class="label" style="padding:2px 9px 0">Bullet</div>
       <div class="bullet-row">
         ${lineBullet(c, 30)}
@@ -1506,7 +1506,8 @@ function lineMenu(anchor, id) {
       const sw = e.target.closest('[data-color]');
       if (sw) {
         c.color = sw.dataset.color;
-        $$('.swatch', m).forEach((s) => s.setAttribute('aria-checked', s === sw));
+        $$('.swatch[data-color]', m).forEach((s) => s.setAttribute('aria-checked', s === sw));
+        $('.swatch.custom', m)?.classList.remove('set');
         await putCollections([c]);
         renderAll();
         return;
@@ -1522,6 +1523,7 @@ function lineMenu(anchor, id) {
       if (act === 'tab-group') openAsTabGroup(id);
       if (act === 'delete') deleteLine(id);
     });
+    bindCustomColour(m, c);
     const codeInput = $('#code-input', m);
     codeInput.addEventListener('change', async () => {
       const v = codeInput.value.trim().toUpperCase();
@@ -1535,6 +1537,35 @@ function lineMenu(anchor, id) {
   });
 }
 
+// A line's colour: the twelve of the current city palette, then a custom colour from the browser's colour picker.
+// The custom swatch is a wheel of the palette until the line has a colour of its own, then shows that colour.
+// A custom colour stays as it is when the city palette changes.
+function colourSwatches(c) {
+  const colours = M.lineColors();
+  const own = !colours.some((x) => x.value.toLowerCase() === String(c.color).toLowerCase());
+  const wheel = `conic-gradient(${colours.map((x) => x.value).join(', ')}, ${colours[0].value})`;
+  return `<div class="swatches" role="radiogroup" aria-label="Line colour">${colours.map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}<label class="swatch custom${own ? ' set' : ''}" title="Custom colour" style="--c:${own ? c.color : 'transparent'};--wheel:${wheel}"><input type="color" value="${own ? c.color : '#5c6773'}" aria-label="Custom line colour"></label></div>`;
+}
+
+// Previews as the picker moves (the swatch and the menu's bullet), and saves when a colour is chosen.
+function bindCustomColour(m, c) {
+  const input = $('.swatch.custom input', m);
+  const label = input.parentElement;
+  const show = (v) => {
+    label.classList.add('set'); label.style.setProperty('--c', v);
+    $$('.swatch[data-color]', m).forEach((s) => s.setAttribute('aria-checked', 'false'));
+    const preview = $('.bullet-row .bullet', m);
+    if (preview) { preview.style.setProperty('--c', v); preview.style.setProperty('--bi', M.bulletInk(v)); }
+  };
+  input.addEventListener('input', () => show(input.value));
+  input.addEventListener('change', async () => {
+    show(input.value);
+    c.color = input.value;
+    await putCollections([c]);
+    renderAll();
+  });
+}
+
 // A smart line's menu: its search, name and colour (it holds no links, so no bullet or branches).
 function smartLineMenu(anchor, c) {
   openMenu(anchor, (m, close) => {
@@ -1543,9 +1574,10 @@ function smartLineMenu(anchor, c) {
       <form class="smart-form"><input class="input menu-search" value="${esc(c.query)}" aria-label="Search for this smart line" spellcheck="false"></form>
       ${menuItem({ label: 'Rename', iconName: 'edit', action: 'rename' })}
       <div class="label" style="padding:4px 9px 0">Line colour</div>
-      <div class="swatches" role="radiogroup" aria-label="Line colour">${M.lineColors().map((x) => `<button class="swatch" role="radio" aria-checked="${x.value === c.color}" style="--c:${x.value}" data-color="${x.value}" title="${x.name}"></button>`).join('')}</div>
+      ${colourSwatches(c)}
       <div class="menu-sep"></div>
       ${menuItem({ label: 'Delete smart line', iconName: 'trash', action: 'delete', danger: true })}`;
+    bindCustomColour(m, c);
     $('.smart-form', m).addEventListener('submit', async (e) => {
       e.preventDefault();
       const q = $('.menu-search', m).value.trim();
@@ -1557,7 +1589,7 @@ function smartLineMenu(anchor, c) {
     });
     m.addEventListener('click', async (e) => {
       const sw = e.target.closest('[data-color]');
-      if (sw) { c.color = sw.dataset.color; $$('.swatch', m).forEach((x) => x.setAttribute('aria-checked', x === sw)); await putCollections([c]); renderAll(); return; }
+      if (sw) { c.color = sw.dataset.color; $$('.swatch[data-color]', m).forEach((x) => x.setAttribute('aria-checked', x === sw)); $('.swatch.custom', m)?.classList.remove('set'); await putCollections([c]); renderAll(); return; }
       const act = e.target.closest('[data-mi]')?.dataset.mi;
       if (!act) return;
       close();
@@ -1578,20 +1610,21 @@ async function saveSmartLine() {
   toast(`Smart line “${c.name}” keeps every link matching ${q}`, { lead: lineBullet(c, 18) });
 }
 
-// Icon picker for a line's bullet: bundled Lucide icons (searchable) or any emoji.
+// Icon picker for a line's bullet: site logos and bundled Lucide icons (one search for both), or any emoji.
 function iconPicker(anchor, c) {
   openMenu(anchor, (m, close) => {
     m.classList.add('icon-picker');
     m.innerHTML = `
-      <div class="picker-head">${lineBullet(c, 30, 'picker-preview')}<input class="input menu-search" placeholder="Search icons: book, code, travel…" aria-label="Search icons"></div>
-      <div class="icon-grid" role="group" aria-label="Icons"></div>
+      <div class="picker-head">${lineBullet(c, 30, 'picker-preview')}<input class="input menu-search" placeholder="Search: reddit, github, book, travel…" aria-label="Search sites and icons"></div>
+      <div class="icon-scroll"></div>
       <form class="emoji-row"><label class="label" for="emoji-in">Or any emoji</label><input class="input" id="emoji-in" placeholder="🚆" autocomplete="off" aria-describedby="emoji-err"><button class="btn sm" type="submit">Use</button><span class="field-error" id="emoji-err" role="alert"></span></form>`;
-    const grid = $('.icon-grid', m);
+    const grid = $('.icon-scroll', m);
     const draw = (q = '') => {
-      const names = searchIcons(q);
-      grid.innerHTML = names.length
-        ? names.map((n) => `<button type="button" class="icon-cell" data-icon="${n}" aria-label="${n.replace(/-/g, ' ')}" title="${n.replace(/-/g, ' ')}" aria-pressed="${c.icon === 'lucide:' + n}">${iconSvg(n, 2)}</button>`).join('')
-        : `<div class="menu-empty">No icons match “${esc(q)}”. Try an emoji below.</div>`;
+      const brands = searchBrands(q), names = searchIcons(q);
+      const group = (label, cells) => `<div class="icon-group" id="ig-${label}">${label}</div><div class="icon-grid" role="group" aria-labelledby="ig-${label}">${cells}</div>`;
+      grid.innerHTML = (brands.length ? group('Sites', brands.map((s) => `<button type="button" class="icon-cell" data-brand="${s}" aria-label="${esc(brandTitle(s))}" title="${esc(brandTitle(s))}" aria-pressed="${c.icon === 'brand:' + s}">${brandSvg(s)}</button>`).join('')) : '')
+        + (names.length ? group('Icons', names.map((n) => `<button type="button" class="icon-cell" data-icon="${n}" aria-label="${n.replace(/-/g, ' ')}" title="${n.replace(/-/g, ' ')}" aria-pressed="${c.icon === 'lucide:' + n}">${iconSvg(n, 2)}</button>`).join('')) : '')
+        || `<div class="menu-empty">Nothing matches “${esc(q)}”. Try an emoji below.</div>`;
     };
     draw();
     const set = async (value) => {
@@ -1603,7 +1636,10 @@ function iconPicker(anchor, c) {
     const search = $('.menu-search', m);
     search.addEventListener('input', () => draw(search.value));
     search.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); $('.icon-cell', grid)?.focus(); } });
-    grid.addEventListener('click', (e) => { const b = e.target.closest('[data-icon]'); if (b) set('lucide:' + b.dataset.icon); });
+    grid.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-icon], [data-brand]');
+      if (b) set(b.dataset.brand ? 'brand:' + b.dataset.brand : 'lucide:' + b.dataset.icon);
+    });
     $('.emoji-row', m).addEventListener('submit', (e) => {
       e.preventDefault();
       const emo = cleanEmoji($('#emoji-in', m).value);

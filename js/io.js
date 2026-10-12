@@ -208,7 +208,7 @@ function cleanCollection(c, i) {
     createdAt: num(c.createdAt, Date.now()),
     ...(c.autoCode === false ? { autoCode: false } : {}),
     // bullet face: a bundled icon name or a single emoji; anything else is dropped
-    ...(typeof c.icon === 'string' && (/^lucide:[a-z0-9-]{1,40}$/.test(c.icon) || /^emoji:[^<>&"'\s]{1,16}$/u.test(c.icon)) ? { icon: c.icon } : {}),
+    ...(typeof c.icon === 'string' && (/^(lucide:[a-z0-9-]|brand:[a-z0-9])[a-z0-9-]{0,40}$/.test(c.icon) || /^emoji:[^<>&"'\s]{1,16}$/u.test(c.icon)) ? { icon: c.icon } : {}),
     ...(Number.isFinite(c.updatedAt) ? { updatedAt: c.updatedAt } : {}),
     // a smart line is a saved search: it shows matching links and never holds any
     ...(c.smart && typeof c.query === 'string' && c.query.trim() ? { smart: true, query: str(c.query, 300).trim() } : {}),

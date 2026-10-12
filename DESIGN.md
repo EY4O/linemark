@@ -498,12 +498,15 @@ The atom of the system. A circle (default 22px) filled with the line colour, car
 - **On the cover edge:** each card's bullet rides the bottom edge of its cover, half over, with a 3px surface-coloured halo; it scales with the card-size slider, `clamp(18px, card-w × 0.092, 32px)`, alongside the placeholder lettering. In list view it rides the cover's right edge at 22px.
 - Sizes in use: 14 (path), 16 (headlines), 18 (toast, pickers), 20 (stop), 22 (drawer, settings headings), 30 (brand), 34 (popup), 38–46 (station sign), 40 (empty state).
 
-**Bullet faces.** A bullet shows one of three faces, always on the line's colour disc:
+**Bullet faces.** A bullet shows one of four faces, always on the line's colour disc:
 - **Letters:** the one- or two-letter code, the default.
 - **Icon:** one of 240 bundled Lucide icons, drawn at 60% of the bullet with a 2.4 stroke so it holds up at 14px.
+- **Site:** one of 72 site logos (Reddit, GitHub, YouTube, Wikipedia…) from Simple Icons (CC0, `js/brand-pack.js`, built by `tools/build-brand-pack.mjs` from `tools/brand-list.txt`), a filled single-colour path drawn on a 28-unit box so it sits at the same visual size as the stroked icons. Stored as `brand:<slug>`.
 - **Emoji:** at 60% of the bullet.
 
-The ink colour still comes from `bulletInk`. The picker is a menu, not a modal: a search field, an 8-column grid of 20px icons (keyboard: arrow keys move in two dimensions), and an emoji field. The selected icon is marked with the brand-soft fill and a 1.5px brand ring.
+The ink colour still comes from `bulletInk`, so a site's logo is drawn in the bullet's ink, never in the brand's own colours. The picker is a menu, not a modal: one search field for sites and icons, the matches in two labelled 8-column groups of 20px cells (Sites, then Icons; keyboard: left and right step through the cells, up and down go to the nearest cell in the next row by position, across the groups), and an emoji field. The selected icon is marked with the brand-soft fill and a 1.5px brand ring.
+
+**Line colour.** A line's menu offers the twelve colours of the current city palette in rows of seven, then a custom swatch: a conic wheel of that palette, covering the browser's native colour input. Choosing a colour previews it on the swatch and the menu's bullet as the picker moves, and saves on commit; the swatch then shows the line's own colour with the checked ring. A custom colour keeps its value when the city palette changes (only palette colours are recoloured), and its bullet ink still comes from `bulletInk`.
 
 ### Extension icon and logo
 A bookmark ribbon drawn as a transit map, in line colours on a white rounded tile with a hairline edge (sources in store/logo/: `tile-white.svg` for 128px, `tile-white-32.svg` for 32 and 48px, `tile-white-16.svg` for 16px). Cobalt and magenta edge lines meet the orange trunk at a top interchange and at the notch, and a teal branch leaves the trunk at 45°; at 128 the tile fills the store's 96x96 safe area. At 32/48 the branch and lower stations drop and the tile fills the canvas; at 16 the trunk drops too, leaving the ribbon's outline and an orange station. The white tile is the toolbar, store and site icon. In the app the band's brand mark (30px) and the tab icon are `icons/logo-light.svg` in light mode and `icons/logo-dark.svg` in dark mode: the same drawing on the band's black, stations reversed, with a faint light edge. The orange L bullet stays the wordmark on the public site and in empty states.

@@ -82,11 +82,21 @@ export function openMenu(anchor, build, { align = 'start', width, focus = true }
     if (cell && ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
       e.preventDefault();
       const cells = $$('.icon-cell', m);
-      // columns = cells sharing the first cell's row (robust to gaps and padding)
-      const cols = Math.max(1, cells.filter((c) => c.offsetTop === cells[0].offsetTop).length);
-      const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
-      const i = cells.indexOf(cell) + step;
-      if (i < 0) $('.menu-search', m)?.focus(); else cells[Math.min(cells.length - 1, i)]?.focus();
+      const i = cells.indexOf(cell);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const j = i + (e.key === 'ArrowRight' ? 1 : -1);
+        if (j < 0) $('.menu-search', m)?.focus(); else cells[Math.min(cells.length - 1, j)]?.focus();
+        return;
+      }
+      // up and down go to the nearest cell in the next row, by position: the picker's groups (Sites, Icons) have
+      // rows of their own, so counting cells would drift at a group's end
+      const dir = e.key === 'ArrowDown' ? 1 : -1;
+      const at = cell.getBoundingClientRect();
+      const ahead = cells.map((c) => [c, c.getBoundingClientRect()]).filter(([, r]) => dir * (r.top - at.top) > 4);
+      if (!ahead.length) { if (dir < 0) $('.menu-search', m)?.focus(); return; }
+      const rowTop = dir > 0 ? Math.min(...ahead.map(([, r]) => r.top)) : Math.max(...ahead.map(([, r]) => r.top));
+      const row = ahead.filter(([, r]) => Math.abs(r.top - rowTop) < 4);
+      row.sort(([, a], [, b]) => Math.abs(a.left - at.left) - Math.abs(b.left - at.left))[0][0].focus();
       return;
     }
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

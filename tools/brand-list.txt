@@ -1,0 +1,88 @@
+# Brand icons bundled for line bullets (tools/build-brand-pack.mjs), from Simple Icons.
+# One per line: the Simple Icons slug, then any extra search words. Brands missing from the pinned release are skipped.
+
+# social and community
+reddit
+x twitter tweet
+mastodon fediverse
+bluesky bsky
+threads
+instagram
+facebook meta
+tiktok
+snapchat
+pinterest
+tumblr
+discord chat
+whatsapp chat
+telegram chat
+signal chat
+quora
+ycombinator hacker news hn y combinator
+
+# code and work
+github git code
+gitlab git code
+stackoverflow stack overflow code
+codepen code
+npm javascript package
+devdotto dev.to code blog
+huggingface ai models
+kaggle data
+notion notes
+obsidian notes
+trello boards
+figma design
+dribbble design
+behance design
+producthunt product hunt launches
+
+# video, music and podcasts
+youtube video
+youtubemusic youtube music
+vimeo video
+twitch streaming
+netflix film tv
+spotify music podcast
+applemusic apple music
+soundcloud music
+bandcamp music
+pocketcasts podcast
+
+# reading and learning
+wikipedia wiki
+medium blog
+substack newsletter
+goodreads books
+letterboxd film
+imdb film tv
+arxiv papers research
+internetarchive archive wayback
+coursera course
+udemy course
+khanacademy khan academy course
+duolingo language
+
+# shopping, travel and life
+etsy shop
+ebay shop
+airbnb travel
+tripadvisor travel
+strava running cycling
+patreon support
+kofi ko-fi support
+
+# games
+steam games
+epicgames epic games
+itchdotio itch.io games
+playstation games
+chessdotcom chess.com
+lichess chess
+
+# Google and Apple
+google search
+gmail mail
+googledrive google drive
+googlemaps google maps
+apple
