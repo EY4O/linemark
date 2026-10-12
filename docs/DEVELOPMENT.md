@@ -22,7 +22,9 @@ js/sync.js           Optional end-to-end encrypted sync through Google Drive's a
 js/config.js         Publisher sign-in configuration: the built-in Google web client ID (placeholder until set up)
 js/bullets.js        Line bullets (letters, icon or emoji), the icon search and emoji check
 js/icon-pack.js      Generated: the bundled Lucide icons (tools/build-icon-pack.mjs)
-tools/               build-icon-pack.mjs (icon pack), store-assets.mjs (store images), package.mjs (store ZIP)
+js/brand-pack.js     Generated: the bundled site logos from Simple Icons (tools/build-brand-pack.mjs)
+tools/               build-icon-pack.mjs (icon pack), build-brand-pack.mjs (site logos), store-assets.mjs (store images),
+                     home-shots.mjs (homepage hover pictures), package.mjs (store ZIPs)
 store/               Store listing text (LISTING.md), promo art, demo library and rendered images
 js/icons.js          Authored SVG icon set
 fonts/               Archivo variable font (OFL)
@@ -86,7 +88,13 @@ The icons are a curated set of [Lucide](https://lucide.dev) icons, bundled so Li
 node tools/build-icon-pack.mjs
 ```
 
-A line stores its bullet as `icon: "lucide:<name>"` or `icon: "emoji:<emoji>"`. With no icon, it shows its one- or two-letter `code`.
+The site logos (Reddit, GitHub…) are a curated set of [Simple Icons](https://simpleicons.org) (CC0), pinned to one release. To change the set, edit `tools/brand-list.txt` (a slug, then any extra search words) and run:
+
+```bash
+node tools/build-brand-pack.mjs
+```
+
+A line stores its bullet as `icon: "lucide:<name>"`, `icon: "brand:<slug>"` or `icon: "emoji:<emoji>"`. With no icon, it shows its one- or two-letter `code`.
 
 ## Store assets and packaging
 
