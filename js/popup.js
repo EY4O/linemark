@@ -194,7 +194,7 @@ function renderCover() {
   // an unavailable choice says why, in its tooltip and to screen readers
   const hasPage = pageBlob || coverMode === 'page', hasShot = shot || coverMode === 'shot';
   const pageWhy = hasPage ? 'The page’s own cover image, stored on this computer' : pending ? 'Still reading the page…' : pageImage ? 'This page’s image couldn’t be downloaded' : 'This page has no cover image';
-  const shotWhy = hasShot ? 'Screenshot of what you see' : pending ? 'Still taking the screenshot…' : 'Chrome didn’t allow a screenshot of this page';
+  const shotWhy = hasShot ? 'Screenshot of what you see' : pending ? 'Still taking the screenshot…' : `${M.BROWSER} didn’t allow a screenshot of this page`;
   $('#cover-switch').innerHTML = `
     <button data-mode="page" aria-pressed="${coverMode === 'page'}" ${hasPage ? '' : 'disabled'} title="${pageWhy}">Page</button>
     <button data-mode="shot" aria-pressed="${coverMode === 'shot'}" ${hasShot ? '' : 'disabled'} title="${shotWhy}">Screen</button>

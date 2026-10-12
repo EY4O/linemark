@@ -413,7 +413,7 @@ function renderBand() {
           <span>Lines</span>
           <button class="icon-btn" data-act="new-line" title="New line" aria-label="New line">${icon('plus', 16)}</button>
         </div>
-        ${rootLines.length ? rootLines.map((c) => lineNode(c, 0)).join('') : `<p class="band-empty">Lines are your collections. <button data-act="new-line">Create one</button> or import your Chrome bookmarks.</p>`}
+        ${rootLines.length ? rootLines.map((c) => lineNode(c, 0)).join('') : `<p class="band-empty">Lines are your collections. <button data-act="new-line">Create one</button> or import your ${M.BROWSER} ${M.BOOKMARKS}.</p>`}
       </section>
       ${tags.length ? `<section class="band-section" aria-label="Tags">
         <div class="band-head"><span>Tags</span></div>
@@ -1125,7 +1125,7 @@ function emptyHTML() {
     return `<div class="empty">${bullets}<h2>Every link gets a line</h2>
       <p>Linemark keeps your bookmarks on this machine, organised into colour-coded lines. Start by bringing in what you already have.</p>
       <div class="actions">
-        ${M.hasChrome ? `<button class="btn primary" data-act="import-chrome">${icon('download', 17)} Import Chrome bookmarks</button>` : ''}
+        ${M.hasChrome ? `<button class="btn primary" data-act="import-chrome">${icon('download', 17)} Import ${M.BROWSER} ${M.BOOKMARKS}</button>` : ''}
         <button class="btn" data-act="import-html">${icon('upload', 17)} Import HTML file</button>
         <button class="btn" data-act="add">${icon('plus', 17)} Add a link</button>
       </div>
@@ -2061,7 +2061,7 @@ async function offerSuggestions(b) {
   const status = await AI.aiStatus();
   if (status === 'unavailable' || S.editing !== b.id || !$('#d-ai')) return;
   box.hidden = false;
-  box.innerHTML = `<button type="button" class="btn sm" id="d-suggest">${icon('sparkles', 15)} Suggest line, tags and summary</button><span class="hint">Uses Chrome’s built-in AI on this computer. Nothing is sent anywhere.${status === 'downloadable' ? ' The first time, Chrome downloads its model.' : ''}</span>`;
+  box.innerHTML = `<button type="button" class="btn sm" id="d-suggest">${icon('sparkles', 15)} Suggest line, tags and summary</button><span class="hint">Uses ${M.BROWSER}’s built-in AI on this computer. Nothing is sent anywhere.${status === 'downloadable' ? ' The first time, ${M.BROWSER} downloads its model.' : ''}</span>`;
   $('#d-suggest').addEventListener('click', async () => {
     const btn = $('#d-suggest');
     btn.disabled = true;
@@ -2075,7 +2075,7 @@ async function offerSuggestions(b) {
     } catch {
       btn.disabled = false;
       btn.innerHTML = `${icon('sparkles', 15)} Suggest line, tags and summary`;
-      toast('Chrome’s built-in AI couldn’t make a suggestion this time.');
+      toast(`${M.BROWSER}’s built-in AI couldn’t make a suggestion this time.`);
     }
   });
 }
@@ -2310,7 +2310,7 @@ function wireSyncForms() {
     if (pass !== $('#sync-pass2').value) return fail('The two passphrases don’t match.', $('#sync-pass2'));
     // the identity permission has to be requested inside the click
     const ok = await chrome.permissions.request({ permissions: ['identity'] }).catch(() => false);
-    if (!ok) return fail('Linemark needs Chrome’s sign-in permission to connect to Google Drive.');
+    if (!ok) return fail(`Linemark needs ${M.BROWSER}’s sign-in permission to connect to Google Drive.`);
     const btn = $('#sync-go');
     btn.disabled = true;
     btn.textContent = 'Signing in and encrypting…';
@@ -2382,7 +2382,7 @@ async function renderSettings() {
       <h2>${icon('download', 20)} Bring links in</h2>
       <p>Folders become lines, and links you already have are skipped.</p>
       <div class="rows">
-        ${M.hasChrome ? `<div class="row"><div class="what"><b>Chrome bookmarks</b><span>Copies your bookmarks bar and other folders into Linemark. Chrome’s own bookmarks are left untouched.</span></div><div class="act"><button class="btn primary" data-act="import-chrome">${icon('download', 16)} Import</button></div></div>` : ''}
+        ${M.hasChrome ? `<div class="row"><div class="what"><b>${M.BROWSER} ${M.BOOKMARKS}</b><span>Copies your ${M.BOOKMARKS} bar and other folders into Linemark. ${M.BROWSER}’s own ${M.BOOKMARKS} are left untouched.</span></div><div class="act"><button class="btn primary" data-act="import-chrome">${icon('download', 16)} Import</button></div></div>` : ''}
         ${M.hasChrome && chrome.tabs?.group ? `<div class="row"><div class="what"><b>Tab groups</b><span>Keeps each tab group in this window as a line in its colour. Tabs you already saved are skipped.</span></div><div class="act"><button class="btn" data-act="save-tab-groups">${icon('tabs', 16)} Save as lines</button></div></div>` : ''}
         <div class="row"><div class="what"><b>Bookmark HTML file</b><span>The standard export from Chrome, Edge, Firefox, Safari, Raindrop or Pocket. Tags and descriptions are kept.</span></div><div class="act"><button class="btn" data-act="import-html">${icon('upload', 16)} Choose file</button></div></div>
         <div class="row"><div class="what"><b>Linemark backup</b><span>Restores lines, links, notes and screenshots from a JSON backup. Matching links are updated.</span></div><div class="act"><button class="btn" data-act="import-json">${icon('upload', 16)} Restore</button></div></div>
@@ -2392,7 +2392,7 @@ async function renderSettings() {
       <h2>${icon('upload', 20)} Take links out</h2>
       <p>Your data is yours. Export at any time; nothing is kept anywhere but this browser profile.</p>
       <div class="rows">
-        <div class="row"><div class="what"><b>Bookmark HTML</b><span>Lines become folders. Import it into Chrome via Bookmark manager › Import, or into any other browser.</span></div><div class="act"><button class="btn" data-act="export-html">${icon('download', 16)} Export</button></div></div>
+        <div class="row"><div class="what"><b>Bookmark HTML</b><span>Lines become folders. Import it into ${M.BROWSER === 'Edge' ? 'Edge via Favorites › Import favorites' : `${M.BROWSER} via Bookmark manager › Import`}, or into any other browser.</span></div><div class="act"><button class="btn" data-act="export-html">${icon('download', 16)} Export</button></div></div>
         <div class="row"><div class="what"><b>Full backup (JSON)</b><span>Everything, including notes, saved screenshots and indexed page text.</span></div><div class="act"><button class="btn" data-act="export-json">${icon('download', 16)} Back up</button></div></div>
       </div>
     </section>
@@ -2453,7 +2453,7 @@ async function renderSettings() {
     </section>
     <section>
       <h2>${icon('cards', 20)} Library</h2>
-      <div class="rows"><div class="row"><div class="what"><b class="tnum">${plural(S.counts.all, 'link')} on ${plural(S.collections.length, 'line')}, ${plural(S.counts.tags.size, 'tag')}</b><span>Using ${mb} of local storage in this Chrome profile.</span></div></div>
+      <div class="rows"><div class="row"><div class="what"><b class="tnum">${plural(S.counts.all, 'link')} on ${plural(S.collections.length, 'line')}, ${plural(S.counts.tags.size, 'tag')}</b><span>Using ${mb} of local storage in this ${M.BROWSER} profile.</span></div></div>
         <div class="row"><div class="what"><b>Linemark Wrapped</b><span>Your year on the lines: what you saved, where it went, and when. Worked out on this computer.</span></div><div class="act"><a class="btn" href="#/wrapped">${icon('map', 16)} Open</a></div></div></div>
     </section>
   </div>`;
@@ -2471,7 +2471,7 @@ async function doImportChrome() {
   if (!M.hasChrome) return;
   const known = new Set(S.bookmarks.filter((b) => !b.trashedAt).map((b) => M.normalizeUrl(b.url)));
   const res = await IO.importChrome(known);
-  if (!res.bookmarks.length) { toast(res.skipped ? `Nothing new: all ${res.skipped} Chrome bookmarks are already here` : 'Chrome has no bookmarks to import'); return; }
+  if (!res.bookmarks.length) { toast(res.skipped ? `Nothing new: all ${res.skipped} ${M.BROWSER} ${M.BOOKMARKS} are already here` : `${M.BROWSER} has no ${M.BOOKMARKS} to import`); return; }
   await IO.commitImport(res, roots().length);
   await load();
   go('#/all');
@@ -3018,7 +3018,7 @@ function bindDrag() {
 
 // IndexedDB writes can fail (quota, corrupted profile). Say so instead of failing silently.
 window.addEventListener('unhandledrejection', (e) => {
-  const msg = e.reason?.name === 'QuotaExceededError' ? 'Chrome is out of storage space for Linemark. Free some disk space, then try again.' : `Something went wrong: ${e.reason?.message || e.reason}`;
+  const msg = e.reason?.name === 'QuotaExceededError' ? `${M.BROWSER} is out of storage space for Linemark. Free some disk space, then try again.` : `Something went wrong: ${e.reason?.message || e.reason}`;
   toast(msg, { duration: 8000 });
 });
 
@@ -3062,7 +3062,7 @@ boot().catch((e) => {
   console.error(e);
   $('#content').innerHTML = `<div class="empty"><h2>Linemark couldn’t start</h2>
     <p>${esc(e?.message || String(e))}</p>
-    <p>Your bookmarks are stored in this Chrome profile and haven’t been touched. Try reloading. If it keeps happening, open <b>chrome://extensions</b> and check Linemark’s <b>Errors</b>.</p>
+    <p>Your bookmarks are stored in this ${M.BROWSER} profile and haven’t been touched. Try reloading. If it keeps happening, open <b>${M.BROWSER === 'Edge' ? 'edge' : 'chrome'}://extensions</b> and check Linemark’s <b>Errors</b>.</p>
     <div class="actions"><button class="btn primary" id="boot-retry">Reload</button></div></div>`;
   $('#boot-retry').addEventListener('click', () => location.reload());
 });

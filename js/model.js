@@ -3,6 +3,19 @@ import * as db from './db.js';
 
 export const hasChrome = typeof chrome !== 'undefined' && !!chrome.runtime?.id;
 
+// The browser's own name, for text that mentions it: Linemark runs in Edge, Opera and Brave as well as Chrome.
+// Edge calls bookmarks "favorites".
+export const BROWSER = (() => {
+  const nav = globalThis.navigator || {};
+  const brands = (nav.userAgentData?.brands || []).map((b) => b.brand).join(' ');
+  const ua = nav.userAgent || '';
+  if (/Microsoft Edge/.test(brands) || /\bEdg\//.test(ua)) return 'Edge';
+  if (/Opera/.test(brands) || /\bOPR\//.test(ua)) return 'Opera';
+  if (nav.brave) return 'Brave';
+  return 'Chrome';
+})();
+export const BOOKMARKS = BROWSER === 'Edge' ? 'favorites' : 'bookmarks';
+
 export const LINE_COLORS = [
   { name: 'Signal', value: '#d92a3a' },
   { name: 'Magenta', value: '#c2255c' },
