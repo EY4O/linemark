@@ -81,7 +81,7 @@ Right-click selected text to keep it as a highlight, or an image to save it, sto
 Save a whole window of tabs, or bring in your Edge favorites in one click.
 
 Organise on lines
-Colour-coded lines that branch into sub-lines, each with an icon, a site’s logo (Reddit, GitHub, YouTube…) or an emoji. Type Cooking/Baking to make a branch as you save.
+Colour-coded lines that branch into sub-lines, each with an icon, a site's logo or an emoji. Type Cooking/Baking to make a branch as you save.
 A link can stop on several lines, and smart lines keep a search as a line that fills itself.
 Tags, notes, favourites, and five views, including a network map of your library.
 
@@ -98,7 +98,7 @@ Give a link a day to revisit, and it waits for you on the Departures board.
 Linemark Wrapped shows your year on the lines, month by month.
 
 Make it yours
-Recolour every line after London, Paris, Tokyo, New York, Berlin or Seoul, or pick a colour of your own, in light or dark.
+Recolour your lines with a palette inspired by city transit maps, or any colour you like, in light or dark.
 Optional suggestions for a line, tags and a summary from the browser's built-in AI where it's available, worked out on your computer.
 
 Private by default
