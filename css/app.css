@@ -1280,6 +1280,7 @@ body { overflow: hidden; }
 .netmap .map-stop .dot { fill: var(--surface); stroke: var(--ink); stroke-width: 2.75; stroke-linejoin: round; transform-box: fill-box; transform-origin: center; transition: transform 0.15s var(--ease); }
 .netmap .map-stop.inter .dot { stroke-width: 4.5; }
 .netmap .map-stop .st-name { fill: var(--ink-2); font-size: 12.5px; font-weight: 560; stroke: var(--ground); stroke-width: 4px; stroke-linejoin: round; paint-order: stroke; } /* a paper halo, so a name stays readable where it crosses a track or a transfer */
+.netmap .map-stop .st-name.end { text-anchor: end; }
 .netmap .map-stop .st-fav { pointer-events: none; }
 .netmap .map-stop .st-tile { fill: var(--rule); stroke: var(--ground); stroke-width: 2px; paint-order: stroke; }
 .netmap .map-stop .st-letter { fill: var(--ink-2); font-size: 8.5px; font-weight: 800; text-anchor: middle; }

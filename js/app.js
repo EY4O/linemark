@@ -1098,18 +1098,24 @@ function mapHTML(list) {
     const label = !named.has(b.id);
     named.add(b.id);
     const x = xOf(r, b);
-    // names alternate above and below the line, column by column, as a metro map sets them, so neighbours never crowd
+    // Names alternate above and below the line, column by column, so neighbours on a line never crowd. All of them
+    // slope the same way (up and to the right, at 30°): above the line a name starts at its station, below the line it
+    // ends at its station. Parallel names never cross, even where one line's lower names meet the next line's upper
+    // ones. The site's icon (the browser's favicon, or its first letter on a tile) always sits next to the station.
     const below = col % 2 === 1;
-    const lx = x + 4, ly = below ? r.y + 27 : r.y - 17;
-    // the label starts with the site's icon (the browser's own favicon, or its first letter on a tile), then the name
+    const lx = below ? x - 6 : x + 4, ly = below ? r.y + 22 : r.y - 17;
     const fav = M.faviconUrl(siteUrl(b), 32), host = M.hostOf(siteUrl(b));
+    const ix = below ? lx - 13 : lx; // the icon's left edge
     const mark = fav
-      ? `<image class="st-fav" href="${esc(fav)}" x="${lx}" y="${ly - 11}" width="13" height="13"/>`
-      : `<rect class="st-tile" x="${lx}" y="${ly - 11}" width="13" height="13" rx="3"/><text class="st-letter" x="${lx + 6.5}" y="${ly - 1.5}">${esc((host[0] || '?').toUpperCase())}</text>`;
+      ? `<image class="st-fav" href="${esc(fav)}" x="${ix}" y="${ly - 11}" width="13" height="13"/>`
+      : `<rect class="st-tile" x="${ix}" y="${ly - 11}" width="13" height="13" rx="3"/><text class="st-letter" x="${ix + 6.5}" y="${ly - 1.5}">${esc((host[0] || '?').toUpperCase())}</text>`;
+    // a lower name runs back to the left, so near the name column it is cut to fit (about 6.4px a character, at 30°)
+    const room = below ? Math.floor(((x - 8 - MAP.label) / 0.866 - 17) / 6.4) : MAP.name;
+    const nameText = esc(cut(b.title, Math.max(6, Math.min(MAP.name, room))));
     return `<a class="map-stop${inter ? ' inter' : ''}${b.createdAt > recent ? ' new' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" data-id="${esc(b.id)}" data-row="${r.i}" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
         <circle class="hit" cx="${x}" cy="${r.y}" r="22"/>
         <path class="dot" d="${shapePath(shapeOf(b.type), x, r.y, inter ? 10.5 : 9)}"/>
-        ${label ? `<g transform="rotate(${below ? 30 : -30} ${lx} ${ly})">${mark}<text class="st-name" x="${lx + 17}" y="${ly}">${esc(cut(b.title, MAP.name))}</text></g>` : ''}
+        ${label ? `<g transform="rotate(-30 ${lx} ${ly})">${mark}<text class="st-name${below ? ' end' : ''}" x="${below ? lx - 17 : lx + 17}" y="${ly}">${nameText}</text></g>` : ''}
       </a>`;
   }).join('')).join('');
   // the key: the station shapes on this map, and the transfer bar if there is one
