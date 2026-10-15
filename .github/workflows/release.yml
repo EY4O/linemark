@@ -1,0 +1,93 @@
+# Releases Linemark when a version tag is pushed (v1.4.2 and so on): runs the tests, builds the store zips, attaches
+# them to a GitHub Release, and submits them to the Chrome Web Store and Microsoft Edge Add-ons for review.
+# The tag must match manifest.json's version. Store credentials are repository secrets; see docs/RELEASING.md.
+#
+#   git tag -a v1.4.2 -m "What changed, for Edge's certification notes"
+#   git push origin v1.4.2
+#
+# It can also be run by hand from the Actions tab (for one store, or as a dry run).
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      store:
+        description: Which store to submit to
+        type: choice
+        options: [both, chrome, edge, none]
+        default: both
+      dry_run:
+        description: Check the zips and settings without calling the stores
+        type: boolean
+        default: true
+
+permissions:
+  contents: write # to create the GitHub Release
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: stores # holds the store secrets; add required reviewers to it to approve each release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the tag matches the manifest
+        id: version
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "v$VERSION" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match manifest.json version $VERSION"
+            exit 1
+          fi
+
+      - name: Release notes
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            NOTES=$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}" | sed '/^-----BEGIN/,$d')
+          fi
+          [ -z "$NOTES" ] && NOTES=$(git log -1 --format=%s)
+          { echo 'RELEASE_NOTES<<EOF'; echo "$NOTES"; echo 'EOF'; } >> "$GITHUB_ENV"
+
+      - name: Tests
+        run: node tests/run.mjs
+
+      - name: Build the store zips
+        run: node tools/package.mjs
+
+      - name: GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            "dist/chrome-${{ steps.version.outputs.version }}.zip" \
+            "dist/edge-${{ steps.version.outputs.version }}.zip" \
+            --title "Linemark ${{ steps.version.outputs.version }}" --notes "$RELEASE_NOTES"
+
+      - name: Submit to the stores
+        if: github.ref_type == 'tag' || inputs.store != 'none'
+        env:
+          CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+        run: |
+          STORE="${{ inputs.store || 'both' }}"
+          DRY=""
+          [ "${{ inputs.dry_run }}" = "true" ] && DRY="--dry-run"
+          node tools/publish.mjs --store "$STORE" $DRY

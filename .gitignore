@@ -14,3 +14,8 @@ node_modules/
 
 # Store upload builds (node tools/package.mjs)
 dist/
+
+# Store credentials: never commit these (they live in GitHub secrets; see docs/RELEASING.md)
+*service-account*.json
+.env
+.env.*

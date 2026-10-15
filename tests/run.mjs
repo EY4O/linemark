@@ -107,6 +107,8 @@ function findChrome() {
 const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), 'emb-'));
 const args = ['--remote-debugging-pipe', '--enable-unsafe-extension-debugging', `--user-data-dir=${PROFILE}`, '--no-first-run', '--no-default-browser-check', '--disable-gpu', 'about:blank'];
 if (!HEADED) args.unshift('--headless=new');
+// CI runners (GitHub's Ubuntu images) don't allow Chrome's sandbox; the suite only loads its own local pages there.
+if (process.env.CI) args.unshift('--no-sandbox');
 const chrome = spawn(findChrome(), args, { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] });
 let msgId = 0; const pending = new Map(); const listeners = new Set(); let buf = '';
 chrome.stdio[4].on('data', (chunk) => {

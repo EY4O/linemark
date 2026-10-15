@@ -24,7 +24,8 @@ js/bullets.js        Line bullets (letters, icon or emoji), the icon search and 
 js/icon-pack.js      Generated: the bundled Lucide icons (tools/build-icon-pack.mjs)
 js/brand-pack.js     Generated: the bundled site logos from Simple Icons (tools/build-brand-pack.mjs)
 tools/               build-icon-pack.mjs (icon pack), build-brand-pack.mjs (site logos), store-assets.mjs (store images),
-                     home-shots.mjs (homepage hover pictures), package.mjs (store ZIPs)
+                     home-shots.mjs (homepage hover pictures), package.mjs (store ZIPs), publish.mjs (store uploads)
+.github/workflows/   release.yml: tag a version to test, build and submit it to both stores (docs/RELEASING.md)
 store/               Store listing text (LISTING.md), promo art, demo library and rendered images
 js/icons.js          Authored SVG icon set
 fonts/               Archivo variable font (OFL)
@@ -101,6 +102,7 @@ A line stores its bullet as `icon: "lucide:<name>"`, `icon: "brand:<slug>"` or `
 ```bash
 node tools/store-assets.mjs   # screenshots, promo tiles and icon, into store/images/
 node tools/package.mjs        # dist/chrome-<version>.zip and dist/edge-<version>.zip for upload
+node tools/publish.mjs        # submit them to both stores (credentials from the environment; see docs/RELEASING.md)
 ```
 
 `store/LISTING.md` has every listing field ready to paste: description, permission justifications and the data-usage answers. `PRIVACY.md` and `docs/privacy.html` are the privacy policy; publish the HTML page and use its URL in the listing.
