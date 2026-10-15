@@ -5,7 +5,7 @@ import * as IO from './io.js';
 import * as Sync from './sync.js';
 import * as AI from './ai.js';
 import { chime } from './chime.js';
-import { shapeIcon, shapePath, shapeOf, TYPE_NAME } from './shapes.js';
+import { shapeIcon, shapePath, shapeOf, TYPE_NAME, SHAPES } from './shapes.js';
 import { lineBulletHTML, iconSvg, searchIcons, cleanEmoji, loadIcons, usesIcons, brandSvg, brandTitle, searchBrands } from './bullets.js';
 import { icon } from './icons.js';
 import { esc, $, $$, debounce, toast, openMenu, closeMenu, isMenuOpen, menuItem, place, armConfirm, relTime, fullDate, plural, download, pickFile } from './ui.js';
@@ -670,7 +670,7 @@ function renderContent() {
     ? `<div class="group-head">${S.route.kind !== 'all' ? `<span>Searching in ${esc(stationInfo().name)}.</span><button class="btn sm ghost" data-act="search-all">${icon('search', 14)} Search all bookmarks</button>` : ''}${smartHere ? '' : `<button class="btn sm ghost" data-act="save-smart" title="Keep this search as a line that fills itself">${icon('filter', 14)} Save as smart line</button>`}</div>`
     : '';
 
-  if (S.ui.view === 'map') { S.enter = null; content.innerHTML = `${legend}${searchElsewhere}${mapHTML(list)}`; return; }
+  if (S.ui.view === 'map') { S.enter = null; content.innerHTML = `${legend}${searchElsewhere}${mapHTML(list)}`; wireMap(content); return; }
   const enter = S.enter ? ` enter-${S.enter}` : '';
   S.enter = null;
   content.innerHTML = `${transfers}${legend}${searchElsewhere}<div class="grid ${S.ui.view}${enter}${S.selected.size ? ' selecting' : ''}" id="grid" style="--card-w:${S.ui.size}px">${list.slice(0, S.limit).map(cardHTML).join('')}</div><div class="more-sentinel" id="sentinel"></div>`;
@@ -1000,8 +1000,9 @@ async function exportWrapped() {
 
 // ======================= network map =======================
 // The listed links drawn as a transit map: each line is a coloured track with its links as stations, branches hang
-// off their parent on a stem in its colour (as in the sidebar), and a link on more than one line is an interchange.
-const MAP = { label: 236, step: 104, row: 104, top: 84, max: 14 };
+// off their parent on a stem in its colour (as in the sidebar), and a link on more than one line is an interchange:
+// its stations stand in one column, joined by a transfer bar, as interchanges are drawn on a metro map.
+const MAP = { label: 236, step: 104, row: 124, top: 112, max: 14, name: 26 };
 function mapHTML(list) {
   const visible = new Set(list.map((b) => b.id));
   const items = new Map(); // line id ('' = unsorted) -> [{ b, inter }]
@@ -1026,42 +1027,190 @@ function mapHTML(list) {
   };
   walk(roots(), 0, null);
   if (items.has('')) rows.push({ c: { id: '', name: 'Unsorted', color: 'var(--ink-3)', code: '' }, depth: 0, parentRow: null, items: items.get(''), unsorted: true });
-  rows.forEach((r, i) => { r.y = MAP.top + i * MAP.row; r.bx = 24 + r.depth * 20; });
-  const longest = Math.min(MAP.max, Math.max(1, ...rows.map((r) => r.items.length)));
-  const w = MAP.label + 40 + longest * MAP.step + 90;
-  const h = MAP.top + rows.length * MAP.row - 40;
+  rows.forEach((r, i) => { r.i = i; r.y = MAP.top + i * MAP.row; r.bx = 24 + r.depth * 20; r.shown = r.items.slice(0, MAP.max); r.col = new Map(); });
+  // Columns. Each line keeps its links in list order. A link shown on several lines takes one column on all of them,
+  // and the lines between its first and last keep that column clear too, so its transfer bar runs straight down
+  // without crossing another station. Plain links take the next free column on their own line.
+  const placed = new Map(); // bookmark id -> the rows it is shown on
+  rows.forEach((r) => r.shown.forEach(({ b }) => { if (!placed.has(b.id)) placed.set(b.id, []); placed.get(b.id).push(r); }));
+  const next = rows.map(() => 0);
+  const transfers = [];
+  for (const b of list) {
+    const on = placed.get(b.id);
+    if (!on) continue;
+    const lo = Math.min(...on.map((r) => r.i)), hi = Math.max(...on.map((r) => r.i));
+    let col = 0;
+    for (let i = lo; i <= hi; i++) col = Math.max(col, next[i]);
+    for (let i = lo; i <= hi; i++) next[i] = col + 1;
+    for (const r of on) r.col.set(b.id, col);
+    if (on.length > 1) transfers.push({ b, x: MAP.label + 30 + col * MAP.step, y1: rows[lo].y, y2: rows[hi].y, rows: on.map((r) => r.i) });
+  }
+  // where each track ends; a line with no links of its own (only branches) gets a dashed spine as long as its branches
+  for (const r of rows) {
+    const last = r.shown.length ? Math.max(...r.shown.map(({ b }) => r.col.get(b.id))) : 0;
+    r.end = MAP.label + 30 + last * MAP.step + 34;
+  }
+  rows.forEach((r, i) => {
+    if (r.shown.length || r.unsorted) return;
+    let end = MAP.label + 60;
+    for (let j = i + 1; j < rows.length && rows[j].depth > r.depth; j++) if (rows[j].shown.length) end = Math.max(end, rows[j].end);
+    r.junction = true; r.end = end;
+  });
+  const columns = Math.max(1, ...next);
+  const w = MAP.label + 40 + columns * MAP.step + 120;
+  const h = MAP.top + (rows.length - 1) * MAP.row + 108; // room under the last line for its lower labels
   const cut = (t, n) => (t.length > n ? t.slice(0, n - 1) + '…' : t);
-  const svg = rows.map((r) => {
+  const recent = Date.now() - 86400000;
+  const xOf = (r, b) => MAP.label + 30 + r.col.get(b.id) * MAP.step;
+  const rowStyle = (r) => `--c:${r.c.color};--bi:${r.unsorted ? 'var(--surface)' : M.bulletInk(r.c.color)}`;
+  // The map is two drawings side by side: the line names, which stay put, and the lines themselves, which scroll.
+  const names = rows.map((r) => {
     const c = r.c;
     const href = r.unsorted ? '#/unsorted' : '#/c/' + c.id;
     // a branch leaves its parent straight down, then takes a 45° turn into its own bullet, as a metro map draws it
     const stem = r.parentRow ? `<path class="stem" d="M${r.parentRow.bx} ${r.parentRow.y + 12} V${r.y - 8} L${r.parentRow.bx + 8} ${r.y} H${r.bx - 12}" style="--c:${r.parentRow.c.color}"/>` : '';
-    const shown = r.items.slice(0, MAP.max);
-    const end = MAP.label + 30 + Math.max(0, shown.length - 1) * MAP.step + 34;
-    const recent = Date.now() - 86400000;
-    const stations = shown.map(({ b, inter }, i) => {
-      const x = MAP.label + 30 + i * MAP.step;
-      return `<a class="map-stop${inter ? ' inter' : ''}${b.createdAt > recent ? ' new' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
-        <title>${esc(b.title)}</title>
-        <circle class="hit" cx="${x}" cy="${r.y}" r="22"/>
-        <path class="dot" d="${shapePath(shapeOf(b.type), x, r.y, inter ? 10.5 : 9)}"/>
-        <text x="${x + 2}" y="${r.y - 17}" transform="rotate(-30 ${x + 2} ${r.y - 17})">${esc(cut(b.title, 22))}</text>
-      </a>`;
-    }).join('');
-    const more = r.items.length > MAP.max ? `<a class="more-stops" href="${href}"><text x="${end + 14}" y="${r.y + 5}">+${r.items.length - MAP.max} more</text></a>` : '';
-    return `<g class="line-row" style="--c:${c.color};--bi:${r.unsorted ? 'var(--surface)' : M.bulletInk(c.color)}">
+    return `<g class="line-row" data-row="${r.i}" style="${rowStyle(r)}">
       ${stem}
       <a class="line-label" href="${href}" aria-label="Line ${esc(c.name)}">
         <rect class="hit" x="${r.bx - 18}" y="${r.y - 22}" width="${MAP.label - r.bx - 4}" height="44" rx="8"/>
         <circle class="lb" cx="${r.bx}" cy="${r.y}" r="12"/>${r.unsorted ? '' : `<text class="lb-code" x="${r.bx}" y="${r.y + 4}">${esc(c.code || M.codeFor(c.name))}</text>`}
         <text class="lb-name" x="${r.bx + 20}" y="${r.y + 5}">${esc(cut(c.name, Math.max(8, 24 - r.depth * 2)))}</text>
       </a>
-      ${shown.length ? `<path class="track" d="M${MAP.label} ${r.y} H${end}"/><path class="cap" d="M${end} ${r.y - 9} V${r.y + 9}"/>` : ''}
-      ${shown.length > 1 && !reducedMotion() ? `<g class="train"><rect x="-12" y="-6.5" width="24" height="13" rx="2.5"/><rect class="pax" x="-7" y="-2.5" width="5" height="5" rx="1"/><rect class="pax" x="2" y="-2.5" width="5" height="5" rx="1"/><animateMotion dur="${Math.round((end - MAP.label) / 34)}s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;0" keyTimes="0;0.5;1" path="M${MAP.label + 30} ${r.y} H${end - 34}"/></g>` : ''}
-      ${stations}${more}
     </g>`;
   }).join('');
-  return `<div class="map-wrap"><svg class="netmap" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="group" aria-label="Network map: ${plural(visible.size, 'link')} on ${plural(rows.length, 'line')}">${svg}</svg></div>`;
+  // first the tracks (and trains), then the transfer bars over them, then the stations on top
+  const tracks = rows.map((r) => {
+    const href = r.unsorted ? '#/unsorted' : '#/c/' + r.c.id;
+    const more = r.items.length > MAP.max ? `<a class="more-stops" href="${href}"><text x="${r.end + 14}" y="${r.y + 5}">+${r.items.length - MAP.max} more</text></a>` : '';
+    const track = r.junction
+      ? `<path class="track junction" d="M${MAP.label} ${r.y} H${r.end}"/>`
+      : r.shown.length ? `<path class="track" d="M${MAP.label} ${r.y} H${r.end}"/><path class="cap" d="M${r.end} ${r.y - 9} V${r.y + 9}"/>` : '';
+    return `<g class="line-row" data-row="${r.i}" style="${rowStyle(r)}">
+      ${track}
+      ${r.shown.length > 1 && !reducedMotion() ? `<g class="train"><rect x="-12" y="-6.5" width="24" height="13" rx="2.5"/><rect class="pax" x="-7" y="-2.5" width="5" height="5" rx="1"/><rect class="pax" x="2" y="-2.5" width="5" height="5" rx="1"/><animateMotion dur="${Math.round((r.end - MAP.label) / 34)}s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;0" keyTimes="0;0.5;1" path="M${MAP.label + 30} ${r.y} H${r.end - 34}"/></g>` : ''}
+      ${more}
+    </g>`;
+  }).join('');
+  const bars = transfers.map(({ b, x, y1, y2, rows: on }) => `<g class="transfer" data-for="${esc(b.id)}" data-rows="${on.join(' ')}"><path class="tr-out" d="M${x} ${y1} V${y2}"/><path class="tr-in" d="M${x} ${y1} V${y2}"/></g>`).join('');
+  const named = new Set(); // an interchange is named once, at its top station; its transfer bar shows where it goes
+  const stops = rows.map((r) => r.shown.map(({ b, inter }) => {
+    const col = r.col.get(b.id);
+    const label = !named.has(b.id);
+    named.add(b.id);
+    const x = xOf(r, b);
+    // names alternate above and below the line, column by column, as a metro map sets them, so neighbours never crowd
+    const below = col % 2 === 1;
+    const lx = x + 4, ly = below ? r.y + 27 : r.y - 17;
+    // the label starts with the site's icon (the browser's own favicon, or its first letter on a tile), then the name
+    const fav = M.faviconUrl(siteUrl(b), 32), host = M.hostOf(siteUrl(b));
+    const mark = fav
+      ? `<image class="st-fav" href="${esc(fav)}" x="${lx}" y="${ly - 11}" width="13" height="13"/>`
+      : `<rect class="st-tile" x="${lx}" y="${ly - 11}" width="13" height="13" rx="3"/><text class="st-letter" x="${lx + 6.5}" y="${ly - 1.5}">${esc((host[0] || '?').toUpperCase())}</text>`;
+    return `<a class="map-stop${inter ? ' inter' : ''}${b.createdAt > recent ? ' new' : ''}" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" data-id="${esc(b.id)}" data-row="${r.i}" aria-label="${esc(b.title)}${inter ? ' (interchange)' : ''}">
+        <circle class="hit" cx="${x}" cy="${r.y}" r="22"/>
+        <path class="dot" d="${shapePath(shapeOf(b.type), x, r.y, inter ? 10.5 : 9)}"/>
+        ${label ? `<g transform="rotate(${below ? 30 : -30} ${lx} ${ly})">${mark}<text class="st-name" x="${lx + 17}" y="${ly}">${esc(cut(b.title, MAP.name))}</text></g>` : ''}
+      </a>`;
+  }).join('')).join('');
+  // the key: the station shapes on this map, and the transfer bar if there is one
+  const types = [...new Set(list.filter((b) => placed.has(b.id)).map((b) => (SHAPES[b.type] ? b.type : 'link')))];
+  const order = Object.keys(SHAPES);
+  types.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  const key = `<ul class="map-key" aria-label="Map key">${types.map((t) => `<li>${shapeIcon(t, 13)}${TYPE_NAME[t]}</li>`).join('')}${transfers.length ? '<li><span class="key-transfer" aria-hidden="true"></span>Interchange</li>' : ''}</ul>`;
+  const fit = `<button type="button" class="btn ghost sm" data-act="map-fit" aria-pressed="${!!S.ui.mapFit}" title="Scale the whole map to the window">${icon('select', 15)} Fit to width</button>`;
+  const label = `Network map: ${plural(visible.size, 'link')} on ${plural(rows.length, 'line')}`;
+  return `<div class="map-shell${S.ui.mapFit ? ' fit' : ''}">
+    <div class="map-bar">${key}${fit}</div>
+    <div class="map-wrap"><div class="map-canvas" style="width:${w}px">
+      <svg class="netmap netmap-names" width="${MAP.label}" height="${h}" viewBox="0 0 ${MAP.label} ${h}" role="group" aria-label="${label}: lines">${names}</svg>
+      <svg class="netmap netmap-lines" width="${w - MAP.label}" height="${h}" viewBox="${MAP.label} 0 ${w - MAP.label} ${h}" role="group" aria-label="${label}: stations">${tracks}<g class="transfers" aria-hidden="true">${bars}</g><g class="stops">${stops}</g></svg>
+    </div></div>
+    <div class="map-peek" aria-hidden="true" hidden></div>
+  </div>`;
+}
+
+// The map's behaviour once drawn: fit to width, the shadow on the name column when the lines scroll under it,
+// following a line or an interchange under the pointer or keyboard focus, and a preview of the link under the pointer.
+function wireMap(content) {
+  const shell = $('.map-shell', content);
+  if (!shell) return;
+  const wrap = $('.map-wrap', shell), canvas = $('.map-canvas', shell), peek = $('.map-peek', shell);
+  const svgs = $$('svg.netmap', shell);
+  const fit = () => {
+    const full = parseFloat(canvas.style.width);
+    const room = wrap.clientWidth - parseFloat(getComputedStyle(wrap).paddingLeft) - parseFloat(getComputedStyle(wrap).paddingRight);
+    canvas.style.zoom = S.ui.mapFit && room < full ? String(room / full) : '';
+  };
+  S.mapFit = fit;
+  fit();
+  S.mapResize?.disconnect();
+  S.mapResize = new ResizeObserver(fit);
+  S.mapResize.observe(wrap);
+  wrap.addEventListener('scroll', () => shell.classList.toggle('scrolled', wrap.scrollLeft > 4), { passive: true });
+
+  // follow: light a line (its stations, and the transfers to its interchanges), or an interchange (its stations on
+  // every line, its transfer, and the lines it serves); everything else fades back
+  const lit = (rowSet, idSet) => {
+    for (const s of svgs) s.classList.add('focus');
+    $$('.line-row', shell).forEach((g) => g.classList.toggle('lit', rowSet.has(g.dataset.row)));
+    $$('.map-stop', shell).forEach((a) => a.classList.toggle('lit', rowSet.has(a.dataset.row) || idSet.has(a.dataset.id)));
+    $$('.transfer', shell).forEach((t) => t.classList.toggle('lit', idSet.has(t.dataset.for)));
+  };
+  const clear = () => { for (const s of svgs) s.classList.remove('focus'); $$('.lit', shell).forEach((e) => e.classList.remove('lit')); };
+  const followRow = (row) => {
+    const ids = new Set($$(`.map-stop.inter[data-row="${row}"]`, shell).map((a) => a.dataset.id));
+    lit(new Set([row]), ids);
+  };
+  const followStop = (a) => {
+    if (!a.classList.contains('inter')) return followRow(a.dataset.row);
+    const rows = new Set($$(`.map-stop[data-id="${CSS.escape(a.dataset.id)}"]`, shell).map((x) => x.dataset.row));
+    lit(rows, new Set([a.dataset.id]));
+  };
+  const follow = (el) => {
+    const stop = el.closest?.('.map-stop');
+    if (stop) return followStop(stop);
+    const row = el.closest?.('.line-row');
+    if (row) return followRow(row.dataset.row);
+    clear();
+  };
+
+  // the preview: cover, title, site, tags and the lines it stops on
+  let timer = 0, shown = null;
+  const hidePeek = () => { clearTimeout(timer); peek.hidden = true; shown = null; };
+  const showPeek = (a) => {
+    const b = S.bm.get(a.dataset.id);
+    if (!b || shown === a) return;
+    shown = a;
+    const col = S.col.get(b.collectionId);
+    const lines = [b.collectionId, ...(b.alsoOn || [])].map((x) => S.col.get(x)).filter(fileable);
+    peek.innerHTML = `<div class="peek-cover">${coverHTML(b, col)}</div>
+      <div class="peek-body">
+        <b class="peek-title">${esc(b.title || b.url)}</b>
+        <span class="peek-site">${favImg(siteUrl(b), 14) || ''}${esc(M.hostOf(siteUrl(b)))}</span>
+        ${b.tags.length ? `<span class="peek-tags">${b.tags.slice(0, 6).map((t) => '#' + esc(t)).join(' ')}</span>` : ''}
+        ${lines.length ? `<span class="peek-lines">${lines.map((c) => `${lineBullet(c, 16)}<span>${esc(c.name)}</span>`).join('')}</span>` : ''}
+      </div>`;
+    hydrate(peek);
+    peek.hidden = false;
+    const at = $('.dot', a).getBoundingClientRect(), box = shell.getBoundingClientRect();
+    const pw = peek.offsetWidth, ph = peek.offsetHeight;
+    let left = at.right - box.left + 14;
+    if (left + pw > box.width) left = at.left - box.left - pw - 14;
+    let top = at.top - box.top - 10;
+    top = Math.max(0, Math.min(top, box.height - ph));
+    peek.style.left = Math.max(0, left) + 'px';
+    peek.style.top = top + 'px';
+  };
+  shell.addEventListener('pointerover', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    follow(e.target);
+    const stop = e.target.closest('.map-stop');
+    clearTimeout(timer);
+    if (stop) timer = setTimeout(() => showPeek(stop), 220); else hidePeek();
+  });
+  wrap.addEventListener('pointerleave', () => { clear(); hidePeek(); });
+  shell.addEventListener('focusin', (e) => { follow(e.target); const stop = e.target.closest('.map-stop'); if (stop) showPeek(stop); else hidePeek(); });
+  shell.addEventListener('focusout', (e) => { if (!shell.contains(e.relatedTarget)) { clear(); hidePeek(); } });
 }
 
 function appendMore() {
@@ -2691,6 +2840,13 @@ function bindEvents() {
       case 'export-html': download(`linemark-bookmarks-${stamp()}.html`, new Blob([IO.toNetscape(S)], { type: 'text/html' })); break;
       case 'export-json': download(`linemark-backup-${stamp()}.json`, await IO.toBackup()); break;
       case 'scan': startScan(actEl.dataset.kind); break;
+      case 'map-fit': {
+        S.ui.mapFit = !S.ui.mapFit; saveUI();
+        actEl.setAttribute('aria-pressed', S.ui.mapFit);
+        actEl.closest('.map-shell')?.classList.toggle('fit', S.ui.mapFit);
+        S.mapFit?.();
+        break;
+      }
       case 'scan-cancel': if (S.scan) S.scan.cancelled = true; break;
       case 'recheck': startScan('links', S.list.map((x) => x.id)); break;
       case 'trash-dead': trash(S.bookmarks.filter((x) => !x.trashedAt && x.health?.state === 'dead').map((x) => x.id)); break;

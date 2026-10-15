@@ -62,6 +62,17 @@ body { width: 380px; max-width: 100%; min-height: 200px; } /* narrows for a scro
 .pop-line:hover { background: var(--band-hover); }
 .pop-line span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pop-line .ic { color: var(--band-ink-2); }
+/* the band's "+2": how many more lines the link stops on */
+.pop-more { flex: none; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--band-hover); color: var(--band-ink); font-size: 0.75rem; font-weight: 700; }
+
+/* the line picker as a checklist: a tick box on every row, the main line marked, and a footer with Done */
+.pick-hint { margin: 2px 9px 6px; color: var(--ink-3); font-size: 0.8125rem; }
+.menu-item.pick .pick-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-main { flex: none; padding: 1px 6px; border-radius: 4px; background: var(--hover); color: var(--ink-2); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.02em; }
+.pick-box { flex: none; display: grid; place-items: center; width: 18px; height: 18px; margin-left: auto; border-radius: 5px; border: 1.5px solid var(--rule-strong); color: var(--surface); }
+.menu-item.pick.on .pick-box { background: var(--ink); border-color: var(--ink); }
+.pick-foot { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px -6px -6px; padding: 8px 9px; border-top: 1px solid var(--rule); background: var(--surface); }
+.pick-count { color: var(--ink-2); font-size: 0.8125rem; font-weight: 600; }
 .pop-band .icon-btn { color: var(--band-ink-2); width: 34px; height: 34px; }
 .pop-band .icon-btn:hover { background: var(--band-hover); color: var(--band-ink); }
 .pop-band .icon-btn.on { color: var(--fav); }

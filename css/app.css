@@ -1236,10 +1236,42 @@ body { overflow: hidden; }
 
 /* ---------- network map ---------- */
 .map-wrap { overflow: auto; margin: 0 -4px; padding: 0 4px 12px; }
+/* the map's frame: a key and the fit toggle above, then the line names (which stay put) beside the scrolling lines */
+.map-shell { position: relative; }
+.map-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 6px; }
+.map-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; color: var(--ink-2); font-size: 0.8125rem; font-weight: 600; }
+.map-key li { display: inline-flex; align-items: center; gap: 6px; }
+.map-key .shape { fill: var(--surface); stroke: var(--ink); stroke-width: 2.6; overflow: visible; }
+.key-transfer { width: 7px; height: 16px; border-radius: 4px; background: var(--surface); box-shadow: 0 0 0 2.5px var(--ink); }
+.map-canvas { display: flex; align-items: flex-start; }
+.netmap-names { position: sticky; left: 0; z-index: 2; flex: none; background: var(--ground); transition: box-shadow 0.2s; }
+.map-shell.scrolled .netmap-names { box-shadow: 10px 0 12px -10px rgba(22, 23, 26, 0.35); }
+:root[data-theme='dark'] .map-shell.scrolled .netmap-names { box-shadow: 10px 0 12px -10px rgba(0, 0, 0, 0.8); }
+.netmap-lines { flex: none; }
+@media (max-width: 600px) { .netmap-names { position: static; } } /* on a phone the names would take half the width */
+/* following a line or an interchange: the rest of the map steps back */
+.netmap .line-row, .netmap .map-stop, .netmap .transfer { transition: opacity 0.18s var(--ease); }
+.netmap.focus .line-row:not(.lit), .netmap.focus .map-stop:not(.lit), .netmap.focus .transfer:not(.lit) { opacity: 0.2; }
+/* the preview of the link under the pointer */
+.map-peek { position: absolute; z-index: 5; width: 264px; overflow: hidden; border: 1px solid var(--rule); border-radius: var(--r-2); background: var(--surface); box-shadow: var(--shadow-3); pointer-events: none; }
+.peek-cover { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--hover); }
+.peek-cover > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.peek-cover .ph { height: 100%; }
+.peek-body { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; }
+.peek-title { font-size: 0.9375rem; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.peek-site { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--ink-3); font-size: 0.8125rem; }
+.peek-tags { color: var(--ink-2); font-size: 0.8125rem; font-weight: 600; }
+.peek-lines { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 2px; color: var(--ink-2); font-size: 0.8125rem; }
+.peek-lines span:not(.bullet) { margin-right: 6px; }
 .netmap { display: block; font-family: var(--font); }
 .netmap .track { fill: none; stroke: var(--c); stroke-width: 7; stroke-linecap: round; }
 .netmap .stem { fill: none; stroke: var(--c); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
 .netmap .cap { fill: none; stroke: var(--c); stroke-width: 6; stroke-linecap: round; } /* the line's terminus bar */
+/* an interchange's transfer: a paper bar outlined in ink, joining its stations down one column, over the tracks */
+.netmap .transfer path { fill: none; stroke-linecap: round; }
+.netmap .transfer .tr-out { stroke: var(--ink); stroke-width: 12; }
+.netmap .transfer .tr-in { stroke: var(--surface); stroke-width: 5.5; }
+.netmap .track.junction { stroke-width: 5; stroke-dasharray: 0.1 11; opacity: 0.6; } /* a line whose links are all on its branches: a dotted spine as long as they are */
 .netmap .lb { fill: var(--c); }
 .netmap .lb-code { fill: var(--bi); font-size: 10.5px; font-weight: 800; font-stretch: 87.5%; text-anchor: middle; }
 .netmap .lb-name { fill: var(--ink); font-size: 15px; font-weight: 720; font-stretch: 87.5%; }
@@ -1247,15 +1279,18 @@ body { overflow: hidden; }
 /* stations as on a metro puzzle: the link's shape, paper-filled, outlined in ink; an interchange is drawn heavier */
 .netmap .map-stop .dot { fill: var(--surface); stroke: var(--ink); stroke-width: 2.75; stroke-linejoin: round; transform-box: fill-box; transform-origin: center; transition: transform 0.15s var(--ease); }
 .netmap .map-stop.inter .dot { stroke-width: 4.5; }
-.netmap .map-stop text { fill: var(--ink-2); font-size: 12.5px; font-weight: 560; }
+.netmap .map-stop .st-name { fill: var(--ink-2); font-size: 12.5px; font-weight: 560; stroke: var(--ground); stroke-width: 4px; stroke-linejoin: round; paint-order: stroke; } /* a paper halo, so a name stays readable where it crosses a track or a transfer */
+.netmap .map-stop .st-fav { pointer-events: none; }
+.netmap .map-stop .st-tile { fill: var(--rule); stroke: var(--ground); stroke-width: 2px; paint-order: stroke; }
+.netmap .map-stop .st-letter { fill: var(--ink-2); font-size: 8.5px; font-weight: 800; text-anchor: middle; }
 .netmap .map-stop:hover .dot, .netmap .map-stop:focus-visible .dot { transform: scale(1.3); }
-.netmap .map-stop:hover text, .netmap .map-stop:focus-visible text { fill: var(--ink); text-decoration: underline; }
+.netmap .map-stop:hover .st-name, .netmap .map-stop:focus-visible .st-name { fill: var(--ink); text-decoration: underline; }
 .netmap a:focus { outline: none; }
 .netmap .map-stop:focus-visible .dot { stroke: var(--brand); stroke-width: 4; }
 .netmap .line-label:focus-visible .lb { stroke: var(--brand); stroke-width: 3; paint-order: stroke; r: 14; }
 .netmap .line-label:hover .lb-name, .netmap .line-label:focus-visible .lb-name { text-decoration: underline; }
 .netmap .more-stops text { fill: var(--ink-3); font-size: 12.5px; font-weight: 650; }
-@media (prefers-reduced-motion: reduce) { .netmap .map-stop .dot { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .netmap .map-stop .dot, .netmap .line-row, .netmap .map-stop, .netmap .transfer { transition: none; } }
 
 /* ---------- on-device suggestions ---------- */
 .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: -4px 0 4px; }

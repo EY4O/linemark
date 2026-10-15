@@ -130,6 +130,8 @@ It is published from the public repository [EY4O/linemark-site](https://github.c
 3. **Privacy:** no new permissions; the justifications above still cover everything.
 4. **Submit for review.**
 
+**1.4.1** follows once 1.4.0 is approved: upload `dist/chrome-1.4.1.zip` (the popup's line picker becomes a checklist for several lines; the network map gains transfer bars, site icons, a key, fit to width, a fixed name column, hover to follow and link previews). No new permissions, and the description doesn't change.
+
 The Edge listing takes the same version: upload `dist/edge-1.4.0.zip` in Partner Center (see `store/EDGE.md`) and paste its description there.
 
 ## Before you submit

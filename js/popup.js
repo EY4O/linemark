@@ -21,6 +21,9 @@ function bullet(c, size) {
   return lineBulletHTML(c, size);
 }
 const lineOf = () => collections.find((c) => c.id === bm.collectionId) || null;
+// Every line the link stops on, main line first, then the lines it also shows on (bm.alsoOn).
+const linesOn = () => [bm.collectionId, ...(bm.alsoOn || [])].filter((id) => id && collections.some((c) => c.id === id));
+const MAX_LINES = 9; // a main line and up to eight more, as the library allows
 
 const persist = debounce(async () => { if (bm) await M.saveBookmark(bm); }, 250);
 
@@ -88,6 +91,7 @@ async function chooseCover(mode) {
 function renderBand() {
   const c = lineOf();
   const parents = c ? M.linePathOf(collections, c.id).slice(0, -1) : []; // a branch names the line it's on
+  const extra = linesOn().slice(1).map((id) => collections.find((x) => x.id === id));
   const band = $('#band');
   band.style.setProperty('--c', c ? c.color : 'var(--band-ink-2)');
   // the first time a new save is shown, a train runs along the line stripe and stops at the bullet
@@ -96,7 +100,7 @@ function renderBand() {
     ${bullet(c, 34)}
     <div class="pop-status">
       <span class="pop-note">${existed ? `Already saved · ${esc(relTime(bm.createdAt))}` : `${icon('check', 14)} Saved to`}${parents.length ? `${existed ? ' · ' : ' '}<span class="pop-path">${esc(parents.join(' › '))} ›</span>` : ''}</span>
-      <button class="pop-line" id="line-btn" title="Change line"><span>${esc(c ? c.name : 'Unsorted')}</span>${icon('chevronDown', 16)}</button>
+      <button class="pop-line" id="line-btn" title="${extra.length ? esc(`Also on ${extra.map((x) => x.name).join(', ')}`) : 'Change line'}"><span>${esc(c ? c.name : 'Unsorted')}</span>${extra.length ? `<span class="pop-more">+${extra.length}</span>` : ''}${icon('chevronDown', 16)}</button>
     </div>
     <button class="icon-btn${bm.favorite ? ' on' : ''}" id="fav-btn" title="${bm.favorite ? 'Unfavorite' : 'Favorite'}" aria-pressed="${bm.favorite}">${icon(bm.favorite ? 'starFilled' : 'star', 19)}</button>
     <button class="icon-btn" id="open-btn" title="Open Linemark (Alt+Shift+L)">${icon('external', 18)}</button>`;
@@ -254,46 +258,77 @@ function wireTags() {
   });
 }
 
+// The line picker is a checklist: tick every line the link belongs on. The first ticked is its main line (the one the
+// band names); the rest are lines it also stops on, as an interchange. Unsorted clears them all. "Line/Branch" makes a
+// branch and ticks it. The list stays open until Done, Escape or a click outside.
 function pickLine(anchor) {
   const flat = [];
   const kids = (pid) => collections.filter((c) => (c.parentId || null) === pid).sort((a, b) => a.order - b.order);
   const ids = new Set(collections.map((c) => c.id));
   const walk = (list, d) => { for (const c of list) { if (c.smart) continue; flat.push([c, d]); walk(kids(c.id), d + 1); } }; // smart lines are searches, not places to file
   walk(collections.filter((c) => !c.parentId || !ids.has(c.parentId)).sort((a, b) => a.order - b.order), 0);
+  const setLines = (list) => {
+    bm.collectionId = list[0] || null;
+    bm.alsoOn = list.slice(1, MAX_LINES);
+    if (!bm.alsoOn.length) delete bm.alsoOn;
+    bm.trashedAt = null;
+    persist();
+    renderBand();
+  };
   openMenu(anchor, (m, close) => {
+    const row = (id, label, lead, on, main) =>
+      `<button type="button" class="menu-item pick${on ? ' on' : ''}" role="menuitemcheckbox" aria-checked="${on}" data-pick="${id}">${lead}<span class="pick-name">${esc(label)}</span>${main ? '<span class="pick-main">Main</span>' : ''}<span class="pick-box" aria-hidden="true">${on ? icon('check', 13) : ''}</span></button>`;
     const draw = (q = '') => {
       // "Cooking/Baking" finds or creates a line and a branch inside it
       const ql = M.splitLinePath(q).join('/').toLowerCase();
       const path = (c) => M.linePathOf(collections, c.id);
       const items = flat.filter(([c]) => !ql || path(c).join('/').toLowerCase().includes(ql));
       const create = M.createLineLabel(collections, q);
+      const on = linesOn();
       $('.list', m).innerHTML =
-        (!ql ? menuItem({ label: 'Unsorted', lead: ring(18, 'var(--ink-3)'), checked: !bm.collectionId, attrs: 'data-pick=""' }) : '') +
-        items.map(([c, d]) => menuItem({ label: ql && d ? path(c).join(' › ') : c.name, lead: `<span style="width:${ql ? 0 : d * 14}px;flex:none"></span>${bullet(c, 18)}`, checked: c.id === bm.collectionId, attrs: `data-pick="${c.id}"` })).join('') +
+        (!ql ? row('', 'Unsorted', ring(18, 'var(--ink-3)'), !on.length, false) : '') +
+        items.map(([c, d]) => row(c.id, ql && d ? path(c).join(' › ') : c.name, `<span style="width:${ql ? 0 : d * 14}px;flex:none"></span>${bullet(c, 18)}`, on.includes(c.id), on.length > 1 && on[0] === c.id)).join('') +
         (create ? menuItem({ label: create, iconName: 'plus', attrs: `data-create="${esc(q)}"` }) : '');
+      const n = on.length;
+      $('.pick-count', m).textContent = n > 1 ? `On ${n} lines` : n ? 'On 1 line' : 'Unsorted';
     };
-    m.innerHTML = `<input class="input menu-search" placeholder="Find a line, or type Line/Branch" aria-label="Find a line, or type Line/Branch to create a branch"><div class="list"></div>`;
+    m.innerHTML = `<input class="input menu-search" placeholder="Find a line, or type Line/Branch" aria-label="Find a line, or type Line/Branch to create a branch">
+      <p class="pick-hint">Tick every line it belongs on.</p>
+      <div class="list"></div>
+      <div class="pick-foot"><span class="pick-count" aria-live="polite"></span><button type="button" class="btn primary sm" id="pick-done">Done</button></div>`;
     draw();
     const input = $('input', m);
     input.addEventListener('input', () => draw(input.value.trim()));
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('.list .menu-item', m)?.click(); } });
+    $('#pick-done', m).addEventListener('click', () => { close(); $('#line-btn')?.focus(); });
     m.addEventListener('click', async (e) => {
-      const it = e.target.closest('.menu-item');
+      const it = e.target.closest('.list .menu-item');
       if (!it) return;
+      const on = linesOn();
       if (it.dataset.create) {
         const plan = M.planLinePath(collections, it.dataset.create);
         const changed = [...plan.created, ...plan.opened].map((c) => ({ ...c, updatedAt: Date.now() }));
         await db.putMany('collections', changed);
         for (const c of changed) { const i = collections.findIndex((x) => x.id === c.id); if (i >= 0) collections[i] = c; else collections.push(c); }
-        bm.collectionId = plan.target?.id || null;
-      } else {
-        bm.collectionId = it.dataset.pick || null;
+        flat.length = 0;
+        walk(collections.filter((c) => !c.parentId || !collections.some((x) => x.id === c.parentId)).sort((a, b) => a.order - b.order), 0);
+        const id = plan.target?.id;
+        if (id && !on.includes(id)) {
+          if (on.length >= MAX_LINES) { toast(`A link can stop on up to ${MAX_LINES} lines`); return; }
+          setLines([...on, id]);
+        }
+        input.value = '';
+        draw();
+        $(`.list [data-pick="${id}"]`, m)?.focus();
+        return;
       }
-      close();
-      bm.trashedAt = null;
-      persist();
-      renderBand();
-      toast(`Moved to ${lineOf()?.name || 'Unsorted'}`);
+      const id = it.dataset.pick;
+      if (!id) setLines([]);
+      else if (on.includes(id)) setLines(on.filter((x) => x !== id));
+      else if (on.length >= MAX_LINES) { toast(`A link can stop on up to ${MAX_LINES} lines`); return; }
+      else setLines([...on, id]);
+      draw(input.value.trim());
+      $(`.list [data-pick="${id}"]`, m)?.focus();
     });
   }, { width: 300 });
 }
