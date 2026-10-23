@@ -1,6 +1,7 @@
 # Releases Linemark when a version tag is pushed (v1.4.2 and so on): runs the tests, builds the store zips, attaches
 # them to a GitHub Release, and submits them to the Chrome Web Store and Microsoft Edge Add-ons for review.
-# The tag must match manifest.json's version. Store credentials are repository secrets; see docs/RELEASING.md.
+# The tag must match manifest.json's version. Chrome is signed in without a key (Workload Identity Federation); the
+# Edge credentials are secrets in the "stores" environment. See docs/RELEASING.md.
 #
 #   git tag -a v1.4.2 -m "What changed, for Edge's certification notes"
 #   git push origin v1.4.2
@@ -26,6 +27,7 @@ on:
 
 permissions:
   contents: write # to create the GitHub Release
+  id-token: write # to prove to Google that this run is EY4O/linemark, for the Chrome Web Store token
 
 concurrency:
   group: release
@@ -78,10 +80,23 @@ jobs:
             "dist/edge-${{ steps.version.outputs.version }}.zip" \
             --title "Linemark ${{ steps.version.outputs.version }}" --notes "$RELEASE_NOTES"
 
+      # Swaps this run's GitHub identity for a one-hour token as the Linemark release service account. Google only
+      # accepts runs of this repository in the "stores" environment, so there is no key to store or leak.
+      - name: Sign in to the Chrome Web Store
+        id: google
+        if: github.ref_type == 'tag' || inputs.store == 'both' || inputs.store == 'chrome'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/1037985269779/locations/global/workloadIdentityPools/github/providers/linemark
+          service_account: linemark-release@angelic-howl-511200-t5.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore
+          create_credentials_file: false
+
       - name: Submit to the stores
         if: github.ref_type == 'tag' || inputs.store != 'none'
         env:
-          CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+          CWS_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
           CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
           EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
           EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}

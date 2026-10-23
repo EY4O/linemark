@@ -4,14 +4,17 @@
 //
 //   node tools/publish.mjs                    both stores
 //   node tools/publish.mjs --store chrome     one store (chrome or edge)
-//   node tools/publish.mjs --dry-run          check the zips and settings, call nothing
+//   node tools/publish.mjs --dry-run          check the zips and settings, upload nothing (with CWS_ACCESS_TOKEN,
+//                                             it also reads the Chrome item's status to prove the sign-in works)
 //   node tools/publish.mjs --notes "…"        notes for Edge's certification testers (default: RELEASE_NOTES, then
 //                                             a line naming the version)
 //
 // Credentials come from the environment (GitHub Actions secrets in .github/workflows/release.yml), never from files
 // in the repository. See docs/RELEASING.md for where each one comes from.
 //
-//   Chrome Web Store (API v2, service account):
+//   Chrome Web Store (API v2, service account), signed in either way:
+//     CWS_ACCESS_TOKEN           a short-lived token for the service account (the release workflow gets one from
+//                                GitHub's keyless sign-in, so no key file exists), or
 //     CWS_SERVICE_ACCOUNT_JSON   the service account's JSON key (the whole file's text)
 //     CWS_PUBLISHER_ID           Developer Dashboard → Publisher → Settings
 //     CWS_ITEM_ID                optional; defaults to Linemark's item ID
@@ -62,10 +65,11 @@ async function chrome() {
   const file = zipFor('chrome');
   const publisher = need('CWS_PUBLISHER_ID');
   const item = process.env.CWS_ITEM_ID || 'laapaiiaipeoilipnbhpjmjbdkomhjln';
-  const keyJson = need('CWS_SERVICE_ACCOUNT_JSON');
+  const preset = process.env.CWS_ACCESS_TOKEN;
+  const keyJson = preset ? '' : need('CWS_SERVICE_ACCOUNT_JSON');
   log('chrome', `${path.basename(file)} → item ${item}${DRY ? ' (dry run)' : ''}`);
-  if (DRY) return;
-  const token = await googleToken(keyJson);
+  if (DRY && !(preset && publisher)) return;
+  const token = preset || await googleToken(keyJson);
   const api = `https://chromewebstore.googleapis.com/v2/publishers/${publisher}/items/${item}`;
   const call = async (url, init = {}) => {
     const res = await fetch(url, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init.headers || {}) } });
@@ -74,6 +78,11 @@ async function chrome() {
     if (!res.ok) throw new Error(`${init.method || 'GET'} ${url} → ${res.status} ${typeof body === 'string' ? body : JSON.stringify(body)}`);
     return body;
   };
+  if (DRY) { // read-only: proves the token, the publisher and the service account's access
+    const st = await call(`${api}:fetchStatus`);
+    log('chrome', `signed in; the store answered: ${JSON.stringify(st).slice(0, 300)}`);
+    return;
+  }
   const up = await call(`https://chromewebstore.googleapis.com/upload/v2/publishers/${publisher}/items/${item}:upload`, {
     method: 'POST', headers: { 'Content-Type': 'application/zip' }, body: fs.readFileSync(file),
   });
