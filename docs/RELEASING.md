@@ -16,7 +16,7 @@ The APIs only update the extension package. Store listing text, screenshots and 
 
 3. Watch the **Release** run in the repository's **Actions** tab. Each store's review then takes its usual time.
 
-To try a release without submitting, run the workflow by hand (**Actions → Release → Run workflow**) with **dry run** ticked: it runs the tests and builds the zips, signs in to the Chrome Web Store and reads Linemark's status there, and checks the Edge settings, without uploading anything. Locally, `node tools/publish.mjs --dry-run` does the same check.
+To try a release without submitting, run the workflow by hand (**Actions → Release → Run workflow**) with **dry run** ticked: it runs the tests and builds the zips, signs in to the Chrome Web Store and reads Linemark's status there, and makes a harmless call to the Edge API to check its key is accepted, without uploading anything. Locally, `node tools/publish.mjs --dry-run` does the same check.
 
 ## One-time setup
 

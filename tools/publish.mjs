@@ -106,8 +106,16 @@ async function edge() {
   const product = need('EDGE_PRODUCT_ID');
   const headers = { Authorization: `ApiKey ${need('EDGE_API_KEY')}`, 'X-ClientID': need('EDGE_CLIENT_ID') };
   log('edge', `${path.basename(file)} → product ${product || '(not set)'}${DRY ? ' (dry run)' : ''}`);
-  if (DRY) return;
   const api = `https://api.addons.microsoftedge.microsoft.com/v1/products/${product}`;
+  if (DRY) {
+    // the API has no read-only call for this, so ask after an operation that doesn't exist: a key the API refuses
+    // answers 401/403, an accepted one gets past sign-in (usually 404)
+    if (!(product && process.env.EDGE_API_KEY && process.env.EDGE_CLIENT_ID)) return;
+    const res = await fetch(`${api}/submissions/operations/00000000-0000-0000-0000-000000000000`, { headers });
+    if (res.status === 401 || res.status === 403) throw new Error(`the API refused the credentials (${res.status}): replace EDGE_API_KEY / EDGE_CLIENT_ID`);
+    log('edge', `credentials accepted (test call answered ${res.status})`);
+    return;
+  }
   // each step answers 202 with the operation to poll in its Location header
   const start = async (url, init) => {
     const res = await fetch(url, { ...init, headers: { ...headers, ...(init.headers || {}) } });
