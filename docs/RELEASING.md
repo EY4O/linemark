@@ -27,7 +27,7 @@ The release job runs in a GitHub **environment** called `stores` (**Settings →
 Chrome needs no key. The workflow proves to Google that it is a run of EY4O/linemark in the `stores` environment ([Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)) and gets a one-hour token as a service account the Chrome Web Store accepts. This is already set up:
 
 - **Google Cloud project** `angelic-howl-511200-t5` (number 1037985269779, owned by iamlooneth@gmail.com): the Chrome Web Store, IAM Service Account Credentials and Security Token Service APIs are on.
-- **Service account** `linemark-release@angelic-howl-511200-t5.iam.gserviceaccount.com`: no keys and no project roles. Its only grant is **Workload Identity User** for `repo:EY4O/linemark:environment:stores`.
+- **Service account** `linemark-release@angelic-howl-511200-t5.iam.gserviceaccount.com`: no keys and no project roles. Its only grant is **Workload Identity User** for the subject `repo:EY4O@25870429/linemark@1413722472:environment:stores`. GitHub writes subjects in this "immutable" form (owner and repository IDs included) for this repository, so the grant must use it too.
 - **Workload identity pool** `github`, provider `linemark`: trusts GitHub's tokens only for this repository's ID and owner ID, so a fork or a new repository with the same name can't use it.
 - **Chrome Web Store dashboard → Account**: the service account's email is added. A publisher can have one service account.
 - **Secret** `CWS_PUBLISHER_ID` in `stores` (from **Publisher → Settings**).
@@ -51,7 +51,7 @@ The API can only publish with the visibility last set in the dashboard: if you c
 
 - **Version already exists / not increased:** bump `manifest.json` and tag again.
 - **Edge: a submission is already in review:** wait for it to finish, then re-run the job.
-- **Chrome: sign-in fails** (`Permission 'iam.serviceAccounts.getAccessToken' denied` or `unauthorized_client`): the job must run in the `stores` environment and in EY4O/linemark; check the pool's condition and the service account's grant in the Cloud project.
+- **Chrome: sign-in fails** (`Permission 'iam.serviceAccounts.getAccessToken' denied` or `unauthorized_client`): the grant's subject must match the one GitHub sends, character for character (see `gh api repos/EY4O/linemark/actions/oidc/customization/sub`), and the job must run in the `stores` environment.
 - **Chrome: 403 from the store after signing in:** the service account isn't added under **Account** in the Chrome Web Store dashboard, or `CWS_PUBLISHER_ID` is wrong.
 - **Chrome: publish refused after a visibility change:** publish once by hand in the dashboard, then re-run.
 - **Uploaded, but submitting failed:** the store already holds that version, so a re-run's upload is refused. Submit the uploaded draft by hand in that store's dashboard, or bump the version and tag again. Re-running never publishes a version twice.
