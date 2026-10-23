@@ -71,8 +71,8 @@ Export to HTML or a full JSON backup at any time.
 
 The screenshots are composed slides (`store/promo/slides.html`) over captures of the real app in `store/images/raw/`, taken with a demo library (`store/demo-seed.html`). The bookmarks point at real public sites, and the cover images are abstract drawings standing in for page screenshots.
 
-**Homepage URL:** `https://ey4o.github.io/linemark-site/`
-**Support URL:** `https://github.com/EY4O/linemark-site/issues`
+**Homepage URL:** `https://linemark.eternalpose.io/`
+**Support URL:** `https://github.com/EY4O/linemark/issues`
 
 ---
 
@@ -110,9 +110,9 @@ The screenshots are composed slides (`store/promo/slides.html`) over captures of
 - ☑ I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
 - ☑ I do not use or transfer user data to determine creditworthiness or for lending purposes.
 
-**Privacy policy URL:** `https://ey4o.github.io/linemark-site/privacy.html`
+**Privacy policy URL:** `https://linemark.eternalpose.io/privacy.html`
 
-It is published from the public repository [EY4O/linemark-site](https://github.com/EY4O/linemark-site), which holds only that page and its font. After changing `docs/privacy.html` here, copy it (and `docs/fonts/`) into that repository and push.
+It is served by GitHub Pages straight from this repository's `docs/` folder (custom domain `linemark.eternalpose.io`, set in `docs/CNAME`), so changing `docs/privacy.html` and pushing publishes it. The old address, ey4o.github.io/linemark-site/, redirects there.
 
 > The contact address in `PRIVACY.md` and `docs/privacy.html` is iamlooneth@gmail.com.
 

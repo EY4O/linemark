@@ -25,8 +25,8 @@ Build the packages with `node tools/package.mjs` and upload `dist/edge-<version>
 ## Properties
 
 - **Category:** Productivity
-- **Website:** `https://ey4o.github.io/linemark-site/`
-- **Support contact:** `https://github.com/EY4O/linemark-site/issues` (or iamlooneth@gmail.com)
+- **Website:** `https://linemark.eternalpose.io/`
+- **Support contact:** `https://github.com/EY4O/linemark/issues` (or iamlooneth@gmail.com)
 - **Mature content:** no
 
 ## Privacy
@@ -60,7 +60,7 @@ Build the packages with `node tools/package.mjs` and upload `dist/edge-<version>
 
 Certify each disclosure statement (no selling or transferring data, no use unrelated to the single purpose, no creditworthiness or lending).
 
-**Privacy policy URL:** `https://ey4o.github.io/linemark-site/privacy.html` (it covers Chrome and Edge).
+**Privacy policy URL:** `https://linemark.eternalpose.io/privacy.html` (it covers Chrome and Edge).
 
 ## Store listing (English)
 

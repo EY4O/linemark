@@ -49,8 +49,8 @@ Linemark's own values:
 |---|---|
 | Chrome Web Store item ID | `laapaiiaipeoilipnbhpjmjbdkomhjln` |
 | Web client redirect URI | `https://laapaiiaipeoilipnbhpjmjbdkomhjln.chromiumapp.org/google` |
-| Homepage | `https://ey4o.github.io/linemark-site/` |
-| Privacy policy | `https://ey4o.github.io/linemark-site/privacy.html` |
+| Homepage | `https://linemark.eternalpose.io/` |
+| Privacy policy | `https://linemark.eternalpose.io/privacy.html` |
 | Consent-screen logo (120×120) | `store/images/oauth-logo-120.png` |
 | Google Cloud project | `angelic-howl-511200-t5` ("Linemark", owned by iamlooneth@gmail.com) |
 | Chrome Extension client | `1037985269779-s7bdmv2c3t320ng3kv0cbtmjoorfr7hl.apps.googleusercontent.com` |

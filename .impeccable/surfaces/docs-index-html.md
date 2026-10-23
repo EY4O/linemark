@@ -5,7 +5,7 @@ primary_target: "docs/index.html"
 related_targets: []
 ---
 
-# Surface: Linemark homepage (docs/index.html, published to ey4o.github.io/linemark-site/)
+# Surface: Linemark homepage (docs/index.html, published at linemark.eternalpose.io)
 
 Mode: Persuade. Audience: people deciding whether to install Linemark, plus Google's OAuth brand-verification reviewers. Job: understand the product in one screen, try it, install it from the Chrome Web Store. Proof: a working sample library (labelled sample) and real store screenshots. Constraints: self-contained static page (no external scripts, fonts or trackers), bundled Archivo, must describe the Google data use and link the privacy policy, Add to Chrome links to the store item laapaiiaipeoilipnbhpjmjbdkomhjln, Ko-fi link in the footer.
 
