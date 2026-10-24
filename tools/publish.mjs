@@ -5,7 +5,8 @@
 //   node tools/publish.mjs                    both stores
 //   node tools/publish.mjs --store chrome     one store (chrome or edge)
 //   node tools/publish.mjs --dry-run          check the zips and settings, upload nothing (with CWS_ACCESS_TOKEN,
-//                                             it also reads the Chrome item's status to prove the sign-in works)
+//                                             it also signs in to Chrome, logs the store's published and in-review
+//                                             versions, and fails if manifest.json's version isn't higher)
 //   node tools/publish.mjs --notes "…"        notes for Edge's certification testers (default: RELEASE_NOTES, then
 //                                             a line naming the version)
 //
@@ -80,7 +81,16 @@ async function chrome() {
   };
   if (DRY) { // read-only: proves the token, the publisher and the service account's access
     const st = await call(`${api}:fetchStatus`);
-    log('chrome', `signed in; the store answered: ${JSON.stringify(st).slice(0, 300)}`);
+    // each revision lists its version per distribution channel (a staged rollout can hold two)
+    const revision = (r) => r && { state: r.state, versions: [...new Set((r.distributionChannels || []).map((c) => c.crxVersion).filter(Boolean))] };
+    const published = revision(st.publishedItemRevisionStatus);
+    const submitted = revision(st.submittedItemRevisionStatus);
+    if (!published && !submitted) { const { publicKey, ...rest } = st; log('chrome', `signed in; the store answered: ${JSON.stringify(rest).slice(0, 300)}`); return; }
+    const show = (r) => r ? `${r.versions.join(', ') || '(no version)'} (${r.state || 'unknown'})` : 'none';
+    log('chrome', `signed in; published ${show(published)}, in review ${show(submitted)}`);
+    const newer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number); for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); return false; };
+    const highest = [...(published?.versions || []), ...(submitted?.versions || [])].reduce((a, v) => (newer(v, a) ? v : a), '0');
+    if (!newer(version, highest)) throw new Error(`manifest.json is ${version} but the store already has ${highest}: bump the version before releasing`);
     return;
   }
   const up = await call(`https://chromewebstore.googleapis.com/upload/v2/publishers/${publisher}/items/${item}:upload`, {
@@ -113,7 +123,7 @@ async function edge() {
     if (!(product && process.env.EDGE_API_KEY && process.env.EDGE_CLIENT_ID)) return;
     const res = await fetch(`${api}/submissions/operations/00000000-0000-0000-0000-000000000000`, { headers });
     if (res.status === 401 || res.status === 403) throw new Error(`the API refused the credentials (${res.status}): replace EDGE_API_KEY / EDGE_CLIENT_ID`);
-    log('edge', `credentials accepted (test call answered ${res.status})`);
+    log('edge', `credentials accepted (test call answered ${res.status}); the API can't report the store's version, so check Partner Center for it`);
     return;
   }
   // each step answers 202 with the operation to poll in its Location header
