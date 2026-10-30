@@ -5,15 +5,15 @@
      &v=terminus   (marquee) the logo as a terminus at the left, five lines departing from it and fanning out
      &ground=paper the map-paper ground instead of the signage band
      Google asks for no text, saturated colour, a filled frame and crisp edges, readable at half size.
-     The art is Linemark's own world: coloured lines meeting at an interchange marked by the logo (the white tile,
-     drawn as in store/logo/tile-white.svg). -->
+     The art is Linemark's own world: coloured lines meeting at an interchange marked by the logo
+     (store/logo/linemark.svg). -->
 <html><head><meta charset="utf-8"><title>promo</title>
 <style>
   html, body { margin: 0; overflow: hidden; }
   svg { display: block; }
 </style></head>
 <body>
-<script>
+<script type="module">
 const q = new URLSearchParams(location.search);
 const size = q.get('size') || 'small', variant = q.get('v') || 'hub';
 const paper = q.get('ground') === 'paper';
@@ -63,21 +63,12 @@ const terminus = {
 };
 const P = size === 'marquee' ? (variant === 'terminus' ? terminus : marquee) : small;
 const [bx, by, br] = P.bullet;
-// The logo at the hub: the 96-unit tile of tile-white.svg scaled to 2 * br, ringed by a gap in the ground colour so
-// the lines read as running into it.
-const s = (br * 2) / 96, gap = (P.stroke * 0.45) / s;
-const logo = `<g transform="translate(${bx} ${by}) scale(${s}) translate(-64 -64)">
-    <rect x="${16 - gap}" y="${16 - gap}" width="${96 + gap * 2}" height="${96 + gap * 2}" rx="${22 + gap}" fill="${GROUND}"/>
-    <rect x="16" y="16" width="96" height="96" rx="22" fill="#ffffff"${paper ? ` stroke="rgba(22,23,26,0.16)" stroke-width="${1.5 / s}"` : ''}/>
-    <g fill="none" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="${C.cobalt}" d="M64 31H54a12 12 0 0 0-12 12v56l22-22"/>
-      <path stroke="${C.magenta}" d="M64 31h10a12 12 0 0 1 12 12v56L64 77"/>
-      <path stroke="${C.teal}" d="M64 51l22 22"/>
-      <path stroke="#ff5a1f" d="M64 31v46"/>
-    </g>
-    <g fill="#fff" stroke-width="3"><circle cx="42" cy="61" r="4.5" stroke="${C.cobalt}"/><circle cx="64" cy="51" r="4.5" stroke="#ff5a1f"/><circle cx="86" cy="73" r="4.5" stroke="${C.magenta}"/></g>
-    <g fill="#fff" stroke="#16171a" stroke-width="3.25"><circle cx="64" cy="31" r="5.75"/><circle cx="64" cy="77" r="5.75"/></g>
-  </g>`;
+// The logo at the hub: store/logo/linemark.svg, its tile (480 of its 512 units) scaled to 2 * br, ringed by a gap in
+// the ground colour so the lines read as running into it.
+const mark = (await (await fetch('../logo/linemark.svg')).text()).replace(/<!--[\s\S]*?-->/g, '');
+const k = (br * 2) / 480, gap = P.stroke * 0.45, half = br + gap;
+const logo = `<rect x="${bx - half}" y="${by - half}" width="${half * 2}" height="${half * 2}" rx="${108 * k + gap}" fill="${GROUND}"/>
+  ${mark.replace('<svg ', `<svg x="${bx - 256 * k}" y="${by - 256 * k}" `).replace(/ width="512" height="512"/, ` width="${512 * k}" height="${512 * k}"`)}`;
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="${GROUND}"/>

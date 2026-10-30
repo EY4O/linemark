@@ -6,6 +6,7 @@
 //   promo-small.png       440x280 small promo tile   (store/promo/promo.html)
 //   promo-marquee.png     1400x560 marquee tile (the terminus layout: the logo with lines departing from it)
 //   icon-128.png          the store icon (same file as icons/icon128.png)
+// and copies the marquee to docs/images/og.png, the site's share image.
 //
 //   node tools/store-assets.mjs        (needs Google Chrome; set CHROME_PATH if it isn't found)
 
@@ -121,6 +122,8 @@ for (const [size, w, h, extra] of [['small', 440, 280, ''], ['marquee', 1400, 56
 }
 fs.copyFileSync(path.join(ROOT, 'icons', 'icon128.png'), path.join(OUT, 'icon-128.png'));
 console.log('  wrote store/images/icon-128.png');
+fs.copyFileSync(path.join(OUT, 'promo-marquee.png'), path.join(ROOT, 'docs', 'images', 'og.png'));
+console.log('  wrote docs/images/og.png');
 
 chrome.kill(); server.close();
 try { fs.rmSync(PROFILE, { recursive: true, force: true }); } catch {}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Linemark's icon, 48px and up: a bookmark ribbon drawn as a transit map, in the house style it shares with Prompto,
+       Model Librarian and Containers (white tile, lavender hairline, ink stations, the red orb). Each line takes one
+       stop of the family's holo gradient: pink on the left, sky on the right, a lavender trunk and a peach branch.
+       The orb is the top interchange. Toolbar sizes and the app use icons/logo.svg. PNGs: node tools/render-icons.mjs -->
+  <defs>
+    <linearGradient id="left" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#f7c6d6"/><stop offset="1" stop-color="#ec8cae"/></linearGradient>
+    <linearGradient id="right" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#bfe4f0"/><stop offset="1" stop-color="#68b6d4"/></linearGradient>
+    <linearGradient id="trunk" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#d4c6f2"/><stop offset="1" stop-color="#9c84d6"/></linearGradient>
+    <linearGradient id="branch" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#f9d0b8"/><stop offset="1" stop-color="#ee9c76"/></linearGradient>
+    <radialGradient id="orb" cx="0.34" cy="0.3" r="0.75" fx="0.34" fy="0.3"><stop offset="0" stop-color="#fff1f1"/><stop offset="0.22" stop-color="#ffb3b3"/><stop offset="0.6" stop-color="#f26d6d"/><stop offset="1" stop-color="#c23b4a"/></radialGradient>
+  </defs>
+  <rect x="21" y="21" width="470" height="470" rx="103" fill="#fff" stroke="#dcdbe3" stroke-width="10"/>
+  <g fill="none" stroke-width="40" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="url(#left)" d="M256 318L150 428V154A70 70 0 0 1 220 84H256"/>
+    <path stroke="url(#right)" d="M256 318L362 428V154A70 70 0 0 0 292 84H256"/>
+    <!-- the branch, then the trunk, each on a white gap so lines that meet read as separate lines -->
+    <path stroke="#fff" stroke-width="56" d="M256 196L362 300"/>
+    <path stroke="url(#branch)" d="M256 196L362 300"/>
+    <path stroke="#fff" stroke-width="56" d="M256 84V318"/>
+    <path stroke="url(#trunk)" d="M256 84V318"/>
+  </g>
+  <g fill="#fff" stroke="#101117">
+    <circle cx="150" cy="238" r="20.5" stroke-width="11"/>
+    <circle cx="256" cy="196" r="19" stroke-width="10"/>
+    <circle cx="362" cy="300" r="20.5" stroke-width="11"/>
+    <circle cx="256" cy="318" r="29" stroke-width="14"/>
+  </g>
+  <circle cx="256" cy="88" r="60" fill="#fff"/>
+  <circle cx="256" cy="88" r="50" fill="url(#orb)"/>
+</svg>

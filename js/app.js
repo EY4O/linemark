@@ -3083,9 +3083,6 @@ function setTheme(theme) {
 function applyTheme() {
   const dark = S.ui.theme === 'dark' || (S.ui.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  // the tab's icon follows the theme too: the white tile in light mode, the dark tile in dark mode
-  const fav = document.querySelector('link[rel=icon]');
-  if (fav) fav.href = `icons/logo-${dark ? 'dark' : 'light'}.svg`;
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
