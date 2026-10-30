@@ -126,7 +126,7 @@ Replace the files (or `git pull`), then click the reload arrow on Linemark's car
 | `contextMenus` | **Save page**, **Save link**, **Save highlight** and **Save image to Linemark** on right-click |
 | `bookmarks` | One-click import of your browser's bookmarks (read only) |
 | `favicon` | Site icons from the browser's own cache |
-| `storage`, `unlimitedStorage` | Keeping your library, covers and page text locally |
+| `unlimitedStorage` | Keeping your library, covers and page text locally |
 | `tabs`, `tabGroups` (optional) | **Save all open tabs**, saving tab groups as lines, and opening a line as a tab group |
 | Site access (optional) | Link checks, page text, previews for imported links, **Refresh**, and the Internet Archive lookup |
 | `identity` (optional) | Signing in to Google for sync; never requested while sync is off |

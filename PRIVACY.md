@@ -13,7 +13,7 @@ Linemark is a bookmark manager for Chrome and other Chromium browsers. It is **l
 
 ## What Linemark stores, and where
 
-Everything below is kept in Linemark's storage inside your Chrome profile (IndexedDB and extension storage) on your device:
+Everything below is kept in Linemark's storage inside your Chrome profile (IndexedDB) on your device:
 
 - **Bookmarks:** web addresses, titles, descriptions, your notes and tags, favorites, and which line (collection) each one belongs to.
 - **Cover images:** a screenshot of the page you saved, or the page's own cover image, downloaded once.
@@ -68,7 +68,7 @@ Specifically, Linemark:
 
 | Permission | Why |
 |---|---|
-| `storage`, `unlimitedStorage` | Keep your library, covers and page text on your device |
+| `unlimitedStorage` | Keep your library, covers and page text on your device |
 | `activeTab`, `scripting` | Read the page you choose to save (title, description, cover, text) and take its screenshot |
 | `contextMenus` | **Save page / Save link / Save highlight / Save image to Linemark** in the right-click menu |
 | `bookmarks` | Import Chrome's bookmarks when you ask (read only) |

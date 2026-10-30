@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Chrome extension, Manifest V3. Plain HTML/CSS/JavaScript (ES modules), no build step: the folder loads directly via `chrome://extensions` → "Load unpacked". Data lives in the extension's IndexedDB; small preferences in `chrome.storage.local`.
+Chrome extension, Manifest V3. Plain HTML/CSS/JavaScript (ES modules), no build step: the folder loads directly via `chrome://extensions` → "Load unpacked". Data lives in the extension's IndexedDB; the theme choice in the page's `localStorage`.
 
 ## Users
 

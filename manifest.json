@@ -3,7 +3,7 @@
   "name": "Linemark — Bookmark Manager",
   "short_name": "Linemark",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApRfmiJXY0lkUPbh9WwAqdqt1l5ARgrLxDDIQ2Vi6733sa1KxDDQPRlpBLm/6ZrcucmD3wM+MvPX0kHiS4KiilB4zTPKUCjGLkhSUfvQtqRPnWyMisntWGhYJzUR/P+zKJvC14nP0cnr+fqhzW2pRZT47QNKOVHx2Yit1kVqxBKDLz+sAw8ZNt/xHJbPrRv2HEArpbt9Affd3UEtGRwJH0MdzE7AxYngn3/zsnw/Otu4ZSbFJGABWfhFd3sZr/PpIDA/YKXsPcKzh3CB5cyW07QU/PNIQIocRkffozj/1YItKpnJ36bO+ifVoKn6u4TiDsGtwLdl+ifbS/CEhCRScYQIDAQAB",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Bookmarks on colour-coded lines, with tags, notes, full-text search and a broken-link checker. Local by default; sync optional.",
   "icons": {
     "16": "icons/icon16.png",
@@ -24,7 +24,6 @@
     "type": "module"
   },
   "permissions": [
-    "storage",
     "unlimitedStorage",
     "contextMenus",
     "activeTab",

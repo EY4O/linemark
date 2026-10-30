@@ -85,8 +85,7 @@ The screenshots are composed slides (`store/promo/slides.html`) over captures of
 
 | Permission | Justification |
 |---|---|
-| `storage` | Stores the user's bookmark library and settings locally in the browser profile. |
-| `unlimitedStorage` | The library includes cover images and page text for search; without this, Chrome could evict large libraries. |
+| `unlimitedStorage` | Stores the bookmark library locally in the browser profile (IndexedDB). It includes cover images and page text for search; without this, Chrome could evict large libraries. |
 | `activeTab` | When the user clicks the toolbar button, shortcut or context menu, Linemark reads that tab's title, address and description and takes a screenshot to save it. |
 | `scripting` | Runs a one-off read of the page the user chose to save (title, description, cover image and readable text). It runs only on that tab, at the user's request. |
 | `contextMenus` | Adds "Save page to Linemark", "Save link to Linemark", "Save highlight to Linemark" (on selected text) and "Save image to Linemark" (on an image) to the right-click menu. |
