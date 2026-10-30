@@ -6,7 +6,7 @@
      &ground=paper the map-paper ground instead of the signage band
      Google asks for no text, saturated colour, a filled frame and crisp edges, readable at half size.
      The art is Linemark's own world: coloured lines meeting at an interchange marked by the logo
-     (store/logo/linemark.svg). -->
+     (icons/linemark.svg). -->
 <html><head><meta charset="utf-8"><title>promo</title>
 <style>
   html, body { margin: 0; overflow: hidden; }
@@ -63,9 +63,9 @@ const terminus = {
 };
 const P = size === 'marquee' ? (variant === 'terminus' ? terminus : marquee) : small;
 const [bx, by, br] = P.bullet;
-// The logo at the hub: store/logo/linemark.svg, its tile (480 of its 512 units) scaled to 2 * br, ringed by a gap in
+// The logo at the hub: icons/linemark.svg, its tile (480 of its 512 units) scaled to 2 * br, ringed by a gap in
 // the ground colour so the lines read as running into it.
-const mark = (await (await fetch('../logo/linemark.svg')).text()).replace(/<!--[\s\S]*?-->/g, '');
+const mark = (await (await fetch('/icons/linemark.svg')).text()).replace(/<!--[\s\S]*?-->/g, '');
 const k = (br * 2) / 480, gap = P.stroke * 0.45, half = br + gap;
 const logo = `<rect x="${bx - half}" y="${by - half}" width="${half * 2}" height="${half * 2}" rx="${108 * k + gap}" fill="${GROUND}"/>
   ${mark.replace('<svg ', `<svg x="${bx - 256 * k}" y="${by - 256 * k}" `).replace(/ width="512" height="512"/, ` width="${512 * k}" height="${512 * k}"`)}`;

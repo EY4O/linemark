@@ -101,7 +101,7 @@ A line stores its bullet as `icon: "lucide:<name>"`, `icon: "brand:<slug>"` or `
 ## Store assets and packaging
 
 ```bash
-node tools/render-icons.mjs   # icon PNGs from store/logo/linemark.svg and icons/logo.svg
+node tools/render-icons.mjs   # icon PNGs from icons/linemark.svg and icons/logo.svg
 node tools/store-assets.mjs   # screenshots, promo tiles and icon, into store/images/
 node tools/package.mjs        # dist/chrome-<version>.zip and dist/edge-<version>.zip for upload
 node tools/publish.mjs        # submit them to both stores (credentials from the environment; see docs/RELEASING.md)

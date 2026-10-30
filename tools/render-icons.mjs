@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Renders Linemark's icon PNGs from its two SVG sources:
-//   store/logo/linemark.svg   the full mark: icons/icon48.png, icons/icon128.png (inside the store's 96x96 safe area),
-//                             icons/icon512.png, docs/images/icon.png (site and README) and store/edge/logo-300.png
+//   icons/linemark.svg        the full mark, also the app's band logo: icons/icon48.png, icons/icon128.png (inside the
+//                             store's 96x96 safe area), icons/icon512.png, docs/images/icon.png (site and README) and
+//                             store/edge/logo-300.png
 //   icons/logo.svg            the toolbar mark: icons/icon16.png and icons/icon32.png
 // store/images/icon-128.png and the promo tiles come from tools/store-assets.mjs.
 //
@@ -13,7 +14,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const FULL = 'store/logo/linemark.svg', SMALL = 'icons/logo.svg';
+const FULL = 'icons/linemark.svg', SMALL = 'icons/logo.svg';
 // [source, output, canvas size, artwork size]: the artwork is centred on the canvas
 const JOBS = [
   [SMALL, 'icons/icon16.png', 16, 16],

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="32" height="32">
-  <!-- Linemark at toolbar size (16 and 32px), on the library's band and as its tab icon: the bookmark's silhouette cut
-       from the family's holo gradient, with the red orb on top. The full mark is store/logo/linemark.svg. -->
+  <!-- Linemark at toolbar size (16 and 32px) and as the library's tab icon: the bookmark's silhouette cut
+       from the family's holo gradient, with the red orb on top. The full mark is icons/linemark.svg. -->
   <defs>
     <linearGradient id="holo" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#f7dccf"/><stop offset="0.3" stop-color="#f4a7c0"/><stop offset="0.62" stop-color="#b9a3e3"/><stop offset="1" stop-color="#8fcfe3"/></linearGradient>
     <radialGradient id="orb" cx="0.34" cy="0.3" r="0.75" fx="0.34" fy="0.3"><stop offset="0" stop-color="#fff1f1"/><stop offset="0.22" stop-color="#ffb3b3"/><stop offset="0.6" stop-color="#f26d6d"/><stop offset="1" stop-color="#c23b4a"/></radialGradient>

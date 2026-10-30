@@ -2,7 +2,7 @@
   <!-- Linemark's icon, 48px and up: a bookmark ribbon drawn as a transit map, in the house style it shares with Prompto,
        Model Librarian and Containers (white tile, lavender hairline, ink stations, the red orb). Each line takes one
        stop of the family's holo gradient: pink on the left, sky on the right, a lavender trunk and a peach branch.
-       The orb is the top interchange. Toolbar sizes and the app use icons/logo.svg. PNGs: node tools/render-icons.mjs -->
+       The orb is the top interchange. It is also the band's logo in the app. Toolbar sizes and the tab icon use icons/logo.svg. PNGs: node tools/render-icons.mjs -->
   <defs>
     <linearGradient id="left" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#f7c6d6"/><stop offset="1" stop-color="#ec8cae"/></linearGradient>
     <linearGradient id="right" gradientUnits="userSpaceOnUse" x1="120" y1="54" x2="392" y2="458"><stop offset="0" stop-color="#bfe4f0"/><stop offset="1" stop-color="#68b6d4"/></linearGradient>

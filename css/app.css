@@ -26,8 +26,8 @@ body { overflow: hidden; }
   gap: 10px;
   padding: 18px 18px 14px;
 }
-/* the logo: the white tile in both themes, like a sticker on the band */
-.brand-logo { width: 30px; height: 30px; flex: none; background: url(../icons/logo.svg) center / contain no-repeat; }
+/* the logo: the full mark on its white tile in both themes, like a sticker on the band */
+.brand-logo { width: 30px; height: 30px; flex: none; background: url(../icons/linemark.svg) center / contain no-repeat; }
 .brand-name { font-size: 1.375rem; line-height: 1; font-stretch: 87.5%; font-weight: 760; letter-spacing: -0.02em; }
 .brand .icon-btn { margin-left: auto; color: var(--band-ink-2); }
 .brand .icon-btn:hover { background: var(--band-hover); color: var(--band-ink); }
